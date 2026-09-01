@@ -137,19 +137,20 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
     final advantageHits = widget.result.logs.where((l) => l.isAdvantage).length;
     final opponent = widget.opponentName ?? 'AI';
 
+    // Achievement badge (visual representation of victory/achievement)
+    final achievementBadge = isWin
+        ? '🏆 ${t.battleResult_winTitle}'
+        : '⚔️ ${t.battleResult_lossTitle}';
+
     final buffer = StringBuffer()
+      ..writeln(achievementBadge)
+      ..writeln()
       ..writeln(t.battleResult_shareHeader)
       ..writeln(isWin ? t.battleResult_shareWin(opponent) : t.battleResult_shareLoss(opponent))
-      ..writeln(t.battleResult_shareStats(widget.result.logs.length, totalDamage, advantageHits))
       ..writeln();
 
-    for (final log in widget.result.logs) {
-      final mark = log.isAdvantage ? '✨' : log.isDisadvantage ? '❄️' : '⚔️';
-      final attacker = log.attackingCard?.nameJp ?? '?';
-      final defender = log.defendingCard?.nameJp ?? '?';
-      buffer.writeln('T${log.turn} $mark $attacker → $defender  -${log.damage}');
-    }
-
+    // Summary stats without detailed turn-by-turn logs
+    buffer.writeln(t.battleResult_shareStats(widget.result.logs.length, totalDamage, advantageHits));
     buffer.writeln();
     buffer.writeln(t.battleResult_shareHashtag);
 
