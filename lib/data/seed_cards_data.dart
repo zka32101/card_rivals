@@ -1,7 +1,7 @@
 import '../models/seed_card.dart';
 
 final seedCardsData = <SeedCard>[
-  // 喜（Joy）C1（20pt）: 5枚
+  // 喜（Joy）C1（20pt）: 2枚
   SeedCard(
     cardId: 'joy_c1_001',
     attribute: 'joy',
@@ -28,47 +28,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Light that protects all',
     imageUrl: 'assets/card_art/joy_c1_002.png',
   ),
-  SeedCard(
-    cardId: 'joy_c1_003',
-    attribute: 'joy',
-    cost: 1,
-    attackPower: 3,
-    defensePower: 7,
-    speed: 10,
-    nameJp: '輝く蝶',
-    nameEn: 'Gleaming Butterfly',
-    descriptionJp: '素早く優雅に舞う',
-    descriptionEn: 'Swift and graceful',
-    imageUrl: 'assets/card_art/joy_c1_003.png',
-  ),
-  SeedCard(
-    cardId: 'joy_c1_004',
-    attribute: 'joy',
-    cost: 1,
-    attackPower: 7,
-    defensePower: 7,
-    speed: 6,
-    nameJp: '希望の光',
-    nameEn: 'Light of Hope',
-    descriptionJp: 'いつも私たちを導く',
-    descriptionEn: 'Always guiding us',
-    imageUrl: 'assets/card_art/joy_c1_004.png',
-  ),
-  SeedCard(
-    cardId: 'joy_c1_005',
-    attribute: 'joy',
-    cost: 1,
-    attackPower: 9,
-    defensePower: 6,
-    speed: 5,
-    nameJp: '朝日',
-    nameEn: 'Morning Sun',
-    descriptionJp: '新しい始まりの象徴',
-    descriptionEn: 'Symbol of new beginnings',
-    imageUrl: 'assets/card_art/joy_c1_005.png',
-  ),
 
-  // 喜（Joy）C2（25pt）: 4枚
+  // 喜（Joy）C2（25pt）: 2枚
   SeedCard(
     cardId: 'joy_c2_001',
     attribute: 'joy',
@@ -95,34 +56,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Earth that embraces all',
     imageUrl: 'assets/card_art/joy_c2_002.png',
   ),
-  SeedCard(
-    cardId: 'joy_c2_003',
-    attribute: 'joy',
-    cost: 2,
-    attackPower: 8,
-    defensePower: 8,
-    speed: 9,
-    nameJp: '幸せの輪',
-    nameEn: 'Circle of Joy',
-    descriptionJp: 'バランスの取れた喜び',
-    descriptionEn: 'Balanced happiness',
-    imageUrl: 'assets/card_art/joy_c2_003.png',
-  ),
-  SeedCard(
-    cardId: 'joy_c2_004',
-    attribute: 'joy',
-    cost: 2,
-    attackPower: 5,
-    defensePower: 7,
-    speed: 13,
-    nameJp: '笑顔の妖精',
-    nameEn: 'Fairy of Smiles',
-    descriptionJp: '楽しさを運ぶ小さな使者',
-    descriptionEn: 'Brings fun wherever',
-    imageUrl: 'assets/card_art/joy_c2_004.png',
-  ),
 
-  // 喜（Joy）C3（30pt）: 3 + 1（端数）= 4枚
+  // 喜（Joy）C3（30pt）: 2枚
   SeedCard(
     cardId: 'joy_c3_001',
     attribute: 'joy',
@@ -148,32 +83,6 @@ final seedCardsData = <SeedCard>[
     descriptionJp: '絶対の防御',
     descriptionEn: 'Impenetrable defense',
     imageUrl: 'assets/card_art/joy_c3_002.png',
-  ),
-  SeedCard(
-    cardId: 'joy_c3_003',
-    attribute: 'joy',
-    cost: 3,
-    attackPower: 9,
-    defensePower: 6,
-    speed: 15,
-    nameJp: '光輪の騎士',
-    nameEn: 'Knight of Radiance',
-    descriptionJp: '光の速度で敵を討つ',
-    descriptionEn: 'Swift as light',
-    imageUrl: 'assets/card_art/joy_c3_003.png',
-  ),
-  SeedCard(
-    cardId: 'joy_c3_004',
-    attribute: 'joy',
-    cost: 3,
-    attackPower: 10,
-    defensePower: 10,
-    speed: 10,
-    nameJp: '生命の輪',
-    nameEn: 'Wheel of Life',
-    descriptionJp: 'あらゆる調和をもたらす',
-    descriptionEn: 'Brings harmony',
-    imageUrl: 'assets/card_art/joy_c3_004.png',
   ),
 
   // 喜（Joy）C4（35pt）: 2枚
@@ -232,7 +141,7 @@ final seedCardsData = <SeedCard>[
     imageUrl: 'assets/card_art/joy_c5_002.png',
   ),
 
-  // 怒（Anger）C1（20pt）: 5枚
+  // 怒（Anger）C1（20pt）: 2枚
   SeedCard(
     cardId: 'anger_c1_001',
     attribute: 'anger',
@@ -259,47 +168,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Unbreakable defense',
     imageUrl: 'assets/card_art/anger_c1_002.png',
   ),
-  SeedCard(
-    cardId: 'anger_c1_003',
-    attribute: 'anger',
-    cost: 1,
-    attackPower: 3,
-    defensePower: 7,
-    speed: 10,
-    nameJp: '獄炎の戦士',
-    nameEn: 'Hellfire Warrior',
-    descriptionJp: '速く、熱く',
-    descriptionEn: 'Fast and fierce',
-    imageUrl: 'assets/card_art/anger_c1_003.png',
-  ),
-  SeedCard(
-    cardId: 'anger_c1_004',
-    attribute: 'anger',
-    cost: 1,
-    attackPower: 7,
-    defensePower: 7,
-    speed: 6,
-    nameJp: '爆炎の渦',
-    nameEn: 'Inferno Whirl',
-    descriptionJp: 'バランスの取れた力',
-    descriptionEn: 'Balanced fury',
-    imageUrl: 'assets/card_art/anger_c1_004.png',
-  ),
-  SeedCard(
-    cardId: 'anger_c1_005',
-    attribute: 'anger',
-    cost: 1,
-    attackPower: 9,
-    defensePower: 6,
-    speed: 5,
-    nameJp: '鬼',
-    nameEn: 'Oni',
-    descriptionJp: '古来の怒りの化身',
-    descriptionEn: 'Ancient wrath embodied',
-    imageUrl: 'assets/card_art/anger_c1_005.png',
-  ),
 
-  // 怒（Anger）C2（25pt）: 4枚
+  // 怒（Anger）C2（25pt）: 2枚
   SeedCard(
     cardId: 'anger_c2_001',
     attribute: 'anger',
@@ -326,34 +196,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Holds back magma',
     imageUrl: 'assets/card_art/anger_c2_002.png',
   ),
-  SeedCard(
-    cardId: 'anger_c2_003',
-    attribute: 'anger',
-    cost: 2,
-    attackPower: 8,
-    defensePower: 8,
-    speed: 9,
-    nameJp: '怒りの炎',
-    nameEn: 'Flames of Wrath',
-    descriptionJp: 'バランスの取れた怒り',
-    descriptionEn: 'Balanced rage',
-    imageUrl: 'assets/card_art/anger_c2_003.png',
-  ),
-  SeedCard(
-    cardId: 'anger_c2_004',
-    attribute: 'anger',
-    cost: 2,
-    attackPower: 5,
-    defensePower: 7,
-    speed: 13,
-    nameJp: '赤鬼',
-    nameEn: 'Red Oni',
-    descriptionJp: '素早く厳しい',
-    descriptionEn: 'Swift and harsh',
-    imageUrl: 'assets/card_art/anger_c2_004.png',
-  ),
 
-  // 怒（Anger）C3（30pt）: 3 + 1（端数）= 4枚
+  // 怒（Anger）C3（30pt）: 2枚
   SeedCard(
     cardId: 'anger_c3_001',
     attribute: 'anger',
@@ -379,32 +223,6 @@ final seedCardsData = <SeedCard>[
     descriptionJp: '揺るがぬ大地',
     descriptionEn: 'Immovable earth',
     imageUrl: 'assets/card_art/anger_c3_002.png',
-  ),
-  SeedCard(
-    cardId: 'anger_c3_003',
-    attribute: 'anger',
-    cost: 3,
-    attackPower: 10,
-    defensePower: 5,
-    speed: 15,
-    nameJp: '獄炎の戦士',
-    nameEn: 'Hellfire Soldier',
-    descriptionJp: '地獄の炎を操る',
-    descriptionEn: 'Commands hellfire',
-    imageUrl: 'assets/card_art/anger_c3_003.png',
-  ),
-  SeedCard(
-    cardId: 'anger_c3_004',
-    attribute: 'anger',
-    cost: 3,
-    attackPower: 11,
-    defensePower: 11,
-    speed: 8,
-    nameJp: '爆炎の渦',
-    nameEn: 'Inferno Vortex',
-    descriptionJp: 'あらゆる物を焼き尽くす',
-    descriptionEn: 'Burns everything',
-    imageUrl: 'assets/card_art/anger_c3_004.png',
   ),
 
   // 怒（Anger）C4（35pt）: 2枚
@@ -463,7 +281,7 @@ final seedCardsData = <SeedCard>[
     imageUrl: 'assets/card_art/anger_c5_002.png',
   ),
 
-  // 哀（Sadness）C1（20pt）: 5枚
+  // 哀（Sadness）C1（20pt）: 2枚
   SeedCard(
     cardId: 'sadness_c1_001',
     attribute: 'sadness',
@@ -490,47 +308,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Gently embraces',
     imageUrl: 'assets/card_art/sadness_c1_002.png',
   ),
-  SeedCard(
-    cardId: 'sadness_c1_003',
-    attribute: 'sadness',
-    cost: 1,
-    attackPower: 4,
-    defensePower: 6,
-    speed: 10,
-    nameJp: '暗夜の精',
-    nameEn: 'Spirit of Dark Night',
-    descriptionJp: '夜闇を優雅に舞う',
-    descriptionEn: 'Dances through darkness',
-    imageUrl: 'assets/card_art/sadness_c1_003.png',
-  ),
-  SeedCard(
-    cardId: 'sadness_c1_004',
-    attribute: 'sadness',
-    cost: 1,
-    attackPower: 7,
-    defensePower: 7,
-    speed: 6,
-    nameJp: '悲しみの風',
-    nameEn: 'Wind of Sadness',
-    descriptionJp: 'そよ風のように優しい',
-    descriptionEn: 'Soft as a breeze',
-    imageUrl: 'assets/card_art/sadness_c1_004.png',
-  ),
-  SeedCard(
-    cardId: 'sadness_c1_005',
-    attribute: 'sadness',
-    cost: 1,
-    attackPower: 9,
-    defensePower: 6,
-    speed: 5,
-    nameJp: '影',
-    nameEn: 'Shadow',
-    descriptionJp: '光があれば必ず生まれる',
-    descriptionEn: 'Born from light',
-    imageUrl: 'assets/card_art/sadness_c1_005.png',
-  ),
 
-  // 哀（Sadness）C2（25pt）: 4枚
+  // 哀（Sadness）C2（25pt）: 2枚
   SeedCard(
     cardId: 'sadness_c2_001',
     attribute: 'sadness',
@@ -557,34 +336,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Protected by abyss',
     imageUrl: 'assets/card_art/sadness_c2_002.png',
   ),
-  SeedCard(
-    cardId: 'sadness_c2_003',
-    attribute: 'sadness',
-    cost: 2,
-    attackPower: 8,
-    defensePower: 8,
-    speed: 9,
-    nameJp: '哀愁',
-    nameEn: 'Pathos',
-    descriptionJp: 'バランスの取れた悲しみ',
-    descriptionEn: 'Balanced melancholy',
-    imageUrl: 'assets/card_art/sadness_c2_003.png',
-  ),
-  SeedCard(
-    cardId: 'sadness_c2_004',
-    attribute: 'sadness',
-    cost: 2,
-    attackPower: 5,
-    defensePower: 7,
-    speed: 13,
-    nameJp: '泪の精',
-    nameEn: 'Spirit of Tears',
-    descriptionJp: '素早く儚い',
-    descriptionEn: 'Swift and fleeting',
-    imageUrl: 'assets/card_art/sadness_c2_004.png',
-  ),
 
-  // 哀（Sadness）C3（30pt）: 3枚
+  // 哀（Sadness）C3（30pt）: 2枚
   SeedCard(
     cardId: 'sadness_c3_001',
     attribute: 'sadness',
@@ -610,19 +363,6 @@ final seedCardsData = <SeedCard>[
     descriptionJp: '深き夜を統べる',
     descriptionEn: 'Rules the deep night',
     imageUrl: 'assets/card_art/sadness_c3_002.png',
-  ),
-  SeedCard(
-    cardId: 'sadness_c3_003',
-    attribute: 'sadness',
-    cost: 3,
-    attackPower: 9,
-    defensePower: 10,
-    speed: 11,
-    nameJp: '泪の魔女',
-    nameEn: 'Witch of Tears',
-    descriptionJp: '悲しみを魔法で癒す',
-    descriptionEn: 'Heals with sorrow',
-    imageUrl: 'assets/card_art/sadness_c3_003.png',
   ),
 
   // 哀（Sadness）C4（35pt）: 2枚
