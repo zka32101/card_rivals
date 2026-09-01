@@ -100,6 +100,7 @@ final myActiveRentalsProvider = FutureProvider<List<PlayCard>>((ref) async {
 
     return snapshot.docs.map((d) {
       final data = d.data();
+      final cardName = Map<String, String>.from(data['cardName'] ?? {});
       return PlayCard(
         cardId: data['cardId'] as String? ?? '',
         attribute: data['attribute'] as String? ?? 'joy',
@@ -107,7 +108,8 @@ final myActiveRentalsProvider = FutureProvider<List<PlayCard>>((ref) async {
         attackPower: (data['attackPower'] as int?) ?? 0,
         defensePower: (data['defensePower'] as int?) ?? 0,
         speed: (data['speed'] as int?) ?? 0,
-        nameJp: data['cardName'] as String? ?? '',
+        nameJp: cardName['jp'] ?? '',
+        nameEn: cardName['en'] ?? '',
         isSeedCard: false,
         isRented: true,
       );

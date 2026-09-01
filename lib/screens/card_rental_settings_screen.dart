@@ -6,6 +6,15 @@ import '../models/user_card.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
 
+// ローカライズされたカード名を取得（現在のロケールに基づいてJP/EN を切り替え）
+String _getCardDisplayName(BuildContext context, UserCard card) {
+  final locale = Localizations.localeOf(context);
+  if (locale.languageCode == 'en' && card.nameEn.isNotEmpty) {
+    return card.nameEn;
+  }
+  return card.nameJp;
+}
+
 class CardRentalSettingsScreen extends ConsumerWidget {
   const CardRentalSettingsScreen({super.key});
 
@@ -133,7 +142,7 @@ class _CardRentalToggleItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(card.nameJp,
+                Text(_getCardDisplayName(context, card),
                     style: TextStyle(
                         fontFamily: Kingdom.displayFont, fontSize: Kingdom.textBody, fontWeight: FontWeight.bold, color: Kingdom.parchment),
                     maxLines: 1,

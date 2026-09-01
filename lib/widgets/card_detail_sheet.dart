@@ -7,6 +7,15 @@ import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
 import 'card_widget.dart';
 
+// ローカライズされたカード名を取得（現在のロケールに基づいてJP/EN を切り替え）
+String _getCardDisplayName(BuildContext context, PlayCard card) {
+  final locale = Localizations.localeOf(context);
+  if (locale.languageCode == 'en' && card.nameEn.isNotEmpty) {
+    return card.nameEn;
+  }
+  return card.nameJp;
+}
+
 /// カード詳細をボトムシートで表示する（コレクション/デッキ選択などから共通利用）
 void showCardDetailSheet(BuildContext context, PlayCard card) {
   showModalBottomSheet(
@@ -86,7 +95,7 @@ class CardDetailSheet extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: Kingdom.spaceSm),
-                    Text(displayCard.nameJp,
+                    Text(_getCardDisplayName(context, displayCard),
                         style: TextStyle(
                             fontFamily: Kingdom.displayFont, fontSize: 18, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
                     const SizedBox(height: Kingdom.spaceXs),

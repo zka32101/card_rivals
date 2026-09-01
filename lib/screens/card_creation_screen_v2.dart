@@ -508,6 +508,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                   defensePower: _defense,
                   speed: _speed,
                   nameJp: t.cardCreation_previewCardName,
+                  nameEn: t.cardCreation_previewCardName,
                 ),
               ),
             ),
@@ -864,6 +865,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
         defensePower: _defense,
         speed: _speed,
         nameJp: _selectedName ?? t.cardCreation_defaultCardName,
+        nameEn: '',
       );
       imageUrl = await FunctionsService.generateCardImage(
         attribute: _attribute ?? 'joy',
@@ -926,7 +928,8 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       attackPower: _attack,
       defensePower: _defense,
       speed: _speed,
-      nameJp: cardNameJp,
+      nameJp: _selectedName ?? t.cardCreation_defaultCardName,
+      nameEn: '',
       imageUrl: imageUrl,
       coCreatorName: coCreatorName.isEmpty ? null : coCreatorName,
     );

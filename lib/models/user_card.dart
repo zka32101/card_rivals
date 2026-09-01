@@ -199,6 +199,7 @@ class UserCard {
         defensePower: leveledDefensePower,
         speed: leveledSpeed,
         nameJp: nameJp,
+        nameEn: nameEn,
         imageUrl: imageUrl,
         isSeedCard: false,
         coCreatorName: coCreatorName,
@@ -218,6 +219,7 @@ class PlayCard {
   final int defensePower;
   final int speed;
   final String nameJp;
+  final String nameEn;
   final String imageUrl;
   final bool isSeedCard;
   // 共同創作: もう一人のクリエイター名（null = 単独創作）
@@ -239,6 +241,7 @@ class PlayCard {
     required this.defensePower,
     required this.speed,
     required this.nameJp,
+    this.nameEn = '',
     this.imageUrl = '',
     this.isSeedCard = true,
     this.coCreatorName,
