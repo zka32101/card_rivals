@@ -138,6 +138,11 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
             tooltip: t.home_tutorialTooltip,
           ),
           IconButton(
+            icon: const Icon(Icons.library_books_outlined, color: Kingdom.gilt),
+            onPressed: () => context.push('/explanation'),
+            tooltip: t.home_explanationTooltip,
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_outlined, color: Kingdom.gilt),
             onPressed: () => context.push('/settings'),
             tooltip: t.home_settingsTooltip,
