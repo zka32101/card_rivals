@@ -421,8 +421,10 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     if (!mounted) return;
 
     final isBigHit = _random.nextDouble() < kParamBigHitChance;
-    // ゲームバランス確保：総パラメータ数を各コストティアごとに厳密に固定
-    final total = isBigHit ? (_budget * (1 + kParamBigHitBonusPercent)).round() : _budget;
+    // ゲームバランス確保：総パラメータ数を各コストティアごとに厳密に固定、ビッグヒット時も最大40
+    final total = isBigHit
+        ? min((_budget * (1 + kParamBigHitBonusPercent)).round(), 40)
+        : _budget;
     final shares = _splitRandom(total, 3);
 
     setState(() {
