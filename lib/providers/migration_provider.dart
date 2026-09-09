@@ -7,7 +7,7 @@ import 'game_state_provider.dart';
 // 移住コスト（コイン）
 const int kMigrationCost = 50;
 // 移住ボーナス倍率の上乗せ（属性有利/不利倍率に加算）
-const double kMigrationBonusMultiplier = 0.15;
+const double kMigrationBonusMultiplier = 0.10;
 
 int _isoWeekNumber(DateTime date) {
   final dayOfYear = int.parse(

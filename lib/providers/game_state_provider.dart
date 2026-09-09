@@ -15,6 +15,7 @@ final allPlayCardsProvider = Provider<List<PlayCard>>((ref) {
     defensePower: sc.defensePower,
     speed: sc.speed,
     nameJp: sc.nameJp,
+    nameEn: sc.nameEn,
     imageUrl: sc.imageUrl,
     isSeedCard: true,
   )).toList();

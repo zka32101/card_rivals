@@ -26,6 +26,20 @@ String? _emotionToAttribute(EmotionType? emotion) => switch (emotion) {
       null => null,
     };
 
+// ローカライズされたカード名を取得（現在のロケールに基づいてJP/EN を切り替え）
+String _getCardDisplayName(BuildContext context, PlayCard card) {
+  final locale = Localizations.localeOf(context);
+  if (locale.languageCode == 'en' && card.nameEn.isNotEmpty) {
+    return card.nameEn;
+  }
+  return card.nameJp;
+}
+
+// カード名をバトル表示用に短縮（6文字制限）
+String _truncateCardName(String name) {
+  return name.length > 6 ? name.substring(0, 6) : name;
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 属性テーマ定義（王国パレット）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1424,9 +1438,7 @@ class _BattleCardDisplay extends StatelessWidget {
                             style: const TextStyle(fontSize: 38)),
                         const SizedBox(height: 4),
                         Text(
-                          card.nameJp.length > 6
-                              ? card.nameJp.substring(0, 6)
-                              : card.nameJp,
+                          _truncateCardName(_getCardDisplayName(context, card)),
                           style: TextStyle(
                             color: color,
                             fontSize: 9,

@@ -9,7 +9,7 @@ import '../models/user_card.dart';
 class BattleEngine {
   static const int initialHp = 30;
   // 「属性の国」移住ボーナス：移住先属性のカードで攻撃した際に加算される倍率
-  static const double migrationBonus = 0.15;
+  static const double migrationBonus = 0.10;
   // クリティカルヒット：確率で追加ダメージ倍率が乗る（属性相性とは独立）
   static const double criticalChance = 0.15;
   static const double criticalMultiplier = 1.5;

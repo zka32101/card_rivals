@@ -3,6 +3,15 @@ import '../models/user_card.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
 
+// ローカライズされたカード名を取得（現在のロケールに基づいてJP/EN を切り替え）
+String _getCardDisplayName(BuildContext context, PlayCard card) {
+  final locale = Localizations.localeOf(context);
+  if (locale.languageCode == 'en' && card.nameEn.isNotEmpty) {
+    return card.nameEn;
+  }
+  return card.nameJp;
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 「感情の国」紋章カード テーマ
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -283,7 +292,7 @@ class _Header extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  card.nameJp,
+                  _getCardDisplayName(context, card),
                   style: TextStyle(
                     fontFamily: Kingdom.displayFont,
                     fontSize: 12,
@@ -605,7 +614,7 @@ class CardThumbnail extends StatelessWidget {
                       border: Border(top: BorderSide(color: accent.withValues(alpha: 0.6), width: 0.8)),
                     ),
                     child: Text(
-                      card.nameJp,
+                      _getCardDisplayName(context, card),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: Kingdom.displayFont,

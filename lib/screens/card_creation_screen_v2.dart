@@ -45,7 +45,8 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
   int _rerollsUsed = 0;
   final _random = Random();
 
-  int get _budget => switch (_cost ?? 1) { 1 => 20, 2 => 25, 3 => 30, 4 => 35, _ => 40 };
+  // パラメータ総数: 最小30～最大40 のバランス
+  int get _budget => switch (_cost ?? 1) { 1 => 30, 2 => 32, 3 => 34, 4 => 36, _ => 38 };
   // build内(Widgetツリー構築中)でのみ使用。ref.watchはbuildフェーズ外(onPressed等)から
   // 呼ぶとエラーになるため、イベントハンドラー側では ref.read(vipStatusProvider) を直接使うこと。
   bool get _isVipWatched => ref.watch(vipStatusProvider).valueOrNull ?? false;
@@ -420,8 +421,11 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     if (!mounted) return;
 
     final isBigHit = _random.nextDouble() < kParamBigHitChance;
-    final total = isBigHit ? (_budget * (1 + kParamBigHitBonusPercent)).round() : _budget + _random.nextInt(5) - 2;
-    final shares = _splitRandom(max(total, 3), 3);
+    // ゲームバランス確保：総パラメータ数を各コストティアごとに厳密に固定、ビッグヒット時も最大40
+    final total = isBigHit
+        ? min((_budget * (1 + kParamBigHitBonusPercent)).round(), 40)
+        : _budget;
+    final shares = _splitRandom(total, 3);
 
     setState(() {
       _attack = shares[0];
@@ -508,6 +512,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                   defensePower: _defense,
                   speed: _speed,
                   nameJp: t.cardCreation_previewCardName,
+                  nameEn: t.cardCreation_previewCardName,
                 ),
               ),
             ),
@@ -864,6 +869,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
         defensePower: _defense,
         speed: _speed,
         nameJp: _selectedName ?? t.cardCreation_defaultCardName,
+        nameEn: '',
       );
       imageUrl = await FunctionsService.generateCardImage(
         attribute: _attribute ?? 'joy',
@@ -926,7 +932,8 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       attackPower: _attack,
       defensePower: _defense,
       speed: _speed,
-      nameJp: cardNameJp,
+      nameJp: _selectedName ?? t.cardCreation_defaultCardName,
+      nameEn: '',
       imageUrl: imageUrl,
       coCreatorName: coCreatorName.isEmpty ? null : coCreatorName,
     );
