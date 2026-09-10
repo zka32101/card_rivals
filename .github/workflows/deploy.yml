@@ -1,24 +1,53 @@
-name: Build and Deploy APK
+name: Build and Deploy APK/AAB
 
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (alpha, beta, production)'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - production
+
+env:
+  FLUTTER_VERSION: '3.47.2'
 
 jobs:
-  build:
+  build-android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
-          flutter-version: '3.x'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
 
       - name: Get dependencies
         run: flutter pub get
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+            BUILD_NUMBER=$(git rev-list --count HEAD)
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+            echo "build_number=${BUILD_NUMBER}" >> $GITHUB_OUTPUT
+          else
+            # workflow_dispatch の場合はデフォルト値を使用
+            echo "version=1.0.0" >> $GITHUB_OUTPUT
+            echo "build_number=$(date +%s)" >> $GITHUB_OUTPUT
+          fi
 
       # android/app/google-services.json は Firebase プロジェクト固有の設定ファイルで
       # .gitignore 対象のためリポジトリに含まれていない。ビルド前にリポジトリの
@@ -56,9 +85,60 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
+      - name: Build App Bundle (AAB)
+        run: flutter build appbundle --release
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: card-rivals-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 14
+          retention-days: 30
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: card-rivals-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  # iOS ビルド用テンプレート（有効化するには runner を macos-latest に変更し、
+  # iOS signing secrets を設定してください）
+  build-ios-template:
+    runs-on: macos-latest
+    if: false  # 準備ができるまでは無効化
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Setup iOS signing
+        env:
+          IOS_SIGNING_CERTIFICATE: ${{ secrets.IOS_SIGNING_CERTIFICATE }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
+          IOS_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_PROVISIONING_PROFILE_SPECIFIER }}
+        run: |
+          # TODO: iOS signing 設定の実装
+          echo "iOS signing setup would go here"
+          echo "Required secrets:"
+          echo "  - IOS_SIGNING_CERTIFICATE (p12/pfx)"
+          echo "  - IOS_CERTIFICATE_PASSWORD"
+          echo "  - IOS_PROVISIONING_PROFILE (mobileprovision)"
+          echo "  - IOS_PROVISIONING_PROFILE_SPECIFIER"
+
+      - name: Build iOS App
+        run: flutter build ios --release
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: card-rivals-ios
+          path: build/ios/ipa/
+          retention-days: 30
