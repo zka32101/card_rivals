@@ -4,13 +4,12 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import '../providers/purchases_provider.dart';
 
 class ShopWidget extends HookConsumerWidget {
-  const ShopWidget({Key? key}) : super(key: key);
+  const ShopWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final packagesAsync = ref.watch(availablePackagesProvider);
     final purchaseState = ref.watch(purchaseProvider);
-    final coinPackages = ref.watch(coinPackagesProvider);
 
     return DefaultTabController(
       length: 2,
@@ -266,20 +265,18 @@ class _SubscriptionCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             // 機能リスト
-            ...subscriptionPackage.features
-                .map(
-                  (feature) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check, color: Colors.green),
-                        const SizedBox(width: 8),
-                        Text(feature),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(),
+            ...subscriptionPackage.features.map(
+              (feature) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check, color: Colors.green),
+                    const SizedBox(width: 8),
+                    Text(feature),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             // 購入ボタン
             SizedBox(

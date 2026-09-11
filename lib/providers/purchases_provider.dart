@@ -16,7 +16,12 @@ final availablePackagesProvider = FutureProvider<List<Package>>((ref) async {
 
 // ユーザーの購入情報
 final customerInfoProvider = FutureProvider<CustomerInfo>((ref) async {
-  return PurchasesService.getCustomerInfo();
+  final data = await PurchasesService.getCustomerInfo();
+  return CustomerInfo(
+    hasActiveSubscription: data['hasActiveSubscription'] as bool,
+    hasAdsRemoved: data['hasAdsRemoved'] as bool,
+    activeEntitlements: data['activeEntitlements'] as Set<String>,
+  );
 });
 
 // アクティブなサブスクリプション確認

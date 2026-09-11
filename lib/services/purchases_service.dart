@@ -16,9 +16,7 @@ class PurchasesService {
       await Purchases.configure(
         PurchasesConfiguration(_apiKey),
       );
-      print('✅ Purchases initialized');
     } catch (e) {
-      print('❌ Purchases initialization error: $e');
       rethrow;
     }
   }
@@ -27,11 +25,8 @@ class PurchasesService {
   static Future<List<Package>> getAvailablePackages() async {
     try {
       final offerings = await Purchases.getOfferings();
-      final packages = offerings.current?.availablePackages ?? [];
-      print('📦 Available packages: ${packages.length}');
-      return packages;
+      return offerings.current?.availablePackages ?? [];
     } catch (e) {
-      print('❌ Get packages error: $e');
       return [];
     }
   }
@@ -39,65 +34,49 @@ class PurchasesService {
   /// 商品を購入
   static Future<bool> purchasePackage(Package package) async {
     try {
-      final customerInfo = await Purchases.purchasePackage(package);
-      print('✅ Purchase successful: ${package.identifier}');
+      final _ = await Purchases.purchasePackage(package);
       return true;
-    } on PurchasesErrorCode catch (e) {
+    } on PurchasesException catch (e) {
       if (e.code == PurchasesErrorCode.purchaseCancelledError) {
-        print('⚠️ Purchase cancelled by user');
+        // Purchase cancelled by user - normal flow
       } else {
-        print('❌ Purchase error: ${e.code}');
+        // Handle other purchase errors
       }
       return false;
     } catch (e) {
-      print('❌ Purchase error: $e');
       return false;
     }
   }
 
   /// ユーザーの購入状態を取得
-  static Future<CustomerInfo> getCustomerInfo() async {
+  static Future<Map<String, dynamic>> getCustomerInfo() async {
     try {
       final info = await Purchases.getCustomerInfo();
       final activeEntitlements = info.entitlements.active.keys.toSet();
 
-      return CustomerInfo(
-        hasActiveSubscription: activeEntitlements.isNotEmpty,
-        hasAdsRemoved: activeEntitlements.contains('ad_free'),
-        activeEntitlements: activeEntitlements,
-      );
+      return {
+        'hasActiveSubscription': activeEntitlements.isNotEmpty,
+        'hasAdsRemoved': activeEntitlements.contains('ad_free'),
+        'activeEntitlements': activeEntitlements,
+      };
     } catch (e) {
-      print('❌ Get customer info error: $e');
-      return const CustomerInfo(
-        hasActiveSubscription: false,
-        hasAdsRemoved: false,
-        activeEntitlements: {},
-      );
+      return {
+        'hasActiveSubscription': false,
+        'hasAdsRemoved': false,
+        'activeEntitlements': <String>{},
+      };
     }
   }
 
   /// サブスクリプション確認
   static Future<bool> hasActiveSubscription() async {
     final info = await getCustomerInfo();
-    return info.hasActiveSubscription;
+    return info['hasActiveSubscription'] as bool;
   }
 
   /// 広告削除確認
   static Future<bool> hasAdsRemoved() async {
     final info = await getCustomerInfo();
-    return info.hasAdsRemoved;
+    return info['hasAdsRemoved'] as bool;
   }
-}
-
-// 購入情報モデル
-class CustomerInfo {
-  final bool hasActiveSubscription;
-  final bool hasAdsRemoved;
-  final Set<String> activeEntitlements;
-
-  const CustomerInfo({
-    required this.hasActiveSubscription,
-    required this.hasAdsRemoved,
-    required this.activeEntitlements,
-  });
 }
