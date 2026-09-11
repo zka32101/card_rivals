@@ -2,7 +2,7 @@
 
 **Project**: Card Rivals（カードゲーム）
 **Status**: 開発中
-**Version**: 1.2.1+4
+**Version**: 1.2.2+5
 
 ## 概要
 
