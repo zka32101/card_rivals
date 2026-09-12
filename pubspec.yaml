@@ -39,8 +39,10 @@ dependencies:
   cloud_firestore: ^6.9.0
   firebase_storage: ^13.5.0
   cloud_functions: ^6.4.0
+  firebase_crashlytics: ^4.2.0
 
-  # Audio / Purchases
+  # Ads / Purchases
+  google_mobile_ads: ^5.1.0
   audioplayers: ^6.0.0
   purchases_flutter: ^8.0.0
 
