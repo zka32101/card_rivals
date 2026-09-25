@@ -6,17 +6,18 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 // VIPパス加入者には広告を一切表示しない。呼び出し側（画面）で
 // vipStatusProvider を確認してから showBanner/showInterstitial を呼ぶこと。
 //
-// ⚠️ 現在は Google 公式のテスト広告ユニットIDを使用している。
-// 本番リリース前に AdMob コンソールで実際の広告ユニットを作成し、
-// 下記のIDを差し替えること（テストIDのまま配布すると実収益が発生しない）。
+// デバッグビルドでは誤って本番広告ユニットに実インプレッションを送らないよう
+// Google公式のテスト広告ユニットIDを使用し、リリースビルドでのみ本番IDを使う。
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class AdService {
-  // Google公式テスト広告ユニットID（本番前に要差し替え）
   static const String _bannerAdUnitIdTest = 'ca-app-pub-3940256099942544/6300978111';
   static const String _interstitialAdUnitIdTest = 'ca-app-pub-3940256099942544/1033173712';
 
-  static String get bannerAdUnitId => _bannerAdUnitIdTest;
-  static String get interstitialAdUnitId => _interstitialAdUnitIdTest;
+  static const String _bannerAdUnitIdProd = 'ca-app-pub-5058227312086483/5391698485';
+  static const String _interstitialAdUnitIdProd = 'ca-app-pub-5058227312086483/2765535147';
+
+  static String get bannerAdUnitId => kReleaseMode ? _bannerAdUnitIdProd : _bannerAdUnitIdTest;
+  static String get interstitialAdUnitId => kReleaseMode ? _interstitialAdUnitIdProd : _interstitialAdUnitIdTest;
 
   static bool _initialized = false;
 
