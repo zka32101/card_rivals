@@ -22,6 +22,7 @@ import 'screens/season_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/shop_screen.dart';
 import 'screens/terms_of_service_screen.dart';
+import 'services/ad_service.dart';
 import 'services/purchase_service.dart';
 import 'theme/kingdom_theme.dart';
 
@@ -65,6 +66,13 @@ void main() async {
   } catch (e) {
     // RevenueCat未設定（APIキー未発行）でも課金以外の機能は使えるようにアプリを止めない
     debugPrint('PurchaseService init failed: $e');
+  }
+  try {
+    await AdService.initialize();
+    AdService.preloadInterstitial();
+  } catch (e) {
+    // 広告SDKの初期化失敗でもアプリ本体は止めない（無料版でも広告なしで遊べる）
+    debugPrint('AdService initialize failed: $e');
   }
   runApp(
     const ProviderScope(
