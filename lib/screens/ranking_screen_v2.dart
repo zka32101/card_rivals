@@ -25,7 +25,8 @@ class RankingScreenV2 extends ConsumerWidget {
         backgroundColor: Colors.amber[700],
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
+      body: SafeArea(
+        child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -57,6 +58,7 @@ class RankingScreenV2 extends ConsumerWidget {
             const SizedBox(height: 8),
             ..._buildRankingList(),
           ],
+        ),
         ),
       ),
     );

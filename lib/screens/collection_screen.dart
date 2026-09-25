@@ -67,7 +67,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> with Single
           ],
         ),
       ),
-      body: Stack(
+      body: SafeArea(
+        child: Stack(
         children: [
           const Positioned.fill(child: EmotionMoteField(count: 12)),
           Column(
@@ -100,6 +101,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> with Single
             ],
           ),
         ],
+        ),
       ),
     );
   }

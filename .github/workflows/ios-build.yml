@@ -22,6 +22,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      # freezed/riverpod_generatorの自動生成ファイルは.gitignore対象のため
+      # リポジトリに含まれていない。生成しないとpurchase_models.freezed.dart等が
+      # 無くコンパイルエラーになる。
+      - name: Generate code (build_runner)
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
@@ -48,6 +54,12 @@ jobs:
 
       - name: Get dependencies
         run: flutter pub get
+
+      # freezed/riverpod_generatorの自動生成ファイルは.gitignore対象のため
+      # リポジトリに含まれていない。生成しないとpurchase_models.freezed.dart等が
+      # 無くコンパイルエラーになる。
+      - name: Generate code (build_runner)
+        run: dart run build_runner build --delete-conflicting-outputs
 
       # Apple Developer 証明書なしでコンパイル可否のみを検証する。
       # 実機インストール・TestFlight配布には署名設定が別途必要。
@@ -97,6 +109,12 @@ jobs:
             exit 1
           fi
           echo "$GOOGLE_SERVICE_INFO_PLIST" > ios/Runner/GoogleService-Info.plist
+
+      # freezed/riverpod_generatorの自動生成ファイルは.gitignore対象のため
+      # リポジトリに含まれていない。生成しないとpurchase_models.freezed.dart等が
+      # 無くコンパイルエラーになる。
+      - name: Generate code (build_runner)
+        run: dart run build_runner build --delete-conflicting-outputs
 
       # 証明書とProvisioning Profileを一時キーチェーンにインポートする
       - name: Import signing certificate and provisioning profile

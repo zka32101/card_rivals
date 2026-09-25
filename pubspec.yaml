@@ -34,12 +34,16 @@ dependencies:
     sdk: flutter
 
   # Firebase
-  firebase_core: ^4.14.0
-  firebase_auth: ^6.6.1
-  cloud_firestore: ^6.9.0
-  firebase_storage: ^13.5.0
-  cloud_functions: ^6.4.0
-  firebase_crashlytics: ^4.2.0
+  # 各パッケージはFlutterFire monorepoで同時リリースされており、同じリリース日の
+  # バージョン同士でないとネイティブ側(firebase-ios-sdk)の要求バージョンが食い違い、
+  # iOSビルド時にXcodeのSwift Package Manager依存解決が失敗する。
+  # バージョンを個別に上げる際は必ず同日リリースのセットで揃えること。
+  firebase_core: ^4.15.0
+  firebase_auth: ^6.7.0
+  cloud_firestore: ^6.10.0
+  firebase_storage: ^13.6.0
+  cloud_functions: ^6.5.0
+  firebase_crashlytics: ^5.4.0
 
   # Ads / Purchases
   google_mobile_ads: ^5.1.0
@@ -58,6 +62,7 @@ dependencies:
   uuid: ^4.6.0
   share_plus: ^13.3.0
   url_launcher: ^6.3.0
+  shared_preferences: ^2.3.3
 
   # Serialization
   freezed_annotation: ^2.4.1
@@ -75,6 +80,14 @@ dev_dependencies:
   riverpod_generator: ^2.6.2
   flutter_launcher_icons: ^0.14.1
 
+# firebase_auth 6.7.0が"^9.0.7"を指定しているにも関わらず、実際には
+# firebase_auth_platform_interface 9.1.0で追加されたmigrateCurrentUser
+# パラメータをコード内で使用しており、9.0.7のままだとビルド時に
+# 「No named parameter with the name 'migrateCurrentUser'」でコンパイルエラーに
+# なる（firebase_auth側のバージョン指定ミスと思われる）。9.1.0を強制して回避。
+dependency_overrides:
+  firebase_auth_platform_interface: ^9.1.0
+
 flutter_launcher_icons:
   android: true
   ios: true
@@ -91,6 +104,14 @@ flutter_launcher_icons:
 # The following section is specific to Flutter packages.
 flutter:
   generate: true
+
+  # google_mobile_ads(CocoaPods)とwebview_flutter_wkwebview(google_mobile_adsが
+  # 依存、Swift Package Manager)が混在するとiOSビルド時にXcodeのpod installが
+  # 「google_mobile_ads uses CocoaPods while webview_flutter_wkwebview uses Swift
+  # Package Manager」で失敗する。google_mobile_adsがSPM対応するまでの暫定対応として
+  # プロジェクト単位でSPMを無効化し、全プラグインをCocoaPodsに統一する。
+  config:
+    enable-swift-package-manager: false
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
