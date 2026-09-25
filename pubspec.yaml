@@ -97,6 +97,14 @@ flutter_launcher_icons:
 flutter:
   generate: true
 
+  # google_mobile_ads(CocoaPods)とwebview_flutter_wkwebview(google_mobile_adsが
+  # 依存、Swift Package Manager)が混在するとiOSビルド時にXcodeのpod installが
+  # 「google_mobile_ads uses CocoaPods while webview_flutter_wkwebview uses Swift
+  # Package Manager」で失敗する。google_mobile_adsがSPM対応するまでの暫定対応として
+  # プロジェクト単位でSPMを無効化し、全プラグインをCocoaPodsに統一する。
+  config:
+    enable-swift-package-manager: false
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
