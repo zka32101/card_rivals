@@ -421,6 +421,7 @@
   "home_achievementsTooltip": "実績",
   "home_tutorialTooltip": "チュートリアル",
   "home_settingsTooltip": "設定",
+  "home_moreMenuTooltip": "その他",
   "home_todayStatusHeader": "💰 今日のプレイ状況",
   "home_dailyQuestsHeader": "📋 デイリークエスト",
   "home_startBattleHeader": "⚔️ バトルを始める",
@@ -793,9 +794,46 @@
   "explanation_page6Detail2": "防御型：優れた保護、シール発動率20%",
   "explanation_page6Detail3": "素早さ型：素早いターン、回避能力15%",
   "explanation_page7Title": "カードレンタル",
-  "explanation_page7Description": "カードを貸し出して不動産収入を得ましょう。\n\nカードを公開すると、他のプレイヤーが1コインでそのカードをバトルで使用できます。",
+  "explanation_page7Description": "カードを貸し出してレンタル収入を得ましょう。\n\nカードを公開すると、他のプレイヤーが1コインでそのカードをバトルで使用できます。",
   "explanation_page7Detail1": "レンタル手数料の40%を獲得",
   "explanation_page7Detail2": "レンタル収益は月ごとに蓄積",
   "explanation_page7Detail3": "公開に切り替えてレンタル可能にする",
-  "home_explanationTooltip": "ゲームガイド"
+  "home_explanationTooltip": "ゲームガイド",
+  "deckPreset_managerTitle": "デッキプリセット管理",
+  "deckPreset_saveDialogTitle": "プリセットを保存",
+  "deckPreset_nameHint": "プリセット名",
+  "deckPreset_descriptionHint": "説明（オプション）",
+  "deckPreset_cancel": "キャンセル",
+  "deckPreset_save": "保存",
+  "deckPreset_nameRequired": "プリセット名を入力してください",
+  "deckPreset_saved": "プリセットを保存しました",
+  "deckPreset_error": "エラー: {error}",
+  "@deckPreset_error": {
+    "placeholders": { "error": { "type": "Object" } }
+  },
+  "deckPreset_deleteTitle": "プリセットを削除",
+  "deckPreset_deleteConfirm": "「{name}」を削除しますか？",
+  "@deckPreset_deleteConfirm": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deckPreset_delete": "削除",
+  "deckPreset_deleted": "プリセットを削除しました",
+  "deckPreset_copyTitle": "プリセットをコピー",
+  "deckPreset_copySuffix": "{name} (コピー)",
+  "@deckPreset_copySuffix": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deckPreset_newNameHint": "新しい名前",
+  "deckPreset_copy": "コピー",
+  "deckPreset_copied": "プリセットをコピーしました",
+  "deckPreset_saveCurrentDeck": "現在のデッキを保存",
+  "deckPreset_empty": "プリセットがありません",
+  "deckPreset_loadError": "エラーが発生しました: {error}",
+  "@deckPreset_loadError": {
+    "placeholders": { "error": { "type": "Object" } }
+  },
+  "deckPreset_cardCount": "カード: {count}枚",
+  "@deckPreset_cardCount": {
+    "placeholders": { "count": { "type": "int" } }
+  }
 }

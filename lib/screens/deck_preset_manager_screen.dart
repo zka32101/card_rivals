@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../l10n/app_localizations.dart';
 import '../models/deck_preset.dart';
 import '../providers/deck_presets_provider.dart';
 import '../theme/kingdom_theme.dart';
@@ -40,12 +41,13 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
   }
 
   void _showSavePresetDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Kingdom.nightDeep,
         title: Text(
-          'プリセットを保存',
+          l10n.deckPreset_saveDialogTitle,
           style: Kingdom.title(size: 18, color: Kingdom.gilt),
         ),
         content: SingleChildScrollView(
@@ -56,7 +58,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 controller: _nameController,
                 style: const TextStyle(color: Kingdom.parchment),
                 decoration: InputDecoration(
-                  hintText: 'プリセット名',
+                  hintText: l10n.deckPreset_nameHint,
                   hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.3)),
@@ -72,7 +74,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 style: const TextStyle(color: Kingdom.parchment),
                 maxLines: 3,
                 decoration: InputDecoration(
-                  hintText: '説明（オプション）',
+                  hintText: l10n.deckPreset_descriptionHint,
                   hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.3)),
@@ -88,14 +90,14 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル', style: TextStyle(color: Kingdom.parchment)),
+            child: Text(l10n.deckPreset_cancel, style: const TextStyle(color: Kingdom.parchment)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Kingdom.gilt),
             onPressed: () async {
               if (_nameController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('プリセット名を入力してください')),
+                  SnackBar(content: Text(l10n.deckPreset_nameRequired)),
                 );
                 return;
               }
@@ -113,18 +115,18 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                   _nameController.clear();
                   _descriptionController.clear();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('プリセットを保存しました')),
+                    SnackBar(content: Text(l10n.deckPreset_saved)),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('エラー: $e')),
+                    SnackBar(content: Text(l10n.deckPreset_error(e))),
                   );
                 }
               }
             },
-            child: const Text('保存'),
+            child: Text(l10n.deckPreset_save),
           ),
         ],
       ),
@@ -132,22 +134,23 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
   }
 
   void _showDeleteConfirmDialog(DeckPreset preset) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Kingdom.nightDeep,
         title: Text(
-          'プリセットを削除',
+          l10n.deckPreset_deleteTitle,
           style: Kingdom.title(size: 18, color: Kingdom.angerCrimson),
         ),
         content: Text(
-          '「${preset.name}」を削除しますか？',
+          l10n.deckPreset_deleteConfirm(preset.name),
           style: const TextStyle(color: Kingdom.parchment),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル', style: TextStyle(color: Kingdom.parchment)),
+            child: Text(l10n.deckPreset_cancel, style: const TextStyle(color: Kingdom.parchment)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Kingdom.angerCrimson),
@@ -157,18 +160,18 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('プリセットを削除しました')),
+                    SnackBar(content: Text(l10n.deckPreset_deleted)),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('エラー: $e')),
+                    SnackBar(content: Text(l10n.deckPreset_error(e))),
                   );
                 }
               }
             },
-            child: const Text('削除'),
+            child: Text(l10n.deckPreset_delete),
           ),
         ],
       ),
@@ -176,21 +179,22 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
   }
 
   void _showCopyPresetDialog(DeckPreset preset) {
-    final copyNameController = TextEditingController(text: '${preset.name} (コピー)');
+    final l10n = AppLocalizations.of(context)!;
+    final copyNameController = TextEditingController(text: l10n.deckPreset_copySuffix(preset.name));
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Kingdom.nightDeep,
         title: Text(
-          'プリセットをコピー',
+          l10n.deckPreset_copyTitle,
           style: Kingdom.title(size: 18, color: Kingdom.gilt),
         ),
         content: TextField(
           controller: copyNameController,
           style: const TextStyle(color: Kingdom.parchment),
           decoration: InputDecoration(
-            hintText: '新しい名前',
+            hintText: l10n.deckPreset_newNameHint,
             hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.3)),
@@ -203,14 +207,14 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル', style: TextStyle(color: Kingdom.parchment)),
+            child: Text(l10n.deckPreset_cancel, style: const TextStyle(color: Kingdom.parchment)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Kingdom.gilt),
             onPressed: () async {
               if (copyNameController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('プリセット名を入力してください')),
+                  SnackBar(content: Text(l10n.deckPreset_nameRequired)),
                 );
                 return;
               }
@@ -225,18 +229,18 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('プリセットをコピーしました')),
+                    SnackBar(content: Text(l10n.deckPreset_copied)),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('エラー: $e')),
+                    SnackBar(content: Text(l10n.deckPreset_error(e))),
                   );
                 }
               }
             },
-            child: const Text('コピー'),
+            child: Text(l10n.deckPreset_copy),
           ),
         ],
       ),
@@ -245,132 +249,135 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final presetsAsync = ref.watch(userDeckPresetsProvider);
 
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: const Text('デッキプリセット管理'),
+        title: Text(l10n.deckPreset_managerTitle),
         backgroundColor: Kingdom.nightDeep,
         elevation: 0,
       ),
-      body: presetsAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Kingdom.gilt),
-        ),
-        error: (error, stack) => Center(
-          child: Text(
-            'エラーが発生しました: $error',
-            style: const TextStyle(color: Kingdom.parchment),
+      body: SafeArea(
+        child: presetsAsync.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: Kingdom.gilt),
           ),
-        ),
-        data: (presets) => Column(
-          children: [
-            // 保存ボタン（カード選択中の場合のみ）
-            if (widget.currentCardIds != null)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: ElevatedButton.icon(
-                  onPressed: _showSavePresetDialog,
-                  icon: const Icon(Icons.save),
-                  label: const Text('現在のデッキを保存'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Kingdom.gilt,
-                    minimumSize: const Size(double.infinity, 48),
+          error: (error, stack) => Center(
+            child: Text(
+              l10n.deckPreset_loadError(error),
+              style: const TextStyle(color: Kingdom.parchment),
+            ),
+          ),
+          data: (presets) => Column(
+            children: [
+              // 保存ボタン（カード選択中の場合のみ）
+              if (widget.currentCardIds != null)
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: ElevatedButton.icon(
+                    onPressed: _showSavePresetDialog,
+                    icon: const Icon(Icons.save),
+                    label: Text(l10n.deckPreset_saveCurrentDeck),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Kingdom.gilt,
+                      minimumSize: const Size(double.infinity, 48),
+                    ),
                   ),
                 ),
-              ),
-            // プリセット一覧
-            Expanded(
-              child: presets.isEmpty
-                  ? Center(
-                      child: Text(
-                        'プリセットがありません',
-                        style: TextStyle(
-                          color: Kingdom.parchment.withValues(alpha: 0.6),
-                          fontSize: 14,
+              // プリセット一覧
+              Expanded(
+                child: presets.isEmpty
+                    ? Center(
+                        child: Text(
+                          l10n.deckPreset_empty,
+                          style: TextStyle(
+                            color: Kingdom.parchment.withValues(alpha: 0.6),
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: presets.length,
-                      itemBuilder: (context, index) {
-                        final preset = presets[index];
-                        return Card(
-                          color: Kingdom.nightDeep,
-                          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          child: ListTile(
-                            title: Text(
-                              preset.name,
-                              style: Kingdom.title(size: 16, color: Kingdom.gilt),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (preset.description.isNotEmpty)
+                      )
+                    : ListView.builder(
+                        itemCount: presets.length,
+                        itemBuilder: (context, index) {
+                          final preset = presets[index];
+                          return Card(
+                            color: Kingdom.nightDeep,
+                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            child: ListTile(
+                              title: Text(
+                                preset.name,
+                                style: Kingdom.title(size: 16, color: Kingdom.gilt),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (preset.description.isNotEmpty)
+                                    Text(
+                                      preset.description,
+                                      style: TextStyle(
+                                        color: Kingdom.parchment.withValues(alpha: 0.7),
+                                        fontSize: 12,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   Text(
-                                    preset.description,
+                                    l10n.deckPreset_cardCount(preset.cardIds.length),
                                     style: TextStyle(
-                                      color: Kingdom.parchment.withValues(alpha: 0.7),
+                                      color: Kingdom.parchment.withValues(alpha: 0.6),
                                       fontSize: 12,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                Text(
-                                  'カード: ${preset.cardIds.length}枚',
-                                  style: TextStyle(
-                                    color: Kingdom.parchment.withValues(alpha: 0.6),
-                                    fontSize: 12,
+                                ],
+                              ),
+                              trailing: PopupMenuButton(
+                                color: Kingdom.nightDeep,
+                                itemBuilder: (context) => [
+                                  PopupMenuItem(
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.copy, color: Kingdom.gilt),
+                                        const SizedBox(width: 8),
+                                        Text(l10n.deckPreset_copy, style: const TextStyle(color: Kingdom.parchment)),
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      Future.delayed(Duration.zero, () {
+                                        _showCopyPresetDialog(preset);
+                                      });
+                                    },
                                   ),
-                                ),
-                              ],
+                                  PopupMenuItem(
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.delete, color: Kingdom.angerCrimson),
+                                        const SizedBox(width: 8),
+                                        Text(l10n.deckPreset_delete, style: const TextStyle(color: Kingdom.parchment)),
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      Future.delayed(Duration.zero, () {
+                                        _showDeleteConfirmDialog(preset);
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                if (widget.onPresetSelected != null) {
+                                  widget.onPresetSelected!(preset);
+                                  Navigator.pop(context);
+                                }
+                              },
                             ),
-                            trailing: PopupMenuButton(
-                              color: Kingdom.nightDeep,
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  child: Row(
-                                    children: const [
-                                      Icon(Icons.copy, color: Kingdom.gilt),
-                                      SizedBox(width: 8),
-                                      Text('コピー', style: TextStyle(color: Kingdom.parchment)),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    Future.delayed(Duration.zero, () {
-                                      _showCopyPresetDialog(preset);
-                                    });
-                                  },
-                                ),
-                                PopupMenuItem(
-                                  child: Row(
-                                    children: const [
-                                      Icon(Icons.delete, color: Kingdom.angerCrimson),
-                                      SizedBox(width: 8),
-                                      Text('削除', style: TextStyle(color: Kingdom.parchment)),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    Future.delayed(Duration.zero, () {
-                                      _showDeleteConfirmDialog(preset);
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                            onTap: () {
-                              if (widget.onPresetSelected != null) {
-                                widget.onPresetSelected!(preset);
-                                Navigator.pop(context);
-                              }
-                            },
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

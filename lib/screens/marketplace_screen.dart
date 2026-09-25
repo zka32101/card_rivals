@@ -146,15 +146,17 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          const MarketplaceBrowseScreen(),
-          const MarketplaceMyListingsScreen(),
-          const MarketplaceTradeOffersScreen(),
-          const MarketplaceCurrencyScreen(),
-          const MarketplaceHistoryScreen(),
-        ],
+      body: SafeArea(
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            const MarketplaceBrowseScreen(),
+            const MarketplaceMyListingsScreen(),
+            const MarketplaceTradeOffersScreen(),
+            const MarketplaceCurrencyScreen(),
+            const MarketplaceHistoryScreen(),
+          ],
+        ),
       ),
     );
   }

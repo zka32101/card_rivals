@@ -39,7 +39,8 @@ class AchievementsScreen extends ConsumerWidget {
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
       ),
-      body: Stack(
+      body: SafeArea(
+        child: Stack(
         children: [
           const Positioned.fill(child: EmotionMoteField(count: 12)),
           SingleChildScrollView(
@@ -124,6 +125,7 @@ class AchievementsScreen extends ConsumerWidget {
         ),
           ),
         ],
+        ),
       ),
     );
   }

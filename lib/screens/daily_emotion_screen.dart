@@ -69,16 +69,18 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
       ),
-      body: todayEmotion.when(
-        data: (emotion) {
-          if (emotion != null) {
-            return _buildCompletedView(emotion, stats);
-          }
-          return _buildInputView(stats);
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Text(t.dailyEmotion_errorWithMessage('$error')),
+      body: SafeArea(
+        child: todayEmotion.when(
+          data: (emotion) {
+            if (emotion != null) {
+              return _buildCompletedView(emotion, stats);
+            }
+            return _buildInputView(stats);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(
+            child: Text(t.dailyEmotion_errorWithMessage('$error')),
+          ),
         ),
       ),
     );

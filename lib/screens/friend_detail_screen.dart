@@ -21,10 +21,12 @@ class FriendDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(friendName),
       ),
-      body: profileAsync.when(
-        data: (profile) => _buildProfileContent(context, ref, profile),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+      body: SafeArea(
+        child: profileAsync.when(
+          data: (profile) => _buildProfileContent(context, ref, profile),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text('Error: $err')),
+        ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 class PurchasesService {
@@ -36,8 +37,9 @@ class PurchasesService {
     try {
       final _ = await Purchases.purchasePackage(package);
       return true;
-    } on PurchasesException catch (e) {
-      if (e.code == PurchasesErrorCode.purchaseCancelledError) {
+    } on PlatformException catch (e) {
+      final errorCode = PurchasesErrorHelper.getErrorCode(e);
+      if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
         // Purchase cancelled by user - normal flow
       } else {
         // Handle other purchase errors

@@ -35,6 +35,13 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      # freezed（purchase_models.dart等）やriverpod_generatorの自動生成ファイルは
+      # .gitignore対象でリポジトリに含まれていないため、ビルド前に生成する。
+      # これを怠ると purchase_models.freezed.dart が存在せずコンパイルエラーになり、
+      # 課金関連画面がビルドできない/実機で購入エラーになる原因になる。
+      - name: Generate code (build_runner)
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Extract version from tag
         id: version
         run: |

@@ -127,20 +127,43 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.card_giftcard_outlined, color: Kingdom.gilt),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AchievementsScreen())),
-            tooltip: t.home_achievementsTooltip,
-          ),
-          IconButton(
-            icon: const Icon(Icons.help_outline, color: Kingdom.gilt),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TutorialScreen())),
-            tooltip: t.home_tutorialTooltip,
-          ),
-          IconButton(
-            icon: const Icon(Icons.library_books_outlined, color: Kingdom.gilt),
-            onPressed: () => context.push('/explanation'),
-            tooltip: t.home_explanationTooltip,
+          PopupMenuButton<VoidCallback>(
+            icon: const Icon(Icons.more_vert, color: Kingdom.gilt),
+            tooltip: t.home_moreMenuTooltip,
+            color: Kingdom.nightDeep,
+            onSelected: (action) => action(),
+            itemBuilder: (context) => [
+              PopupMenuItem<VoidCallback>(
+                value: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AchievementsScreen())),
+                child: Row(
+                  children: [
+                    const Icon(Icons.card_giftcard_outlined, color: Kingdom.gilt),
+                    const SizedBox(width: 8),
+                    Text(t.home_achievementsTooltip, style: const TextStyle(color: Kingdom.parchment)),
+                  ],
+                ),
+              ),
+              PopupMenuItem<VoidCallback>(
+                value: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TutorialScreen())),
+                child: Row(
+                  children: [
+                    const Icon(Icons.help_outline, color: Kingdom.gilt),
+                    const SizedBox(width: 8),
+                    Text(t.home_tutorialTooltip, style: const TextStyle(color: Kingdom.parchment)),
+                  ],
+                ),
+              ),
+              PopupMenuItem<VoidCallback>(
+                value: () => context.push('/explanation'),
+                child: Row(
+                  children: [
+                    const Icon(Icons.library_books_outlined, color: Kingdom.gilt),
+                    const SizedBox(width: 8),
+                    Text(t.home_explanationTooltip, style: const TextStyle(color: Kingdom.parchment)),
+                  ],
+                ),
+              ),
+            ],
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: Kingdom.gilt),
@@ -149,7 +172,8 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
           ),
         ],
       ),
-      body: Stack(
+      body: SafeArea(
+        child: Stack(
         children: [
           const DecoratedBox(
             decoration: BoxDecoration(
@@ -283,6 +307,7 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
           ),
           ),
         ],
+        ),
       ),
     );
   }

@@ -291,17 +291,20 @@ class _Header extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  _getCardDisplayName(context, card),
-                  style: TextStyle(
-                    fontFamily: Kingdom.displayFont,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    color: Kingdom.parchment,
-                    letterSpacing: 0.3,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _getCardDisplayName(context, card),
+                    style: TextStyle(
+                      fontFamily: Kingdom.displayFont,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: Kingdom.parchment,
+                      letterSpacing: 0.3,
+                    ),
+                    maxLines: 1,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 4),

@@ -22,7 +22,8 @@ class SeasonScreen extends ConsumerWidget {
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
       ),
-      body: Stack(
+      body: SafeArea(
+        child: Stack(
         children: [
           const Positioned.fill(child: EmotionMoteField(count: 12)),
           currentSeasonAsync.when(
@@ -93,6 +94,7 @@ class SeasonScreen extends ConsumerWidget {
             error: (err, stack) => Center(child: Text('Error: $err')),
           ),
         ],
+        ),
       ),
     );
   }
@@ -517,7 +519,8 @@ class SeasonLeaderboardScreen extends ConsumerWidget {
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
       ),
-      body: Stack(
+      body: SafeArea(
+        child: Stack(
         children: [
           const Positioned.fill(child: EmotionMoteField(count: 12)),
           currentSeasonAsync.when(
@@ -551,6 +554,7 @@ class SeasonLeaderboardScreen extends ConsumerWidget {
             error: (err, stack) => Center(child: Text('Error: $err')),
           ),
         ],
+        ),
       ),
     );
   }
@@ -657,7 +661,8 @@ class SeasonRewardsScreen extends ConsumerWidget {
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
       ),
-      body: Stack(
+      body: SafeArea(
+        child: Stack(
         children: [
           const Positioned.fill(child: EmotionMoteField(count: 12)),
           currentSeasonAsync.when(
@@ -708,6 +713,7 @@ class SeasonRewardsScreen extends ConsumerWidget {
             error: (err, stack) => Center(child: Text('Error: $err')),
           ),
         ],
+        ),
       ),
     );
   }

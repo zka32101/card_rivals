@@ -36,10 +36,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
     return userId.when(
       data: (id) => _buildFriendsUI(context, id),
       loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
       ),
       error: (err, stack) => Scaffold(
-        body: Center(child: Text('Error: $err')),
+        body: SafeArea(child: Center(child: Text('Error: $err'))),
       ),
     );
   }
@@ -57,13 +57,15 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildFriendsList(context, userId),
-          _buildFriendRequests(context, userId),
-          const FriendSearchScreen(),
-        ],
+      body: SafeArea(
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildFriendsList(context, userId),
+            _buildFriendRequests(context, userId),
+            const FriendSearchScreen(),
+          ],
+        ),
       ),
     );
   }

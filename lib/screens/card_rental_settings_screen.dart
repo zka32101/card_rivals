@@ -31,7 +31,8 @@ class CardRentalSettingsScreen extends ConsumerWidget {
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
       ),
-      body: Stack(
+      body: SafeArea(
+        child: Stack(
         children: [
           const Positioned.fill(child: EmotionMoteField(count: 10)),
           myCards.isEmpty
@@ -99,6 +100,7 @@ class CardRentalSettingsScreen extends ConsumerWidget {
               ),
             ),
         ],
+        ),
       ),
     );
   }

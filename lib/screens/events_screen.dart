@@ -19,7 +19,7 @@ class EventsScreen extends ConsumerWidget {
         backgroundColor: Kingdom.nightDeep,
         elevation: 0,
       ),
-      body: eventsAsync.when(
+      body: SafeArea(child: eventsAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: Kingdom.gilt),
         ),
@@ -47,7 +47,7 @@ class EventsScreen extends ConsumerWidget {
                   return _EventCard(event: event);
                 },
               ),
-      ),
+      )),
     );
   }
 }

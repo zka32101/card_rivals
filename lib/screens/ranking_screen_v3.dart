@@ -54,7 +54,8 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
           ],
         ),
       ),
-      body: Stack(
+      body: SafeArea(
+        child: Stack(
         children: [
           const Positioned.fill(child: EmotionMoteField(count: 12)),
           Column(
@@ -78,6 +79,7 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
             ],
           ),
         ],
+        ),
       ),
     );
   }
