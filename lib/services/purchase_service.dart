@@ -17,7 +17,7 @@ const String kVipEntitlementId = 'vip';
 const int kStarterPackCoins = 350;
 const int kStarterPackGems = 5;
 
-const String kRevenueCatApiKeyAndroid = 'YOUR_REVENUECAT_ANDROID_API_KEY';
+const String kRevenueCatApiKeyAndroid = 'goog_gBSlgBnofzpIFbHUgzEyfFLUSmb';
 const String kRevenueCatApiKeyIos = 'YOUR_REVENUECAT_IOS_API_KEY';
 
 // コイン/ジェムパック定義（RevenueCat側のPackage識別子と1:1で対応させる）
