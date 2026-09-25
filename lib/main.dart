@@ -35,9 +35,18 @@ void main() async {
   if (kReleaseMode) {
     debugPrint = (String? message, {int? wrapWidth}) {};
   }
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on FirebaseException catch (e) {
+    // AndroidネイティブのFirebaseInitProviderがgoogle-services.jsonから
+    // 既定のFirebaseAppを自動初期化済みの場合、Dart側の明示initializeAppは
+    // "duplicate-app" で失敗する。既に初期化済みなだけなので無視して続行する。
+    if (e.code != 'duplicate-app') {
+      rethrow;
+    }
+  }
   try {
     // ウォレット/カード/ランキングなど全機能がFirestoreのユーザードキュメントに
     // 紐づくため、匿名認証ユーザーを起動時に確立しておく。これを怠ると
