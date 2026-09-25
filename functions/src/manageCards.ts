@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {getFirestore, FieldValue, Transaction} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // カード作成・特訓（サーバー権威）
@@ -93,10 +93,10 @@ export const createCard = functions
     const cardNameJp = (data.cardNameJp ?? "").trim() || "無名のカード";
     const cardNameEn = (data.cardNameEn ?? "").trim() || cardNameJp;
 
-    const walletRef = admin.firestore().collection("users").doc(userId).collection("wallet").doc("balance");
-    const cardRef = admin.firestore().collection("users").doc(userId).collection("cards").doc(cardId);
+    const walletRef = getFirestore().collection("users").doc(userId).collection("wallet").doc("balance");
+    const cardRef = getFirestore().collection("users").doc(userId).collection("cards").doc(cardId);
 
-    const newCoinBalance = await admin.firestore().runTransaction(async (tx) => {
+    const newCoinBalance = await getFirestore().runTransaction(async (tx: Transaction) => {
       const walletDoc = await tx.get(walletRef);
       const coinBalance: number = walletDoc.data()?.coinBalance ?? DEFAULT_COIN_BALANCE;
       if (coinBalance < coinCost) {
@@ -106,7 +106,7 @@ export const createCard = functions
 
       tx.set(walletRef, {
         coinBalance: updatedBalance,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
 
       tx.set(cardRef, {
@@ -126,7 +126,7 @@ export const createCard = functions
         todayVictoriesCount: 0,
         wins: 0,
         losses: 0,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
         coCreatorId: null,
         coCreatorName: data.coCreatorName ?? null,
         level: 0,
@@ -161,11 +161,11 @@ export const levelUpCard = functions
       throw new functions.https.HttpsError("invalid-argument", "cardIdが必要です");
     }
 
-    const cardRef = admin.firestore().collection("users").doc(userId).collection("cards").doc(cardId);
-    const walletRef = admin.firestore().collection("users").doc(userId).collection("wallet").doc("balance");
+    const cardRef = getFirestore().collection("users").doc(userId).collection("cards").doc(cardId);
+    const walletRef = getFirestore().collection("users").doc(userId).collection("wallet").doc("balance");
 
     try {
-      return await admin.firestore().runTransaction(async (tx) => {
+      return await getFirestore().runTransaction(async (tx: Transaction) => {
         const cardDoc = await tx.get(cardRef);
         if (!cardDoc.exists) {
           throw new functions.https.HttpsError("not-found", "カードが見つかりません");
@@ -185,7 +185,7 @@ export const levelUpCard = functions
 
         tx.set(walletRef, {
           coinBalance: updatedBalance,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         }, {merge: true});
         tx.update(cardRef, {level: level + 1});
 

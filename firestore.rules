@@ -72,6 +72,14 @@ service cloud.firestore {
         allow read: if request.auth != null && request.auth.uid == userId;
         allow write: if false;
       }
+
+      // デッキプリセット（バトル用のカード5枚編成を最大5件まで保存）。
+      // 戦闘の実ダメージ計算に関わるフィールド（attackPower等）はcardsコレクション側で
+      // 別途検証済みのため、ここではcardIdsの参照先を持つだけの本人専用メモとして扱い、
+      // 本人のみ読み書き可能にする。
+      match /deckPresets/{presetId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // =============== カードレンタル取引記録 ===============

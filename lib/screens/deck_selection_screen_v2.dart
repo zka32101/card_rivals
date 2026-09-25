@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../models/deck_preset.dart';
 import '../models/user_card.dart';
 import '../providers/collection_provider.dart';
+import '../providers/deck_presets_provider.dart';
 import '../widgets/card_widget.dart';
 import '../widgets/card_detail_sheet.dart';
 import '../theme/kingdom_theme.dart';
@@ -51,6 +53,18 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
         title: Text(title, style: Kingdom.title(size: 16)),
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.folder_open, color: Kingdom.gilt),
+            tooltip: t.deckSelection_loadPresetButton,
+            onPressed: _showPresetPicker,
+          ),
+          IconButton(
+            icon: const Icon(Icons.save_outlined, color: Kingdom.gilt),
+            tooltip: t.deckSelection_savePresetButton,
+            onPressed: _selected.length == widget.maxCards ? _showSavePresetDialog : null,
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -271,6 +285,169 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
             ),
           ),
         ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPresetPicker() {
+    final t = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Kingdom.nightDeep,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Consumer(
+            builder: (context, ref, _) {
+              final presetsAsync = ref.watch(userDeckPresetsProvider);
+              return ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+                child: Padding(
+                  padding: const EdgeInsets.all(Kingdom.spaceLg),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(t.deckSelection_presetPickerTitle, style: Kingdom.title(size: 16, color: Kingdom.gilt)),
+                      const SizedBox(height: Kingdom.spaceMd),
+                      Flexible(
+                        child: presetsAsync.when(
+                          loading: () => const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Center(child: CircularProgressIndicator(color: Kingdom.gilt)),
+                          ),
+                          error: (_, _) => Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text(t.deckSelection_presetEmpty,
+                                style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6))),
+                          ),
+                          data: (presets) {
+                            if (presets.isEmpty) {
+                              return Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: Text(t.deckSelection_presetEmpty,
+                                    style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6))),
+                              );
+                            }
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: presets.length,
+                              itemBuilder: (context, i) {
+                                final preset = presets[i];
+                                return ListTile(
+                                  title: Text(preset.name,
+                                      style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold)),
+                                  subtitle: Text(t.deckPreset_cardCount(preset.cardIds.length),
+                                      style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 12)),
+                                  trailing: const Icon(Icons.chevron_right, color: Kingdom.gilt),
+                                  onTap: () {
+                                    Navigator.pop(sheetContext);
+                                    _loadPreset(preset);
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _loadPreset(DeckPreset preset) {
+    final t = AppLocalizations.of(context)!;
+    final allCards = ref.read(battleEligibleCardsProvider);
+    final cardById = {for (final c in allCards) c.cardId: c};
+    final resolved = <PlayCard>[];
+    var missing = false;
+    for (final id in preset.cardIds) {
+      final card = cardById[id];
+      if (card != null) {
+        resolved.add(card);
+      } else {
+        missing = true;
+      }
+    }
+    setState(() => _selected = resolved);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(missing ? t.deckSelection_presetMissingCards : t.deckSelection_presetLoaded(preset.name)),
+        backgroundColor: missing ? Kingdom.angerCrimson : null,
+      ),
+    );
+  }
+
+  void _showSavePresetDialog() {
+    final t = AppLocalizations.of(context)!;
+    if (_selected.length != widget.maxCards) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.deckSelection_saveNeedsFullDeck(widget.maxCards))),
+      );
+      return;
+    }
+    final nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Kingdom.nightDeep,
+        title: Text(t.deckPreset_saveDialogTitle, style: Kingdom.title(size: 18, color: Kingdom.gilt)),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          style: const TextStyle(color: Kingdom.parchment),
+          decoration: InputDecoration(
+            hintText: t.deckPreset_nameHint,
+            hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
+            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.3))),
+            focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Kingdom.gilt)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(t.deckPreset_cancel, style: const TextStyle(color: Kingdom.parchment)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Kingdom.gilt),
+            onPressed: () async {
+              final name = nameController.text.trim();
+              if (name.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(t.deckPreset_nameRequired)),
+                );
+                return;
+              }
+              try {
+                await saveDeckPreset(
+                  ref,
+                  name: name,
+                  cardIds: _selected.map((c) => c.cardId).toList(),
+                );
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(t.deckPreset_saved)),
+                  );
+                }
+              } catch (e) {
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(t.deckPreset_error(e)), backgroundColor: Kingdom.angerCrimson),
+                  );
+                }
+              }
+            },
+            child: Text(t.deckPreset_save),
           ),
         ],
       ),

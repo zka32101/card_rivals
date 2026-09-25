@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {getFirestore, FieldValue, Timestamp} from "firebase-admin/firestore";
 import {SEED_CARDS} from "./seedCards";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -35,7 +35,7 @@ const CARD_LEVEL_SPEED_BONUS = 1;
 // 使うことはできない（常に呼び出し元本人のコレクションだけを見る）。
 // 見つからない場合はnullを返す（呼び出し側でレンタル中カードとしての解決を試みる）。
 async function resolveCustomCard(ownerUid: string, cardId: string): Promise<CardInput | null> {
-  const doc = await admin.firestore()
+  const doc = await getFirestore()
     .collection("users").doc(ownerUid)
     .collection("cards").doc(cardId)
     .get();
@@ -59,11 +59,11 @@ async function resolveCustomCard(ownerUid: string, cardId: string): Promise<Card
 // 内容でレンタルが継続する — lib/providers/card_rental_provider.dart の
 // myActiveRentalsProviderと同じ考え方）。見つからなければnullを返す。
 async function resolveRentedCard(renterUid: string, cardId: string): Promise<CardInput | null> {
-  const snapshot = await admin.firestore()
+  const snapshot = await getFirestore()
     .collection("rentals")
     .where("renterUid", "==", renterUid)
     .where("cardId", "==", cardId)
-    .where("rentalEnd", ">", admin.firestore.Timestamp.now())
+    .where("rentalEnd", ">", Timestamp.now())
     .limit(1)
     .get();
   if (snapshot.empty) return null;
@@ -110,7 +110,7 @@ function isoWeekNumber(date: Date): number {
 // 呼び出し元ユーザーが実際に購入済みの属性移住ボーナスを、Firestoreの記録から取得する。
 // クライアントがmigratedAttributeを自己申告する形は廃止し、必ずサーバー側の記録を正とする。
 async function resolveMigratedAttribute(userId: string): Promise<string | undefined> {
-  const doc = await admin.firestore()
+  const doc = await getFirestore()
     .collection("users").doc(userId)
     .collection("migration").doc("state")
     .get();
@@ -314,8 +314,8 @@ async function updateSeasonProgress(
   attackerWon: boolean
 ): Promise<SeasonProgressResult | null> {
   try {
-    const now = admin.firestore.Timestamp.now();
-    const seasonSnap = await admin.firestore()
+    const now = Timestamp.now();
+    const seasonSnap = await getFirestore()
       .collection("seasons")
       .where("startDate", "<=", now)
       .where("endDate", ">", now)
@@ -329,11 +329,11 @@ async function updateSeasonProgress(
     const maxRankTier: number = seasonDoc.data().maxRankTier ?? 10;
     const pointsGained = attackerWon ? SEASON_POINTS_PER_WIN : 0;
 
-    const progressRef = admin.firestore()
+    const progressRef = getFirestore()
       .collection("users").doc(userId)
       .collection("seasonProgress").doc(seasonId);
 
-    return await admin.firestore().runTransaction(async (tx) => {
+    return await getFirestore().runTransaction(async (tx) => {
       const doc = await tx.get(progressRef);
       const before = doc.data() ?? {};
       const currentRank: number = before.currentRank ?? 1;
@@ -366,8 +366,8 @@ async function updateSeasonProgress(
         battlesPlayed: battlesPlayed + 1,
         highestRank: newHighestRank,
         unlockedRewards: before.unlockedRewards ?? [],
-        joinedAt: before.joinedAt ?? admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        joinedAt: before.joinedAt ?? FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
 
       return {
@@ -413,8 +413,8 @@ export const pvpBattle = functions
     // クライアントからの自己申告は一切受け付けない（不正な弱デッキ偽装を防ぐ）。
     // 同じmatchIdの二重使用（レーティング詐取のリプレイ）も防ぐため、
     // トランザクションで consumed フラグを検証・更新する。
-    const matchRef = admin.firestore().collection("pvpMatches").doc(data.matchId);
-    const opponentDeckCardIds = await admin.firestore().runTransaction(async (tx) => {
+    const matchRef = getFirestore().collection("pvpMatches").doc(data.matchId);
+    const opponentDeckCardIds = await getFirestore().runTransaction(async (tx) => {
       const doc = await tx.get(matchRef);
       if (!doc.exists) {
         throw new functions.https.HttpsError("not-found", "対戦相手の情報が見つかりません");
@@ -430,7 +430,7 @@ export const pvpBattle = functions
       if (createdAtMs === 0 || Date.now() - createdAtMs > MATCH_TTL_MS) {
         throw new functions.https.HttpsError("failed-precondition", "マッチの有効期限が切れています");
       }
-      tx.update(matchRef, {consumed: true, consumedAt: admin.firestore.FieldValue.serverTimestamp()});
+      tx.update(matchRef, {consumed: true, consumedAt: FieldValue.serverTimestamp()});
       return match.opponentDeckCardIds as string[];
     });
 
@@ -448,11 +448,11 @@ export const pvpBattle = functions
     // 対称な幅にして、五分の勝率なら長期的にレーティングが均衡するようにする。
     // TODO: 相手レーティング差を考慮したELO式に拡張できる
     const ratingDelta = result.attackerWon ? 15 : -15;
-    const ratingRef = admin.firestore()
+    const ratingRef = getFirestore()
       .collection("users").doc(userId)
       .collection("rating").doc("current");
 
-    const newRating = await admin.firestore().runTransaction(async (tx) => {
+    const newRating = await getFirestore().runTransaction(async (tx) => {
       const doc = await tx.get(ratingRef);
       const before = doc.data() ?? {};
       const currentRating: number = before.rating ?? 1000;
@@ -463,7 +463,7 @@ export const pvpBattle = functions
         rating: updatedRating,
         wins: wins + (result.attackerWon ? 1 : 0),
         losses: losses + (result.attackerWon ? 0 : 1),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
       return updatedRating;
     });

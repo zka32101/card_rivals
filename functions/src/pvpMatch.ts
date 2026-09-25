@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {getFirestore, FieldValue} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PvPマッチング
@@ -78,14 +78,14 @@ export const pvpMatch = functions
       deck.push(OPPONENT_POOL[(seed + i * 3) % OPPONENT_POOL.length]);
     }
 
-    const matchRef = await admin.firestore().collection("pvpMatches").add({
+    const matchRef = await getFirestore().collection("pvpMatches").add({
       attackerUid: context.auth.uid,
       opponentDeckCardIds: deck.map((c) => c.cardId),
       opponentName,
       opponentTier,
       opponentRating,
       consumed: false,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     });
 
     return {

@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {getFirestore, FieldValue, Transaction} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // シーズンリワード請求（サーバー権威）
@@ -33,13 +33,13 @@ export const claimSeasonReward = functions
       throw new functions.https.HttpsError("invalid-argument", "リクエストが不正です");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const rewardRef = db.collection("seasons").doc(seasonId).collection("rewards").doc(rewardId);
     const progressRef = db.collection("users").doc(userId).collection("seasonProgress").doc(seasonId);
     const walletRef = db.collection("users").doc(userId).collection("wallet").doc("balance");
 
     try {
-      return await db.runTransaction(async (tx) => {
+      return await db.runTransaction(async (tx: Transaction) => {
         // ── 読み取りは書き込みより先に行う（Firestoreトランザクションの制約） ──
         const rewardDoc = await tx.get(rewardRef);
         if (!rewardDoc.exists) {
@@ -77,13 +77,13 @@ export const claimSeasonReward = functions
         // ── ここから書き込み ──
         tx.set(progressRef, {
           unlockedRewards: [...unlockedRewards, rewardId],
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         }, {merge: true});
 
         tx.set(walletRef, {
           coinBalance: coinBalance + coinsReward,
           gemBalance: gemBalance + gemsReward,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         }, {merge: true});
 
         return {success: true, gemsGranted: gemsReward, coinsGranted: coinsReward};
@@ -126,7 +126,7 @@ export const getSeasonLeaderboard = functions
       // 旧実装（全users取得→各ユーザーのサブコレクションを1件ずつ取得）と異なり、
       // 1回のクエリで完結する。ソート順は旧実装のローカルソートと同じ
       // （ランク→ランク内ポイント→シーズン総ポイントの降順）。
-      const snapshot = await admin.firestore()
+      const snapshot = await getFirestore()
         .collectionGroup("seasonProgress")
         .where("seasonId", "==", seasonId)
         .orderBy("currentRank", "desc")

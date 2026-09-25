@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {getStorage} from "firebase-admin/storage";
 import {generateImageWithFallback} from "./imageProviders";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -357,7 +357,7 @@ export const generateCardImage = functions
       throw new functions.https.HttpsError("internal", "画像生成に失敗しました（Replicate/Leonardo両方失敗）");
     }
 
-    const bucket = admin.storage().bucket();
+    const bucket = getStorage().bucket();
     const userId = context.auth.uid;
     const filename = `user_cards/${userId}/${Date.now()}.png`;
     const file = bucket.file(filename);

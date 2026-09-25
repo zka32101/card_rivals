@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {getFirestore, Timestamp, Transaction, QueryDocumentSnapshot} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // イベント・チャレンジ管理（サーバー権威）
@@ -22,10 +22,10 @@ interface UserChallengeProgress {
   challengeId: string;
   progress: number;
   completed: boolean;
-  completedAt?: admin.firestore.Timestamp;
+  completedAt?: Timestamp;
   rewardClaimed: boolean;
-  claimedAt?: admin.firestore.Timestamp;
-  updatedAt: admin.firestore.Timestamp;
+  claimedAt?: Timestamp;
+  updatedAt: Timestamp;
 }
 
 // チャレンジの進捗を更新
@@ -49,7 +49,7 @@ export const progressChallenge = functions
       throw new functions.https.HttpsError("invalid-argument", "進捗量は0以上である必要があります");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const progressRef = db
       .collection("users")
       .doc(userId)
@@ -73,9 +73,9 @@ export const progressChallenge = functions
       const target = challengeData.target || 1;
 
       // トランザクション内で進捗を更新
-      await db.runTransaction(async (transaction) => {
+      await db.runTransaction(async (transaction: Transaction) => {
         const currentProgress = await transaction.get(progressRef);
-        const now = admin.firestore.Timestamp.now();
+        const now = Timestamp.now();
 
         if (!currentProgress.exists) {
           // 新規進捗を作成
@@ -130,10 +130,10 @@ export const claimChallengeReward = functions
       throw new functions.https.HttpsError("invalid-argument", "イベントIDとチャレンジIDが必要です");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
 
     try {
-      return await db.runTransaction(async (transaction) => {
+      return await db.runTransaction(async (transaction: Transaction) => {
         // ユーザーの進捗を確認
         const progressRef = db
           .collection("users")
@@ -177,7 +177,7 @@ export const claimChallengeReward = functions
 
         // ユーザーのウォレットを更新
         const walletRef = db.collection("users").doc(userId).collection("wallet").doc("overall");
-        const now = admin.firestore.Timestamp.now();
+        const now = Timestamp.now();
 
         const walletSnapshot = await transaction.get(walletRef);
         if (walletSnapshot.exists) {
@@ -232,7 +232,7 @@ export const getUserEventProgress = functions
       throw new functions.https.HttpsError("invalid-argument", "イベントIDが必要です");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
 
     try {
       const progressSnapshot = await db
@@ -242,7 +242,7 @@ export const getUserEventProgress = functions
         .where("eventId", "==", eventId)
         .get();
 
-      const progresses = progressSnapshot.docs.map((doc) => doc.data() as UserChallengeProgress);
+      const progresses = progressSnapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as UserChallengeProgress);
 
       return {
         success: true,

@@ -8,8 +8,9 @@ import 'auth_provider.dart';
 // 定数
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-const int maxPresetsPerUser = 10;
-const int maxCardsPerDeck = 30;
+const int maxPresetsPerUser = 5;
+// バトル用デッキは常に5枚固定（DeckSelectionScreenV2のデフォルトmaxCardsと合わせる）
+const int battleDeckSize = 5;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // Providers
@@ -104,8 +105,8 @@ Future<String?> saveDeckPreset(
     throw Exception('プリセット名は50文字以内です');
   }
 
-  if (cardIds.isEmpty || cardIds.length > maxCardsPerDeck) {
-    throw Exception('デッキには1〜$maxCardsPerDeck枚のカードが必要です');
+  if (cardIds.length != battleDeckSize) {
+    throw Exception('デッキにはちょうど$battleDeckSize枚のカードが必要です');
   }
 
   try {
@@ -240,7 +241,7 @@ Future<String?> copyDeckPreset(
       throw Exception('デッキプリセットは最大$maxPresetsPerUser個までです');
     }
 
-    final sourceData = sourceSnap.data() as Map<String, dynamic>? ?? {};
+    final sourceData = sourceSnap.data() ?? {};
     final now = DateTime.now();
     final newPresetId = presetsRef.doc().id;
 

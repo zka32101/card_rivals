@@ -1,7 +1,7 @@
-import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 
-const db = admin.firestore();
+const db = getFirestore();
 const PLATFORM_FEE_PERCENT = 10;
 const CARD_LISTING_MIN_PRICE = 10;
 const CARD_LISTING_MAX_PRICE = 10000;
@@ -20,11 +20,11 @@ interface CardListing {
   imageUrl: string;
   price: number;
   status: 'active' | 'sold' | 'delisted';
-  createdAt: admin.firestore.Timestamp;
-  soldAt?: admin.firestore.Timestamp;
+  createdAt: Timestamp;
+  soldAt?: Timestamp;
   buyerId?: string;
   buyerName?: string;
-  expiresAt?: admin.firestore.Timestamp;
+  expiresAt?: Timestamp;
   views: number;
 }
 
@@ -38,7 +38,7 @@ interface MarketplaceTransaction {
   relatedListingId: string;
   counterpartyId?: string;
   counterpartyName?: string;
-  createdAt: admin.firestore.Timestamp;
+  createdAt: Timestamp;
   isSuccessful: boolean;
   errorMessage?: string;
   metadata: Record<string, any>;
@@ -85,8 +85,8 @@ export const createCardListing = functions.https.onCall(async (data, context) =>
 
     // Create listing ID
     const listingId = db.collection('dummy').doc().id;
-    const now = admin.firestore.Timestamp.now();
-    const expiresAt = new admin.firestore.Timestamp(now.seconds + CARD_LISTING_EXPIRY_DAYS * 24 * 3600, now.nanoseconds);
+    const now = Timestamp.now();
+    const expiresAt = new Timestamp(now.seconds + CARD_LISTING_EXPIRY_DAYS * 24 * 3600, now.nanoseconds);
 
     // Get seller name (pseudo handle)
     const userRef = db.collection('users').doc(userId);
@@ -188,7 +188,7 @@ export const buyCard = functions.https.onCall(async (data, context) => {
     }
 
     // Update listing status
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
     const updatedListing = { ...listing, status: 'sold', soldAt: now, buyerId, buyerName: `Player-${buyerId.substring(0, 6)}` };
     transaction.update(globalListingRef, updatedListing);
 
@@ -316,9 +316,9 @@ interface TradeOffer {
   senderCardIds: string[];
   recipientCardIds: string[];
   status: 'pending' | 'accepted' | 'rejected' | 'expired' | 'cancelled';
-  createdAt: admin.firestore.Timestamp;
-  respondedAt?: admin.firestore.Timestamp;
-  expiresAt: admin.firestore.Timestamp;
+  createdAt: Timestamp;
+  respondedAt?: Timestamp;
+  expiresAt: Timestamp;
   message?: string;
   senderCards: TradeCard[];
   recipientCards: TradeCard[];
@@ -404,8 +404,8 @@ export const createTradeOffer = functions.https.onCall(async (data, context) => 
 
     // Create trade offer
     const offerId = db.collection('trade_offers').doc().id;
-    const now = admin.firestore.Timestamp.now();
-    const expiresAt = new admin.firestore.Timestamp(
+    const now = Timestamp.now();
+    const expiresAt = new Timestamp(
       now.seconds + TRADE_OFFER_EXPIRY_DAYS * 24 * 3600,
       now.nanoseconds
     );
@@ -468,14 +468,14 @@ export const respondToTradeOffer = functions.https.onCall(async (data, context) 
       throw new Error('Only the recipient can respond');
     }
 
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
     if (now.seconds > offer.expiresAt.seconds) {
       throw new Error('Trade offer has expired');
     }
 
     if (action === 'reject') {
       // Simply update status to rejected
-      const rejectedAt = admin.firestore.Timestamp.now();
+      const rejectedAt = Timestamp.now();
       transaction.update(offerRef, {
         status: 'rejected',
         respondedAt: rejectedAt,
@@ -624,17 +624,17 @@ export const cancelTradeOffer = functions.https.onCall(async (data, context) => 
     // Update status to cancelled
     transaction.update(offerRef, {
       status: 'cancelled',
-      respondedAt: admin.firestore.Timestamp.now(),
+      respondedAt: Timestamp.now(),
     });
 
     // Update in both user collections
     transaction.update(
       db.collection('users').doc(offer.senderId).collection('marketplace/trade_offers').doc(offerId),
-      { status: 'cancelled', respondedAt: admin.firestore.Timestamp.now() }
+      { status: 'cancelled', respondedAt: Timestamp.now() }
     );
     transaction.update(
       db.collection('users').doc(offer.recipientId).collection('marketplace/trade_offers').doc(offerId),
-      { status: 'cancelled', respondedAt: admin.firestore.Timestamp.now() }
+      { status: 'cancelled', respondedAt: Timestamp.now() }
     );
 
     return { success: true, message: 'Trade offer cancelled' };
@@ -651,8 +651,8 @@ interface CurrencyListing {
   amount: number;
   price: number;
   status: 'active' | 'partial' | 'closed';
-  createdAt: admin.firestore.Timestamp;
-  expiresAt: admin.firestore.Timestamp;
+  createdAt: Timestamp;
+  expiresAt: Timestamp;
 }
 
 /**
@@ -690,7 +690,7 @@ export const fillCurrencyListing = functions.https.onCall(async (data, context) 
     }
 
     // Check expiry
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
     if (now.seconds > listing.expiresAt.seconds) {
       throw new functions.https.HttpsError('failed-precondition', 'Listing has expired');
     }
@@ -851,8 +851,8 @@ export const fillCurrencyListing = functions.https.onCall(async (data, context) 
  * Scheduled job to expire old listings (runs daily)
  */
 export const expireListings = functions.pubsub.schedule('every day 02:00').onRun(async (context) => {
-  const now = admin.firestore.Timestamp.now();
-  const expiryThreshold = new admin.firestore.Timestamp(now.seconds - 24 * 3600, now.nanoseconds);
+  const now = Timestamp.now();
+  const expiryThreshold = new Timestamp(now.seconds - 24 * 3600, now.nanoseconds);
 
   // Expire active card listings
   const expiredCardListings = await db

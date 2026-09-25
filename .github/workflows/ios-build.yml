@@ -34,6 +34,22 @@ jobs:
       - name: Test
         run: flutter test || true
 
+      # Cloud Functions（functions/）はFlutterのanalyzeでは検証されない別プロジェクト。
+      # これが無いとTypeScriptのコンパイルエラー（依存パッケージの破壊的変更など）に
+      # CI上で誰も気付けず、デプロイ時に初めて発覚する事態になる。
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '20'
+
+      - name: Install Cloud Functions dependencies
+        working-directory: functions
+        run: npm ci
+
+      - name: Build Cloud Functions (TypeScript)
+        working-directory: functions
+        run: npm run build
+
   build-ios:
     # 署名なしiOSビルド。macOSランナーは10倍課金のため、
     # 手動実行またはPR時のみに限定し、pushでは絶対に自動起動しない。
