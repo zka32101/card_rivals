@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
+import {getFirestore, FieldValue} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // カード作成・特訓（サーバー権威）
@@ -53,22 +53,22 @@ interface CreateCardRequest {
   isVip?: boolean;
 }
 
-export const createCard = functions
-  .region("asia-northeast1")
-  .runWith({timeoutSeconds: 30})
-  .https.onCall(async (data: CreateCardRequest, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const createCard = onCall(
+  {region: "asia-northeast1", timeoutSeconds: 30},
+  async (request) => {
+    const data = request.data as CreateCardRequest;
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     const cost = data.cost;
     const budget = BUDGET_BY_COST[cost];
     if (!budget) {
-      throw new functions.https.HttpsError("invalid-argument", "不正なコスト帯です");
+      throw new HttpsError("invalid-argument", "不正なコスト帯です");
     }
     if (!VALID_ATTRIBUTES.includes(data.attribute)) {
-      throw new functions.https.HttpsError("invalid-argument", "不正な属性です");
+      throw new HttpsError("invalid-argument", "不正な属性です");
     }
 
     const {attackPower, defensePower, speed} = data;
@@ -76,13 +76,13 @@ export const createCard = functions
       !Number.isInteger(attackPower) || !Number.isInteger(defensePower) || !Number.isInteger(speed) ||
       attackPower < 1 || defensePower < 1 || speed < 1
     ) {
-      throw new functions.https.HttpsError("invalid-argument", "不正なステータス値です");
+      throw new HttpsError("invalid-argument", "不正なステータス値です");
     }
     const total = attackPower + defensePower + speed;
     const minTotal = Math.max(3, budget - ROLL_VARIANCE);
     const maxTotal = Math.round(budget * (1 + BIG_HIT_BONUS_PERCENT));
     if (total < minTotal || total > maxTotal) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "ステータス値がコスト帯の予算範囲外です"
       );
@@ -93,20 +93,20 @@ export const createCard = functions
     const cardNameJp = (data.cardNameJp ?? "").trim() || "無名のカード";
     const cardNameEn = (data.cardNameEn ?? "").trim() || cardNameJp;
 
-    const walletRef = admin.firestore().collection("users").doc(userId).collection("wallet").doc("balance");
-    const cardRef = admin.firestore().collection("users").doc(userId).collection("cards").doc(cardId);
+    const walletRef = getFirestore().collection("users").doc(userId).collection("wallet").doc("balance");
+    const cardRef = getFirestore().collection("users").doc(userId).collection("cards").doc(cardId);
 
-    const newCoinBalance = await admin.firestore().runTransaction(async (tx) => {
+    const newCoinBalance = await getFirestore().runTransaction(async (tx: FirebaseFirestore.Transaction) => {
       const walletDoc = await tx.get(walletRef);
       const coinBalance: number = walletDoc.data()?.coinBalance ?? DEFAULT_COIN_BALANCE;
       if (coinBalance < coinCost) {
-        throw new functions.https.HttpsError("failed-precondition", "コインが不足しています");
+        throw new HttpsError("failed-precondition", "コインが不足しています");
       }
       const updatedBalance = coinBalance - coinCost;
 
       tx.set(walletRef, {
         coinBalance: updatedBalance,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
 
       tx.set(cardRef, {
@@ -126,7 +126,7 @@ export const createCard = functions
         todayVictoriesCount: 0,
         wins: 0,
         losses: 0,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
         coCreatorId: null,
         coCreatorName: data.coCreatorName ?? null,
         level: 0,
@@ -148,54 +148,54 @@ function cardLevelUpCost(currentLevel: number): number {
   return 50 * (currentLevel + 1);
 }
 
-export const levelUpCard = functions
-  .region("asia-northeast1")
-  .runWith({timeoutSeconds: 30})
-  .https.onCall(async (data: {cardId: string}, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const levelUpCard = onCall(
+  {region: "asia-northeast1", timeoutSeconds: 30},
+  async (request) => {
+    const data = request.data as {cardId: string};
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const {cardId} = data;
     if (!cardId) {
-      throw new functions.https.HttpsError("invalid-argument", "cardIdが必要です");
+      throw new HttpsError("invalid-argument", "cardIdが必要です");
     }
 
-    const cardRef = admin.firestore().collection("users").doc(userId).collection("cards").doc(cardId);
-    const walletRef = admin.firestore().collection("users").doc(userId).collection("wallet").doc("balance");
+    const cardRef = getFirestore().collection("users").doc(userId).collection("cards").doc(cardId);
+    const walletRef = getFirestore().collection("users").doc(userId).collection("wallet").doc("balance");
 
     try {
-      return await admin.firestore().runTransaction(async (tx) => {
+      return await getFirestore().runTransaction(async (tx: FirebaseFirestore.Transaction) => {
         const cardDoc = await tx.get(cardRef);
         if (!cardDoc.exists) {
-          throw new functions.https.HttpsError("not-found", "カードが見つかりません");
+          throw new HttpsError("not-found", "カードが見つかりません");
         }
         const level: number = cardDoc.data()?.level ?? 0;
         if (level >= MAX_CARD_LEVEL) {
-          throw new functions.https.HttpsError("failed-precondition", "既に最大レベルです");
+          throw new HttpsError("failed-precondition", "既に最大レベルです");
         }
         const cost = cardLevelUpCost(level);
 
         const walletDoc = await tx.get(walletRef);
         const coinBalance: number = walletDoc.data()?.coinBalance ?? DEFAULT_COIN_BALANCE;
         if (coinBalance < cost) {
-          throw new functions.https.HttpsError("failed-precondition", "コインが不足しています");
+          throw new HttpsError("failed-precondition", "コインが不足しています");
         }
         const updatedBalance = coinBalance - cost;
 
         tx.set(walletRef, {
           coinBalance: updatedBalance,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         }, {merge: true});
         tx.update(cardRef, {level: level + 1});
 
         return {success: true, newLevel: level + 1, newCoinBalance: updatedBalance};
       });
     } catch (error) {
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       console.error(`Failed to level up card ${cardId} for ${userId}:`, error);
-      throw new functions.https.HttpsError("internal", "特訓に失敗しました");
+      throw new HttpsError("internal", "特訓に失敗しました");
     }
   });

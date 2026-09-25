@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
+import {getFirestore, Timestamp, FieldValue} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // カードレンタル（サーバー権威）
@@ -43,28 +43,27 @@ interface RentCardRequest {
   rentalDays: number;
 }
 
-export const rentCard = functions
-  .region("asia-northeast1")
-  .runWith({timeoutSeconds: 30})
-  .https.onCall(async (data: RentCardRequest, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const rentCard = onCall(
+  {region: "asia-northeast1", timeoutSeconds: 30},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
-    const renterId = context.auth.uid;
-    const {cardId, creatorId, rentalDays} = data;
+    const renterId = request.auth.uid;
+    const {cardId, creatorId, rentalDays} = request.data as RentCardRequest;
 
     if (!cardId || !creatorId || !rentalDays) {
-      throw new functions.https.HttpsError("invalid-argument", "リクエストが不正です");
+      throw new HttpsError("invalid-argument", "リクエストが不正です");
     }
     if (renterId === creatorId) {
-      throw new functions.https.HttpsError("invalid-argument", "自分のカードはレンタルできません");
+      throw new HttpsError("invalid-argument", "自分のカードはレンタルできません");
     }
     const totalCost = RENTAL_PLANS[rentalDays];
     if (!totalCost) {
-      throw new functions.https.HttpsError("invalid-argument", "不正なレンタル期間です");
+      throw new HttpsError("invalid-argument", "不正なレンタル期間です");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const cardRef = db.collection("users").doc(creatorId).collection("cards").doc(cardId);
     const renterWalletRef = db.collection("users").doc(renterId).collection("wallet").doc("balance");
     const creatorWalletRef = db.collection("users").doc(creatorId).collection("wallet").doc("balance");
@@ -75,26 +74,26 @@ export const rentCard = functions
     const activeRentersQuery = db.collection("rentals")
       .where("creatorUid", "==", creatorId)
       .where("cardId", "==", cardId)
-      .where("rentalEnd", ">", admin.firestore.Timestamp.now());
+      .where("rentalEnd", ">", Timestamp.now());
 
     const creatorEarnings = Math.floor((totalCost * CREATOR_SHARE_PERCENT) / 100);
 
-    const newRenterBalance = await db.runTransaction(async (tx) => {
+    const newRenterBalance = await db.runTransaction(async (tx: FirebaseFirestore.Transaction) => {
       // ── 読み取りは書き込みより先に行う（Firestoreトランザクションの制約） ──
       const cardDoc = await tx.get(cardRef);
       if (!cardDoc.exists) {
-        throw new functions.https.HttpsError("not-found", "カードが見つかりません");
+        throw new HttpsError("not-found", "カードが見つかりません");
       }
       const cardData = cardDoc.data()!;
       if (cardData.isPublic !== true) {
-        throw new functions.https.HttpsError("failed-precondition", "このカードは現在レンタル公開されていません");
+        throw new HttpsError("failed-precondition", "このカードは現在レンタル公開されていません");
       }
 
       // 同時貸し出し人数の上限チェック（1枚の人気カードだけで際限なく
       // 稼ぎ続けられないよう、有効なレンタル契約数に歯止めをかける）。
       const activeRentersSnap = await tx.get(activeRentersQuery.count());
       if (activeRentersSnap.data().count >= MAX_CONCURRENT_RENTERS_PER_CARD) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           "resource-exhausted",
           "このカードは現在貸し出し人数の上限に達しています。空きが出るまでお待ちください"
         );
@@ -103,31 +102,31 @@ export const rentCard = functions
       const renterWalletDoc = await tx.get(renterWalletRef);
       const renterBalance: number = renterWalletDoc.data()?.coinBalance ?? DEFAULT_COIN_BALANCE;
       if (renterBalance < totalCost) {
-        throw new functions.https.HttpsError("failed-precondition", "コインが不足しています");
+        throw new HttpsError("failed-precondition", "コインが不足しています");
       }
 
       const creatorWalletDoc = await tx.get(creatorWalletRef);
       const creatorBalance: number = creatorWalletDoc.data()?.coinBalance ?? DEFAULT_COIN_BALANCE;
 
       // ── ここから書き込み ──
-      const now = admin.firestore.Timestamp.now();
-      const rentalEnd = admin.firestore.Timestamp.fromMillis(
+      const now = Timestamp.now();
+      const rentalEnd = Timestamp.fromMillis(
         now.toMillis() + rentalDays * 24 * 60 * 60 * 1000
       );
 
       tx.set(renterWalletRef, {
         coinBalance: renterBalance - totalCost,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
 
       tx.set(creatorWalletRef, {
         coinBalance: creatorBalance + creatorEarnings,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
 
       tx.update(cardRef, {
-        totalRentalCount: admin.firestore.FieldValue.increment(1),
-        totalRentalEarnings: admin.firestore.FieldValue.increment(creatorEarnings),
+        totalRentalCount: FieldValue.increment(1),
+        totalRentalEarnings: FieldValue.increment(creatorEarnings),
       });
 
       // カードのステータスをレンタル成立時点でスナップショットしておく。
@@ -150,11 +149,12 @@ export const rentCard = functions
         creatorEarnings,
         rentalStart: now,
         rentalEnd,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
       });
 
       return renterBalance - totalCost;
     });
 
     return {success: true, newCoinBalance: newRenterBalance, totalCost, creatorEarnings};
-  });
+  }
+);

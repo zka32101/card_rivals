@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {getFirestore, FieldValue} from "firebase-admin/firestore";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PvPマッチング
@@ -56,13 +56,14 @@ function tierFor(rating: number): string {
   return TIER_TABLE[TIER_TABLE.length - 1].label;
 }
 
-export const pvpMatch = functions
-  .region("asia-northeast1")
-  .https.onCall(async (data: {attackerRating?: number}, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const pvpMatch = onCall(
+  {region: "asia-northeast1"},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
 
+    const data = request.data as {attackerRating?: number};
     const rating = data.attackerRating ?? 1000;
     // マッチのたびに異なる相手になるよう現在時刻も混ぜたシード
     const seed = Math.abs(rating + Date.now());
@@ -78,14 +79,14 @@ export const pvpMatch = functions
       deck.push(OPPONENT_POOL[(seed + i * 3) % OPPONENT_POOL.length]);
     }
 
-    const matchRef = await admin.firestore().collection("pvpMatches").add({
-      attackerUid: context.auth.uid,
+    const matchRef = await getFirestore().collection("pvpMatches").add({
+      attackerUid: request.auth.uid,
       opponentDeckCardIds: deck.map((c) => c.cardId),
       opponentName,
       opponentTier,
       opponentRating,
       consumed: false,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     });
 
     return {

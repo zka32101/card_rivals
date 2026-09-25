@@ -1,7 +1,8 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
+import {getFirestore, Timestamp} from "firebase-admin/firestore";
 
-const db = admin.firestore();
+const db = getFirestore();
 
 // ============================================================
 // Cloud Functions for Friend Management
@@ -13,22 +14,19 @@ const db = admin.firestore();
  * - Prevents requesting existing friends
  * - Validates user exists
  */
-export const sendFriendRequest = functions.https.onCall(
-  async (
-    data: {
-      senderId: string;
-      recipientId: string;
-      message?: string;
-    },
-    context
-  ) => {
+export const sendFriendRequest = onCall<{
+  senderId: string;
+  recipientId: string;
+  message?: string;
+}>(async (request) => {
+    const data = request.data;
     // Verify authentication
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Not authenticated');
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Not authenticated');
     }
 
-    if (context.auth.uid !== data.senderId) {
-      throw new functions.https.HttpsError(
+    if (request.auth.uid !== data.senderId) {
+      throw new HttpsError(
         'permission-denied',
         'Cannot send request on behalf of another user'
       );
@@ -38,7 +36,7 @@ export const sendFriendRequest = functions.https.onCall(
 
     // Prevent self-friending
     if (senderId === recipientId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'Cannot send friend request to yourself'
       );
@@ -51,12 +49,12 @@ export const sendFriendRequest = functions.https.onCall(
           db.collection('users').doc(recipientId)
         );
         if (!recipientDoc.exists) {
-          throw new functions.https.HttpsError('not-found', 'Recipient not found');
+          throw new HttpsError('not-found', 'Recipient not found');
         }
 
         const recipientData = recipientDoc.data();
         if (!recipientData) {
-          throw new functions.https.HttpsError('not-found', 'Recipient data not found');
+          throw new HttpsError('not-found', 'Recipient data not found');
         }
 
         // Get sender info
@@ -64,12 +62,12 @@ export const sendFriendRequest = functions.https.onCall(
           db.collection('users').doc(senderId)
         );
         if (!senderDoc.exists) {
-          throw new functions.https.HttpsError('not-found', 'Sender not found');
+          throw new HttpsError('not-found', 'Sender not found');
         }
 
         const senderData = senderDoc.data();
         if (!senderData) {
-          throw new functions.https.HttpsError('not-found', 'Sender data not found');
+          throw new HttpsError('not-found', 'Sender data not found');
         }
 
         // Check if already friends
@@ -77,7 +75,7 @@ export const sendFriendRequest = functions.https.onCall(
           db.collection('users').doc(recipientId).collection('friends').doc(senderId)
         );
         if (friendDoc.exists) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'already-exists',
             'Already friends with this user'
           );
@@ -90,18 +88,18 @@ export const sendFriendRequest = functions.https.onCall(
             .doc(recipientId)
             .collection('friendRequests')
             .where('senderId', '==', senderId)
-            .where('expiresAt', '>', admin.firestore.Timestamp.now())
+            .where('expiresAt', '>', Timestamp.now())
         );
 
         if (!existingRequest.empty) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'already-exists',
             'Friend request already sent'
           );
         }
 
         // Create friend request
-        const now = admin.firestore.Timestamp.now();
+        const now = Timestamp.now();
         const expiresAt = new Date(now.toDate());
         expiresAt.setDate(expiresAt.getDate() + 30);
 
@@ -121,7 +119,7 @@ export const sendFriendRequest = functions.https.onCall(
           sentAt: now,
           message: message || null,
           viewedAt: false,
-          expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+          expiresAt: Timestamp.fromDate(expiresAt),
         };
 
         transaction.set(requestRef, requestData);
@@ -133,11 +131,11 @@ export const sendFriendRequest = functions.https.onCall(
         };
       });
     } catch (error) {
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       console.error('Error sending friend request:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to send friend request');
+      throw new HttpsError('internal', 'Failed to send friend request');
     }
   }
 );
@@ -145,21 +143,18 @@ export const sendFriendRequest = functions.https.onCall(
 /**
  * Accept friend request and establish mutual friendship
  */
-export const acceptFriendRequest = functions.https.onCall(
-  async (
-    data: {
-      requestId: string;
-      userId: string;
-      friendId: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Not authenticated');
+export const acceptFriendRequest = onCall<{
+  requestId: string;
+  userId: string;
+  friendId: string;
+}>(async (request) => {
+    const data = request.data;
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Not authenticated');
     }
 
-    if (context.auth.uid !== data.userId) {
-      throw new functions.https.HttpsError(
+    if (request.auth.uid !== data.userId) {
+      throw new HttpsError(
         'permission-denied',
         'Cannot accept request for another user'
       );
@@ -178,12 +173,12 @@ export const acceptFriendRequest = functions.https.onCall(
         const requestDoc = await transaction.get(requestRef);
 
         if (!requestDoc.exists) {
-          throw new functions.https.HttpsError('not-found', 'Friend request not found');
+          throw new HttpsError('not-found', 'Friend request not found');
         }
 
-        const request = requestDoc.data();
-        if (!request || request.expiresAt.toDate() < new Date()) {
-          throw new functions.https.HttpsError('invalid-argument', 'Request has expired');
+        const friendRequestData = requestDoc.data();
+        if (!friendRequestData || friendRequestData.expiresAt.toDate() < new Date()) {
+          throw new HttpsError('invalid-argument', 'Request has expired');
         }
 
         // Get both users' public data
@@ -191,17 +186,17 @@ export const acceptFriendRequest = functions.https.onCall(
         const friendDoc = await transaction.get(db.collection('users').doc(friendId));
 
         if (!userDoc.exists || !friendDoc.exists) {
-          throw new functions.https.HttpsError('not-found', 'User data not found');
+          throw new HttpsError('not-found', 'User data not found');
         }
 
         const userData = userDoc.data();
         const friendData = friendDoc.data();
 
         if (!userData || !friendData) {
-          throw new functions.https.HttpsError('not-found', 'User data is missing');
+          throw new HttpsError('not-found', 'User data is missing');
         }
 
-        const now = admin.firestore.Timestamp.now();
+        const now = Timestamp.now();
 
         // Add friend to user's friends list
         transaction.set(
@@ -248,11 +243,11 @@ export const acceptFriendRequest = functions.https.onCall(
         };
       });
     } catch (error) {
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       console.error('Error accepting friend request:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to accept request');
+      throw new HttpsError('internal', 'Failed to accept request');
     }
   }
 );
@@ -260,20 +255,17 @@ export const acceptFriendRequest = functions.https.onCall(
 /**
  * Reject/decline a friend request
  */
-export const rejectFriendRequest = functions.https.onCall(
-  async (
-    data: {
-      requestId: string;
-      userId: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Not authenticated');
+export const rejectFriendRequest = onCall<{
+  requestId: string;
+  userId: string;
+}>(async (request) => {
+    const data = request.data;
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Not authenticated');
     }
 
-    if (context.auth.uid !== data.userId) {
-      throw new functions.https.HttpsError(
+    if (request.auth.uid !== data.userId) {
+      throw new HttpsError(
         'permission-denied',
         'Cannot reject request for another user'
       );
@@ -296,7 +288,7 @@ export const rejectFriendRequest = functions.https.onCall(
       };
     } catch (error) {
       console.error('Error rejecting friend request:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to reject request');
+      throw new HttpsError('internal', 'Failed to reject request');
     }
   }
 );
@@ -304,20 +296,17 @@ export const rejectFriendRequest = functions.https.onCall(
 /**
  * Remove a friend (mutual removal)
  */
-export const removeFriend = functions.https.onCall(
-  async (
-    data: {
-      userId: string;
-      friendId: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Not authenticated');
+export const removeFriend = onCall<{
+  userId: string;
+  friendId: string;
+}>(async (request) => {
+    const data = request.data;
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Not authenticated');
     }
 
-    if (context.auth.uid !== data.userId) {
-      throw new functions.https.HttpsError(
+    if (request.auth.uid !== data.userId) {
+      throw new HttpsError(
         'permission-denied',
         'Cannot remove friend for another user'
       );
@@ -333,7 +322,7 @@ export const removeFriend = functions.https.onCall(
         );
 
         if (!friendshipDoc.exists) {
-          throw new functions.https.HttpsError('not-found', 'Friendship not found');
+          throw new HttpsError('not-found', 'Friendship not found');
         }
 
         // Remove from both users' friends lists
@@ -351,11 +340,11 @@ export const removeFriend = functions.https.onCall(
         };
       });
     } catch (error) {
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       console.error('Error removing friend:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to remove friend');
+      throw new HttpsError('internal', 'Failed to remove friend');
     }
   }
 );
@@ -363,23 +352,20 @@ export const removeFriend = functions.https.onCall(
 /**
  * Update friend metadata (alias, group, notifications)
  */
-export const updateFriendMetadata = functions.https.onCall(
-  async (
-    data: {
-      userId: string;
-      friendId: string;
-      customAlias?: string;
-      group?: string;
-      notificationsEnabled?: boolean;
-    },
-    context
-  ) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Not authenticated');
+export const updateFriendMetadata = onCall<{
+  userId: string;
+  friendId: string;
+  customAlias?: string;
+  group?: string;
+  notificationsEnabled?: boolean;
+}>(async (request) => {
+    const data = request.data;
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Not authenticated');
     }
 
-    if (context.auth.uid !== data.userId) {
-      throw new functions.https.HttpsError(
+    if (request.auth.uid !== data.userId) {
+      throw new HttpsError(
         'permission-denied',
         'Cannot update friend for another user'
       );
@@ -409,7 +395,7 @@ export const updateFriendMetadata = functions.https.onCall(
       };
     } catch (error) {
       console.error('Error updating friend metadata:', error);
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         'Failed to update friend metadata'
       );
@@ -421,12 +407,12 @@ export const updateFriendMetadata = functions.https.onCall(
  * Batch update friend profiles when user stats change
  * Called after rating/tier updates to sync cached data
  */
-export const updateFriendCachedData = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
-    const oldData = change.before.data();
-    const newData = change.after.data();
+export const updateFriendCachedData = onDocumentUpdated(
+  'users/{userId}',
+  async (event) => {
+    const userId = event.params.userId;
+    const oldData = event.data?.before.data();
+    const newData = event.data?.after.data();
 
     // Check if rating or tier changed
     if (
