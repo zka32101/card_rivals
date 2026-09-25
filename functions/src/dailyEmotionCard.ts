@@ -1,5 +1,7 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {getFirestore, Timestamp} from "firebase-admin/firestore";
+import {getStorage} from "firebase-admin/storage";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import fetch from "node-fetch";
 import {generateImageWithFallback} from "./imageProviders";
 
@@ -17,17 +19,16 @@ const EMOTION_PROMPTS: Record<string, string> = {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // Haiku を使ってカード名を生成
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-export const generateDailyEmotionCardName = functions
-  .region("asia-northeast1")
-  .runWith({secrets: ["ANTHROPIC_API_KEY"]})
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
+export const generateDailyEmotionCardName = onCall(
+  {region: "asia-northeast1", secrets: ["ANTHROPIC_API_KEY"]},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const { emotion, userMessage } = data;
+    const { emotion, userMessage } = request.data;
     if (!emotion || !userMessage) {
-      throw new functions.https.HttpsError("invalid-argument", "Missing emotion or message");
+      throw new HttpsError("invalid-argument", "Missing emotion or message");
     }
 
     try {
@@ -72,7 +73,7 @@ export const generateDailyEmotionCardName = functions
       };
     } catch (error) {
       console.error("Error generating emotion card name:", error);
-      throw new functions.https.HttpsError("internal", "Failed to generate card name");
+      throw new HttpsError("internal", "Failed to generate card name");
     }
   });
 
@@ -83,17 +84,16 @@ export const generateDailyEmotionCardName = functions
 // 生成した画像はサーバー側でFirebase Storageにアップロードし、公開URLを返す
 // （旧実装はReplicateのprediction IDを返すだけでクライアント側ポーリングが未実装だった）。
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-export const generateDailyEmotionCardImage = functions
-  .region("asia-northeast1")
-  .runWith({timeoutSeconds: 120, memory: "256MB", secrets: ["LEONARDO_API_KEY"]})
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
+export const generateDailyEmotionCardImage = onCall(
+  {region: "asia-northeast1", timeoutSeconds: 120, memory: "256MiB", secrets: ["LEONARDO_API_KEY"]},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const { emotion, userMessage, cardName } = data;
+    const { emotion, userMessage, cardName } = request.data;
     if (!emotion) {
-      throw new functions.https.HttpsError("invalid-argument", "Missing emotion");
+      throw new HttpsError("invalid-argument", "Missing emotion");
     }
 
     const basePrompt = EMOTION_PROMPTS[emotion] || EMOTION_PROMPTS.joy;
@@ -108,11 +108,11 @@ export const generateDailyEmotionCardImage = functions
       providerUsed = generated.provider;
     } catch (error) {
       console.error("Error generating emotion card image:", error);
-      throw new functions.https.HttpsError("internal", "Failed to generate card image");
+      throw new HttpsError("internal", "Failed to generate card image");
     }
 
-    const bucket = admin.storage().bucket();
-    const userId = context.auth.uid;
+    const bucket = getStorage().bucket();
+    const userId = request.auth.uid;
     const filename = `daily_emotion_cards/${userId}/${Date.now()}.png`;
     const file = bucket.file(filename);
 
@@ -126,16 +126,15 @@ export const generateDailyEmotionCardImage = functions
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 感情カード作成（Cloud Firestore トリガー）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-export const onDailyEmotionCardCreated = functions
-  .region("asia-northeast1")
-  .firestore.document("users/{userId}/daily_emotions/{cardId}")
-  .onCreate(async (snap, context) => {
-    const { userId } = context.params;
-    const cardData = snap.data();
+export const onDailyEmotionCardCreated = onDocumentCreated(
+  {document: "users/{userId}/daily_emotions/{cardId}", region: "asia-northeast1"},
+  async (event) => {
+    const { userId } = event.params;
+    const cardData = event.data!.data();
 
     try {
       // 統計情報を更新
-      const statsRef = admin.firestore().collection("users").doc(userId).collection("daily_emotion_stats").doc("stats");
+      const statsRef = getFirestore().collection("users").doc(userId).collection("daily_emotion_stats").doc("stats");
       const statsDoc = await statsRef.get();
 
       const currentStats = statsDoc.data() ?? {
@@ -144,7 +143,7 @@ export const onDailyEmotionCardCreated = functions
         joyDays: 0,
         angerDays: 0,
         sadnessDays: 0,
-        lastEmotionDate: admin.firestore.Timestamp.now(),
+        lastEmotionDate: Timestamp.now(),
       };
 
       // 感情タイプでカウント
@@ -152,7 +151,7 @@ export const onDailyEmotionCardCreated = functions
       const updateData = {
         totalDays: (currentStats.totalDays || 0) + 1,
         [emotionKey]: (currentStats[emotionKey as keyof typeof currentStats] || 0) + 1,
-        lastEmotionDate: admin.firestore.Timestamp.now(),
+        lastEmotionDate: Timestamp.now(),
       };
 
       // ストリーク更新（昨日カードがあるかチェック）
@@ -161,13 +160,12 @@ export const onDailyEmotionCardCreated = functions
       const startOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
       const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59);
 
-      const yesterdayCards = await admin
-        .firestore()
+      const yesterdayCards = await getFirestore()
         .collection("users")
         .doc(userId)
         .collection("daily_emotions")
-        .where("createdAt", ">=", admin.firestore.Timestamp.fromDate(startOfYesterday))
-        .where("createdAt", "<=", admin.firestore.Timestamp.fromDate(endOfYesterday))
+        .where("createdAt", ">=", Timestamp.fromDate(startOfYesterday))
+        .where("createdAt", "<=", Timestamp.fromDate(endOfYesterday))
         .limit(1)
         .get();
 

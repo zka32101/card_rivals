@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
+import {getFirestore, FieldValue} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // シーズンリワード請求（サーバー権威）
@@ -19,31 +19,30 @@ interface ClaimSeasonRewardRequest {
 const DEFAULT_COIN_BALANCE = 100;
 const DEFAULT_GEM_BALANCE = 0;
 
-export const claimSeasonReward = functions
-  .region("asia-northeast1")
-  .runWith({timeoutSeconds: 30})
-  .https.onCall(async (data: ClaimSeasonRewardRequest, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const claimSeasonReward = onCall(
+  {region: "asia-northeast1", timeoutSeconds: 30},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
-    const userId = context.auth.uid;
-    const {seasonId, rewardId} = data;
+    const userId = request.auth.uid;
+    const {seasonId, rewardId} = request.data as ClaimSeasonRewardRequest;
 
     if (!seasonId || !rewardId) {
-      throw new functions.https.HttpsError("invalid-argument", "リクエストが不正です");
+      throw new HttpsError("invalid-argument", "リクエストが不正です");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const rewardRef = db.collection("seasons").doc(seasonId).collection("rewards").doc(rewardId);
     const progressRef = db.collection("users").doc(userId).collection("seasonProgress").doc(seasonId);
     const walletRef = db.collection("users").doc(userId).collection("wallet").doc("balance");
 
     try {
-      return await db.runTransaction(async (tx) => {
+      return await db.runTransaction(async (tx: FirebaseFirestore.Transaction) => {
         // ── 読み取りは書き込みより先に行う（Firestoreトランザクションの制約） ──
         const rewardDoc = await tx.get(rewardRef);
         if (!rewardDoc.exists) {
-          throw new functions.https.HttpsError("not-found", "リワードが見つかりません");
+          throw new HttpsError("not-found", "リワードが見つかりません");
         }
         const reward = rewardDoc.data()!;
         const rankTier: number = reward.rankTier ?? 1;
@@ -52,7 +51,7 @@ export const claimSeasonReward = functions
 
         const progressDoc = await tx.get(progressRef);
         if (!progressDoc.exists) {
-          throw new functions.https.HttpsError("failed-precondition", "シーズン進捗が見つかりません");
+          throw new HttpsError("failed-precondition", "シーズン進捗が見つかりません");
         }
         const progress = progressDoc.data()!;
         const currentRank: number = progress.currentRank ?? 1;
@@ -60,13 +59,13 @@ export const claimSeasonReward = functions
 
         // season_screen.dart の isUnlocked 判定（currentRank基準）と揃える
         if (currentRank < rankTier) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             "failed-precondition",
             "このリワードを受け取るにはランクが足りません"
           );
         }
         if (unlockedRewards.includes(rewardId)) {
-          throw new functions.https.HttpsError("failed-precondition", "このリワードは既に受け取り済みです");
+          throw new HttpsError("failed-precondition", "このリワードは既に受け取り済みです");
         }
 
         const walletDoc = await tx.get(walletRef);
@@ -77,25 +76,26 @@ export const claimSeasonReward = functions
         // ── ここから書き込み ──
         tx.set(progressRef, {
           unlockedRewards: [...unlockedRewards, rewardId],
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         }, {merge: true});
 
         tx.set(walletRef, {
           coinBalance: coinBalance + coinsReward,
           gemBalance: gemBalance + gemsReward,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         }, {merge: true});
 
         return {success: true, gemsGranted: gemsReward, coinsGranted: coinsReward};
       });
     } catch (error) {
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       console.error(`Failed to claim season reward for ${userId}:`, error);
-      throw new functions.https.HttpsError("internal", "リワード受取に失敗しました");
+      throw new HttpsError("internal", "リワード受取に失敗しました");
     }
-  });
+  }
+);
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // シーズンランキング取得
@@ -109,16 +109,15 @@ export const claimSeasonReward = functions
 
 const LEADERBOARD_LIMIT = 100;
 
-export const getSeasonLeaderboard = functions
-  .region("asia-northeast1")
-  .runWith({timeoutSeconds: 30})
-  .https.onCall(async (data: {seasonId: string}, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const getSeasonLeaderboard = onCall(
+  {region: "asia-northeast1", timeoutSeconds: 30},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
-    const {seasonId} = data;
+    const {seasonId} = request.data as {seasonId: string};
     if (!seasonId) {
-      throw new functions.https.HttpsError("invalid-argument", "seasonIdが必要です");
+      throw new HttpsError("invalid-argument", "seasonIdが必要です");
     }
 
     try {
@@ -126,7 +125,7 @@ export const getSeasonLeaderboard = functions
       // 旧実装（全users取得→各ユーザーのサブコレクションを1件ずつ取得）と異なり、
       // 1回のクエリで完結する。ソート順は旧実装のローカルソートと同じ
       // （ランク→ランク内ポイント→シーズン総ポイントの降順）。
-      const snapshot = await admin.firestore()
+      const snapshot = await getFirestore()
         .collectionGroup("seasonProgress")
         .where("seasonId", "==", seasonId)
         .orderBy("currentRank", "desc")
@@ -135,7 +134,7 @@ export const getSeasonLeaderboard = functions
         .limit(LEADERBOARD_LIMIT)
         .get();
 
-      const leaderboard = snapshot.docs.map((doc) => {
+      const leaderboard = snapshot.docs.map((doc: FirebaseFirestore.QueryDocumentSnapshot) => {
         const d = doc.data();
         return {
           userId: d.userId ?? "",
@@ -151,6 +150,7 @@ export const getSeasonLeaderboard = functions
       return {leaderboard};
     } catch (error) {
       console.error(`Failed to fetch season leaderboard for season ${seasonId}:`, error);
-      throw new functions.https.HttpsError("internal", "ランキングの取得に失敗しました");
+      throw new HttpsError("internal", "ランキングの取得に失敗しました");
     }
-  });
+  }
+);

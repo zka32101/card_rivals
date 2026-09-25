@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
 import fetch from "node-fetch";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -21,14 +21,14 @@ const TONE_LABEL: Record<string, string> = {
   normal: "バランスの良い",
 };
 
-export const generateCardName = functions
-  .region("asia-northeast1")
-  .runWith({secrets: ["ANTHROPIC_API_KEY"]})
-  .https.onCall(async (data: GenerateCardNameRequest, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const generateCardName = onCall(
+  {region: "asia-northeast1", secrets: ["ANTHROPIC_API_KEY"]},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
 
+    const data = request.data as GenerateCardNameRequest;
     const attribute = data.attribute ?? "joy";
     const cost = data.cost ?? 1;
     const attack = data.attack ?? 0;
@@ -80,6 +80,7 @@ export const generateCardName = functions
       return {names: names.slice(0, 3)};
     } catch (error) {
       console.error("Error generating card name:", error);
-      throw new functions.https.HttpsError("internal", "カード名の生成に失敗しました");
+      throw new HttpsError("internal", "カード名の生成に失敗しました");
     }
-  });
+  }
+);

@@ -1,5 +1,6 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {getFirestore} from "firebase-admin/firestore";
+import {getStorage} from "firebase-admin/storage";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {generateImageWithFallback} from "./imageProviders";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -18,15 +19,15 @@ function todayJST(): string {
 // 上限超過時はHttpsErrorを投げて画像生成APIを呼ばせない。
 async function checkAndIncrementDailyGenerationCount(userId: string): Promise<void> {
   const today = todayJST();
-  const ref = admin.firestore().collection("cardGenerationLimits").doc(userId);
+  const ref = getFirestore().collection("cardGenerationLimits").doc(userId);
 
-  await admin.firestore().runTransaction(async (tx) => {
+  await getFirestore().runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     const data = snap.data();
     const count = data?.date === today ? (data.count as number ?? 0) : 0;
 
     if (count >= DAILY_CARD_GENERATION_LIMIT) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "resource-exhausted",
         `1日のカード生成回数の上限（${DAILY_CARD_GENERATION_LIMIT}回）に達しました。日付が変わってから再度お試しください。`
       );
@@ -309,22 +310,23 @@ interface GenerateImageRequest {
   tone: string;
 }
 
-export const generateCardImage = functions
-  .region("asia-northeast1")
-  .runWith({
+export const generateCardImage = onCall(
+  {
+    region: "asia-northeast1",
     timeoutSeconds: 120,
-    memory: "256MB",
+    memory: "256MiB",
     // REPLICATE_API_TOKEN は未登録（スキップ中）。generateImageWithFallbackは
     // トークン無し時にエラーを投げ、自動的にLeonardoへフォールバックする。
     // Replicateを登録したら IMAGE_PROVIDER_SECRETS （imageProviders.ts）に差し替える。
     secrets: ["LEONARDO_API_KEY"],
-  })
-  .https.onCall(async (data: GenerateImageRequest, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+  },
+  async (request) => {
+    const data = request.data as GenerateImageRequest;
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
 
-    await checkAndIncrementDailyGenerationCount(context.auth.uid);
+    await checkAndIncrementDailyGenerationCount(request.auth.uid);
 
     const attr = data.attribute ?? "joy";
     const rarity = (data.rarity ?? "n").toLowerCase();
@@ -390,11 +392,11 @@ export const generateCardImage = functions
       imageBuffer = generated.buffer;
       providerUsed = generated.provider;
     } catch {
-      throw new functions.https.HttpsError("internal", "画像生成に失敗しました（Replicate/Leonardo両方失敗）");
+      throw new HttpsError("internal", "画像生成に失敗しました（Replicate/Leonardo両方失敗）");
     }
 
-    const bucket = admin.storage().bucket();
-    const userId = context.auth.uid;
+    const bucket = getStorage().bucket();
+    const userId = request.auth.uid;
     const filename = `user_cards/${userId}/${Date.now()}.png`;
     const file = bucket.file(filename);
 
@@ -403,4 +405,5 @@ export const generateCardImage = functions
 
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
     return {imageUrl: publicUrl, promptUsed: prompt, provider: providerUsed};
-  });
+  }
+);

@@ -1,7 +1,8 @@
-import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
+import {getFirestore, Timestamp} from "firebase-admin/firestore";
+import {onCall, HttpsError} from 'firebase-functions/v2/https';
+import {onSchedule} from 'firebase-functions/v2/scheduler';
 
-const db = admin.firestore();
+const db = getFirestore();
 const PLATFORM_FEE_PERCENT = 10;
 const CARD_LISTING_MIN_PRICE = 10;
 const CARD_LISTING_MAX_PRICE = 10000;
@@ -20,11 +21,11 @@ interface CardListing {
   imageUrl: string;
   price: number;
   status: 'active' | 'sold' | 'delisted';
-  createdAt: admin.firestore.Timestamp;
-  soldAt?: admin.firestore.Timestamp;
+  createdAt: Timestamp;
+  soldAt?: Timestamp;
   buyerId?: string;
   buyerName?: string;
-  expiresAt?: admin.firestore.Timestamp;
+  expiresAt?: Timestamp;
   views: number;
 }
 
@@ -38,7 +39,7 @@ interface MarketplaceTransaction {
   relatedListingId: string;
   counterpartyId?: string;
   counterpartyName?: string;
-  createdAt: admin.firestore.Timestamp;
+  createdAt: Timestamp;
   isSuccessful: boolean;
   errorMessage?: string;
   metadata: Record<string, any>;
@@ -49,24 +50,24 @@ interface MarketplaceTransaction {
 /**
  * Create a card listing
  */
-export const createCardListing = functions.https.onCall(async (data, context) => {
-  if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'User not authenticated');
+export const createCardListing = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
-  const userId = context.auth.uid;
-  const { cardId, price } = data;
+  const userId = request.auth.uid;
+  const { cardId, price } = request.data;
 
   // Validate inputs
-  if (!cardId || typeof cardId !== 'string') throw new functions.https.HttpsError('invalid-argument', 'Invalid cardId');
-  if (!price || typeof price !== 'number') throw new functions.https.HttpsError('invalid-argument', 'Invalid price');
+  if (!cardId || typeof cardId !== 'string') throw new Error('Invalid cardId');
+  if (!price || typeof price !== 'number') throw new Error('Invalid price');
   if (price < CARD_LISTING_MIN_PRICE || price > CARD_LISTING_MAX_PRICE) {
-    throw new functions.https.HttpsError('invalid-argument', `Price must be between ${CARD_LISTING_MIN_PRICE} and ${CARD_LISTING_MAX_PRICE}`);
+    throw new Error(`Price must be between ${CARD_LISTING_MIN_PRICE} and ${CARD_LISTING_MAX_PRICE}`);
   }
 
   return await db.runTransaction(async (transaction) => {
     // Verify user owns the card
     const cardRef = db.collection('users').doc(userId).collection('cards').doc(cardId);
     const cardDoc = await transaction.get(cardRef);
-    if (!cardDoc.exists) throw new functions.https.HttpsError('not-found', 'Card not found');
+    if (!cardDoc.exists) throw new HttpsError('not-found', 'Card not found');
 
     const cardData = cardDoc.data()!;
 
@@ -80,13 +81,13 @@ export const createCardListing = functions.https.onCall(async (data, context) =>
       .get();
 
     if (!existingListingQuery.empty) {
-      throw new functions.https.HttpsError('already-exists', 'Card already listed');
+      throw new HttpsError('already-exists', 'Card already listed');
     }
 
     // Create listing ID
     const listingId = db.collection('dummy').doc().id;
-    const now = admin.firestore.Timestamp.now();
-    const expiresAt = new admin.firestore.Timestamp(now.seconds + CARD_LISTING_EXPIRY_DAYS * 24 * 3600, now.nanoseconds);
+    const now = Timestamp.now();
+    const expiresAt = new Timestamp(now.seconds + CARD_LISTING_EXPIRY_DAYS * 24 * 3600, now.nanoseconds);
 
     // Get seller name (pseudo handle)
     const userRef = db.collection('users').doc(userId);
@@ -126,14 +127,14 @@ export const createCardListing = functions.https.onCall(async (data, context) =>
 /**
  * Buy a card from marketplace
  */
-export const buyCard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'User not authenticated');
+export const buyCard = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
-  const buyerId = context.auth.uid;
-  const { listingId } = data;
+  const buyerId = request.auth.uid;
+  const { listingId } = request.data;
 
   if (!listingId || typeof listingId !== 'string') {
-    throw new functions.https.HttpsError('invalid-argument', 'Invalid listingId');
+    throw new Error('Invalid listingId');
   }
 
   return await db.runTransaction(async (transaction) => {
@@ -141,28 +142,28 @@ export const buyCard = functions.https.onCall(async (data, context) => {
     const globalListingRef = db.collection('marketplace/active_card_listings').doc(listingId);
     const globalListingDoc = await transaction.get(globalListingRef);
 
-    if (!globalListingDoc.exists) throw new functions.https.HttpsError('not-found', 'Listing not found');
+    if (!globalListingDoc.exists) throw new HttpsError('not-found', 'Listing not found');
 
     const listing = globalListingDoc.data() as CardListing;
 
     // Validate
-    if (listing.status !== 'active') throw new functions.https.HttpsError('failed-precondition', 'Listing is not active');
-    if (listing.sellerId === buyerId) throw new functions.https.HttpsError('invalid-argument', 'Cannot buy your own card');
+    if (listing.status !== 'active') throw new HttpsError('failed-precondition', 'Listing is not active');
+    if (listing.sellerId === buyerId) throw new Error('Cannot buy your own card');
 
     // Check buyer has enough coins
     const buyerWalletRef = db.collection('users').doc(buyerId).collection('wallet').doc('balance');
     const buyerWalletDoc = await transaction.get(buyerWalletRef);
-    if (!buyerWalletDoc.exists) throw new functions.https.HttpsError('not-found', 'Buyer wallet not found');
+    if (!buyerWalletDoc.exists) throw new HttpsError('not-found', 'Buyer wallet not found');
 
     const buyerWallet = buyerWalletDoc.data()!;
     if ((buyerWallet.coinBalance || 0) < listing.price) {
-      throw new functions.https.HttpsError('failed-precondition', 'Insufficient coins');
+      throw new HttpsError('failed-precondition', 'Insufficient coins');
     }
 
     // Get card from seller
     const cardRef = db.collection('users').doc(listing.sellerId).collection('cards').doc(listing.cardId);
     const cardDoc = await transaction.get(cardRef);
-    if (!cardDoc.exists) throw new functions.https.HttpsError('not-found', 'Card no longer exists');
+    if (!cardDoc.exists) throw new HttpsError('not-found', 'Card no longer exists');
 
     // Calculate fee
     const platformFee = Math.floor(listing.price * PLATFORM_FEE_PERCENT / 100);
@@ -188,7 +189,7 @@ export const buyCard = functions.https.onCall(async (data, context) => {
     }
 
     // Update listing status
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
     const updatedListing = { ...listing, status: 'sold', soldAt: now, buyerId, buyerName: `Player-${buyerId.substring(0, 6)}` };
     transaction.update(globalListingRef, updatedListing);
 
@@ -239,20 +240,20 @@ export const buyCard = functions.https.onCall(async (data, context) => {
 /**
  * Delist a card from marketplace
  */
-export const delistCard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'User not authenticated');
+export const delistCard = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
-  const userId = context.auth.uid;
-  const { listingId } = data;
+  const userId = request.auth.uid;
+  const { listingId } = request.data;
 
   return await db.runTransaction(async (transaction) => {
     const userListingRef = db.collection('users').doc(userId).collection('marketplace/card_listings').doc(listingId);
     const userListingDoc = await transaction.get(userListingRef);
 
-    if (!userListingDoc.exists) throw new functions.https.HttpsError('not-found', 'Listing not found');
+    if (!userListingDoc.exists) throw new HttpsError('not-found', 'Listing not found');
 
     const listing = userListingDoc.data() as CardListing;
-    if (listing.status !== 'active') throw new functions.https.HttpsError('failed-precondition', 'Only active listings can be delisted');
+    if (listing.status !== 'active') throw new HttpsError('failed-precondition', 'Only active listings can be delisted');
 
     // Update both collections
     const updatedListing = { ...listing, status: 'delisted' };
@@ -268,25 +269,25 @@ export const delistCard = functions.https.onCall(async (data, context) => {
 /**
  * Update price of a card listing
  */
-export const updateCardListing = functions.https.onCall(async (data, context) => {
-  if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'User not authenticated');
+export const updateCardListing = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
-  const userId = context.auth.uid;
-  const { listingId, newPrice } = data;
+  const userId = request.auth.uid;
+  const { listingId, newPrice } = request.data;
 
-  if (!newPrice || typeof newPrice !== 'number') throw new functions.https.HttpsError('invalid-argument', 'Invalid price');
+  if (!newPrice || typeof newPrice !== 'number') throw new Error('Invalid price');
   if (newPrice < CARD_LISTING_MIN_PRICE || newPrice > CARD_LISTING_MAX_PRICE) {
-    throw new functions.https.HttpsError('invalid-argument', `Price must be between ${CARD_LISTING_MIN_PRICE} and ${CARD_LISTING_MAX_PRICE}`);
+    throw new Error(`Price must be between ${CARD_LISTING_MIN_PRICE} and ${CARD_LISTING_MAX_PRICE}`);
   }
 
   return await db.runTransaction(async (transaction) => {
     const userListingRef = db.collection('users').doc(userId).collection('marketplace/card_listings').doc(listingId);
     const userListingDoc = await transaction.get(userListingRef);
 
-    if (!userListingDoc.exists) throw new functions.https.HttpsError('not-found', 'Listing not found');
+    if (!userListingDoc.exists) throw new HttpsError('not-found', 'Listing not found');
 
     const listing = userListingDoc.data() as CardListing;
-    if (listing.status !== 'active') throw new functions.https.HttpsError('failed-precondition', 'Only active listings can be updated');
+    if (listing.status !== 'active') throw new HttpsError('failed-precondition', 'Only active listings can be updated');
 
     transaction.update(userListingRef, { price: newPrice });
 
@@ -316,9 +317,9 @@ interface TradeOffer {
   senderCardIds: string[];
   recipientCardIds: string[];
   status: 'pending' | 'accepted' | 'rejected' | 'expired' | 'cancelled';
-  createdAt: admin.firestore.Timestamp;
-  respondedAt?: admin.firestore.Timestamp;
-  expiresAt: admin.firestore.Timestamp;
+  createdAt: Timestamp;
+  respondedAt?: Timestamp;
+  expiresAt: Timestamp;
   message?: string;
   senderCards: TradeCard[];
   recipientCards: TradeCard[];
@@ -328,11 +329,11 @@ interface TradeOffer {
  * Create a trade offer between two players
  * No fees for P2P trades
  */
-export const createTradeOffer = functions.https.onCall(async (data, context) => {
-  if (!context.auth) throw new Error('Not authenticated');
+export const createTradeOffer = onCall(async (request) => {
+  if (!request.auth) throw new Error('Not authenticated');
 
-  const userId = context.auth.uid;
-  const { recipientId, senderCardIds, recipientCardIds, message } = data;
+  const userId = request.auth.uid;
+  const { recipientId, senderCardIds, recipientCardIds, message } = request.data;
 
   // Validation
   if (!recipientId || !Array.isArray(senderCardIds) || !Array.isArray(recipientCardIds)) {
@@ -404,8 +405,8 @@ export const createTradeOffer = functions.https.onCall(async (data, context) => 
 
     // Create trade offer
     const offerId = db.collection('trade_offers').doc().id;
-    const now = admin.firestore.Timestamp.now();
-    const expiresAt = new admin.firestore.Timestamp(
+    const now = Timestamp.now();
+    const expiresAt = new Timestamp(
       now.seconds + TRADE_OFFER_EXPIRY_DAYS * 24 * 3600,
       now.nanoseconds
     );
@@ -442,11 +443,11 @@ export const createTradeOffer = functions.https.onCall(async (data, context) => 
 /**
  * Respond to a trade offer (accept or reject)
  */
-export const respondToTradeOffer = functions.https.onCall(async (data, context) => {
-  if (!context.auth) throw new Error('Not authenticated');
+export const respondToTradeOffer = onCall(async (request) => {
+  if (!request.auth) throw new Error('Not authenticated');
 
-  const userId = context.auth.uid;
-  const { offerId, action } = data;
+  const userId = request.auth.uid;
+  const { offerId, action } = request.data;
 
   if (!offerId || !['accept', 'reject'].includes(action)) {
     throw new Error('Invalid response data');
@@ -468,14 +469,14 @@ export const respondToTradeOffer = functions.https.onCall(async (data, context) 
       throw new Error('Only the recipient can respond');
     }
 
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
     if (now.seconds > offer.expiresAt.seconds) {
       throw new Error('Trade offer has expired');
     }
 
     if (action === 'reject') {
       // Simply update status to rejected
-      const rejectedAt = admin.firestore.Timestamp.now();
+      const rejectedAt = Timestamp.now();
       transaction.update(offerRef, {
         status: 'rejected',
         respondedAt: rejectedAt,
@@ -597,11 +598,11 @@ export const respondToTradeOffer = functions.https.onCall(async (data, context) 
 /**
  * Cancel a trade offer (only sender can cancel pending offers)
  */
-export const cancelTradeOffer = functions.https.onCall(async (data, context) => {
-  if (!context.auth) throw new Error('Not authenticated');
+export const cancelTradeOffer = onCall(async (request) => {
+  if (!request.auth) throw new Error('Not authenticated');
 
-  const userId = context.auth.uid;
-  const { offerId } = data;
+  const userId = request.auth.uid;
+  const { offerId } = request.data;
 
   if (!offerId) throw new Error('Invalid offerId');
 
@@ -624,17 +625,17 @@ export const cancelTradeOffer = functions.https.onCall(async (data, context) => 
     // Update status to cancelled
     transaction.update(offerRef, {
       status: 'cancelled',
-      respondedAt: admin.firestore.Timestamp.now(),
+      respondedAt: Timestamp.now(),
     });
 
     // Update in both user collections
     transaction.update(
       db.collection('users').doc(offer.senderId).collection('marketplace/trade_offers').doc(offerId),
-      { status: 'cancelled', respondedAt: admin.firestore.Timestamp.now() }
+      { status: 'cancelled', respondedAt: Timestamp.now() }
     );
     transaction.update(
       db.collection('users').doc(offer.recipientId).collection('marketplace/trade_offers').doc(offerId),
-      { status: 'cancelled', respondedAt: admin.firestore.Timestamp.now() }
+      { status: 'cancelled', respondedAt: Timestamp.now() }
     );
 
     return { success: true, message: 'Trade offer cancelled' };
@@ -651,26 +652,26 @@ interface CurrencyListing {
   amount: number;
   price: number;
   status: 'active' | 'partial' | 'closed';
-  createdAt: admin.firestore.Timestamp;
-  expiresAt: admin.firestore.Timestamp;
+  createdAt: Timestamp;
+  expiresAt: Timestamp;
 }
 
 /**
  * Fill a currency exchange listing (buy/sell gems)
  * Supports partial fills
  */
-export const fillCurrencyListing = functions.https.onCall(async (data, context) => {
-  if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'User not authenticated');
+export const fillCurrencyListing = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
-  const buyerId = context.auth.uid;
-  const { listingId, amount } = data;
+  const buyerId = request.auth.uid;
+  const { listingId, amount } = request.data;
 
   if (!listingId || typeof listingId !== 'string') {
-    throw new functions.https.HttpsError('invalid-argument', 'Invalid listingId');
+    throw new Error('Invalid listingId');
   }
 
   if (!amount || typeof amount !== 'number' || amount <= 0) {
-    throw new functions.https.HttpsError('invalid-argument', 'Invalid amount');
+    throw new Error('Invalid amount');
   }
 
   return await db.runTransaction(async (transaction) => {
@@ -679,30 +680,30 @@ export const fillCurrencyListing = functions.https.onCall(async (data, context) 
     const globalListingDoc = await transaction.get(globalListingRef);
 
     if (!globalListingDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Listing not found');
+      throw new HttpsError('not-found', 'Listing not found');
     }
 
     const listing = globalListingDoc.data() as CurrencyListing;
 
     // Validate listing status
     if (listing.status !== 'active' && listing.status !== 'partial') {
-      throw new functions.https.HttpsError('failed-precondition', 'Listing is not available');
+      throw new HttpsError('failed-precondition', 'Listing is not available');
     }
 
     // Check expiry
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
     if (now.seconds > listing.expiresAt.seconds) {
-      throw new functions.https.HttpsError('failed-precondition', 'Listing has expired');
+      throw new HttpsError('failed-precondition', 'Listing has expired');
     }
 
     // Validate amount requested doesn't exceed available
     if (amount > listing.amount) {
-      throw new functions.https.HttpsError('invalid-argument', `Only ${listing.amount} available`);
+      throw new Error(`Only ${listing.amount} available`);
     }
 
     // Cannot buy from yourself
     if (listing.playerId === buyerId) {
-      throw new functions.https.HttpsError('invalid-argument', 'Cannot buy from yourself');
+      throw new Error('Cannot buy from yourself');
     }
 
     // Get buyer wallet
@@ -710,7 +711,7 @@ export const fillCurrencyListing = functions.https.onCall(async (data, context) 
     const buyerDoc = await transaction.get(buyerRef);
 
     if (!buyerDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Buyer profile not found');
+      throw new HttpsError('not-found', 'Buyer profile not found');
     }
 
     const buyerData = buyerDoc.data();
@@ -722,7 +723,7 @@ export const fillCurrencyListing = functions.https.onCall(async (data, context) 
     const sellerDoc = await transaction.get(sellerRef);
 
     if (!sellerDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Seller profile not found');
+      throw new HttpsError('not-found', 'Seller profile not found');
     }
 
     const sellerData = sellerDoc.data();
@@ -736,10 +737,10 @@ export const fillCurrencyListing = functions.https.onCall(async (data, context) 
     if (listing.type === 'sell_gems') {
       // Buyer is paying coins to get gems
       if (buyerCoins < totalCost) {
-        throw new functions.https.HttpsError('failed-precondition', 'Insufficient coins');
+        throw new HttpsError('failed-precondition', 'Insufficient coins');
       }
       if (sellerGems < amount) {
-        throw new functions.https.HttpsError('failed-precondition', 'Seller no longer has enough gems');
+        throw new HttpsError('failed-precondition', 'Seller no longer has enough gems');
       }
 
       // Transfer coins and gems
@@ -755,10 +756,10 @@ export const fillCurrencyListing = functions.https.onCall(async (data, context) 
     } else {
       // Buyer is paying gems to get coins (buy_gems listing means seller is buying gems from you)
       if (buyerGems < amount) {
-        throw new functions.https.HttpsError('failed-precondition', 'Insufficient gems');
+        throw new HttpsError('failed-precondition', 'Insufficient gems');
       }
       if (sellerCoins < totalCost) {
-        throw new functions.https.HttpsError('failed-precondition', 'Seller no longer has enough coins');
+        throw new HttpsError('failed-precondition', 'Seller no longer has enough coins');
       }
 
       // Transfer gems and coins
@@ -850,9 +851,9 @@ export const fillCurrencyListing = functions.https.onCall(async (data, context) 
 /**
  * Scheduled job to expire old listings (runs daily)
  */
-export const expireListings = functions.pubsub.schedule('every day 02:00').onRun(async (context) => {
-  const now = admin.firestore.Timestamp.now();
-  const expiryThreshold = new admin.firestore.Timestamp(now.seconds - 24 * 3600, now.nanoseconds);
+export const expireListings = onSchedule('every day 02:00', async () => {
+  const now = Timestamp.now();
+  const expiryThreshold = new Timestamp(now.seconds - 24 * 3600, now.nanoseconds);
 
   // Expire active card listings
   const expiredCardListings = await db
@@ -875,5 +876,4 @@ export const expireListings = functions.pubsub.schedule('every day 02:00').onRun
   // Could add similar cleanup here if desired
 
   console.log(`Expired ${expiredCardListings.docs.length} card listings`);
-  return null;
 });

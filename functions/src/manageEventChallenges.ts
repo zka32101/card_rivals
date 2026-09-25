@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
+import {getFirestore, Timestamp} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // イベント・チャレンジ管理（サーバー権威）
@@ -22,34 +22,34 @@ interface UserChallengeProgress {
   challengeId: string;
   progress: number;
   completed: boolean;
-  completedAt?: admin.firestore.Timestamp;
+  completedAt?: Timestamp;
   rewardClaimed: boolean;
-  claimedAt?: admin.firestore.Timestamp;
-  updatedAt: admin.firestore.Timestamp;
+  claimedAt?: Timestamp;
+  updatedAt: Timestamp;
 }
 
 // チャレンジの進捗を更新
-export const progressChallenge = functions
-  .region("asia-northeast1")
-  .runWith({timeoutSeconds: 30})
-  .https.onCall(async (data: ProgressChallengeRequest, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const progressChallenge = onCall(
+  {region: "asia-northeast1", timeoutSeconds: 30},
+  async (request) => {
+    const data = request.data as ProgressChallengeRequest;
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const {eventId, challengeId, progressAmount} = data;
 
     // バリデーション
     if (!eventId || !challengeId) {
-      throw new functions.https.HttpsError("invalid-argument", "イベントIDとチャレンジIDが必要です");
+      throw new HttpsError("invalid-argument", "イベントIDとチャレンジIDが必要です");
     }
 
     if (progressAmount < 0) {
-      throw new functions.https.HttpsError("invalid-argument", "進捗量は0以上である必要があります");
+      throw new HttpsError("invalid-argument", "進捗量は0以上である必要があります");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const progressRef = db
       .collection("users")
       .doc(userId)
@@ -66,16 +66,16 @@ export const progressChallenge = functions
         .get();
 
       if (!challengeSnapshot.exists) {
-        throw new functions.https.HttpsError("not-found", "チャレンジが見つかりません");
+        throw new HttpsError("not-found", "チャレンジが見つかりません");
       }
 
       const challengeData = challengeSnapshot.data() as any;
       const target = challengeData.target || 1;
 
       // トランザクション内で進捗を更新
-      await db.runTransaction(async (transaction) => {
+      await db.runTransaction(async (transaction: FirebaseFirestore.Transaction) => {
         const currentProgress = await transaction.get(progressRef);
-        const now = admin.firestore.Timestamp.now();
+        const now = Timestamp.now();
 
         if (!currentProgress.exists) {
           // 新規進捗を作成
@@ -106,34 +106,35 @@ export const progressChallenge = functions
 
       return {success: true};
     } catch (error) {
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       console.error(`Failed to progress challenge for ${userId}:`, error);
-      throw new functions.https.HttpsError("internal", "チャレンジの進捗更新に失敗しました");
+      throw new HttpsError("internal", "チャレンジの進捗更新に失敗しました");
     }
-  });
+  }
+);
 
 // チャレンジのリワードを受け取る
-export const claimChallengeReward = functions
-  .region("asia-northeast1")
-  .runWith({timeoutSeconds: 30})
-  .https.onCall(async (data: ClaimRewardRequest, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const claimChallengeReward = onCall(
+  {region: "asia-northeast1", timeoutSeconds: 30},
+  async (request) => {
+    const data = request.data as ClaimRewardRequest;
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const {eventId, challengeId} = data;
 
     if (!eventId || !challengeId) {
-      throw new functions.https.HttpsError("invalid-argument", "イベントIDとチャレンジIDが必要です");
+      throw new HttpsError("invalid-argument", "イベントIDとチャレンジIDが必要です");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
 
     try {
-      return await db.runTransaction(async (transaction) => {
+      return await db.runTransaction(async (transaction: FirebaseFirestore.Transaction) => {
         // ユーザーの進捗を確認
         const progressRef = db
           .collection("users")
@@ -143,19 +144,19 @@ export const claimChallengeReward = functions
         const progressSnapshot = await transaction.get(progressRef);
 
         if (!progressSnapshot.exists) {
-          throw new functions.https.HttpsError("not-found", "チャレンジの進捗が見つかりません");
+          throw new HttpsError("not-found", "チャレンジの進捗が見つかりません");
         }
 
         const progress = progressSnapshot.data() as UserChallengeProgress;
 
         // チャレンジが完了していることを確認
         if (!progress.completed) {
-          throw new functions.https.HttpsError("failed-precondition", "チャレンジはまだ完了していません");
+          throw new HttpsError("failed-precondition", "チャレンジはまだ完了していません");
         }
 
         // リワードがすでに受け取られていることを確認
         if (progress.rewardClaimed) {
-          throw new functions.https.HttpsError("failed-precondition", "リワードはすでに受け取られています");
+          throw new HttpsError("failed-precondition", "リワードはすでに受け取られています");
         }
 
         // チャレンジの定義を取得してリワードを得る
@@ -168,7 +169,7 @@ export const claimChallengeReward = functions
         );
 
         if (!challengeSnapshot.exists) {
-          throw new functions.https.HttpsError("not-found", "チャレンジが見つかりません");
+          throw new HttpsError("not-found", "チャレンジが見つかりません");
         }
 
         const challengeData = challengeSnapshot.data() as any;
@@ -177,7 +178,7 @@ export const claimChallengeReward = functions
 
         // ユーザーのウォレットを更新
         const walletRef = db.collection("users").doc(userId).collection("wallet").doc("overall");
-        const now = admin.firestore.Timestamp.now();
+        const now = Timestamp.now();
 
         const walletSnapshot = await transaction.get(walletRef);
         if (walletSnapshot.exists) {
@@ -208,31 +209,32 @@ export const claimChallengeReward = functions
         };
       });
     } catch (error) {
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       console.error(`Failed to claim challenge reward for ${userId}:`, error);
-      throw new functions.https.HttpsError("internal", "リワード受取に失敗しました");
+      throw new HttpsError("internal", "リワード受取に失敗しました");
     }
-  });
+  }
+);
 
 // ユーザーのイベント進捗をまとめて取得
-export const getUserEventProgress = functions
-  .region("asia-northeast1")
-  .runWith({timeoutSeconds: 30})
-  .https.onCall(async (data: {eventId: string}, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
+export const getUserEventProgress = onCall(
+  {region: "asia-northeast1", timeoutSeconds: 30},
+  async (request) => {
+    const data = request.data as {eventId: string};
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "認証が必要です");
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const {eventId} = data;
 
     if (!eventId) {
-      throw new functions.https.HttpsError("invalid-argument", "イベントIDが必要です");
+      throw new HttpsError("invalid-argument", "イベントIDが必要です");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
 
     try {
       const progressSnapshot = await db
@@ -242,7 +244,9 @@ export const getUserEventProgress = functions
         .where("eventId", "==", eventId)
         .get();
 
-      const progresses = progressSnapshot.docs.map((doc) => doc.data() as UserChallengeProgress);
+      const progresses = progressSnapshot.docs.map(
+        (doc: FirebaseFirestore.QueryDocumentSnapshot) => doc.data() as UserChallengeProgress
+      );
 
       return {
         success: true,
@@ -250,6 +254,7 @@ export const getUserEventProgress = functions
       };
     } catch (error) {
       console.error(`Failed to fetch event progress for ${userId}:`, error);
-      throw new functions.https.HttpsError("internal", "進捗取得に失敗しました");
+      throw new HttpsError("internal", "進捗取得に失敗しました");
     }
-  });
+  }
+);
