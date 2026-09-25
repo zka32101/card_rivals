@@ -34,11 +34,15 @@ dependencies:
     sdk: flutter
 
   # Firebase
-  firebase_core: ^4.14.0
-  firebase_auth: ^6.6.1
-  cloud_firestore: ^6.9.0
+  # 各パッケージはFlutterFire monorepoで同時リリースされており、同じリリース日の
+  # バージョン同士でないとネイティブ側(firebase-ios-sdk)の要求バージョンが食い違い、
+  # iOSビルド時にXcodeのSwift Package Manager依存解決が失敗する。
+  # バージョンを個別に上げる際は必ず同日リリースのセットで揃えること。
+  firebase_core: ^4.15.0
+  firebase_auth: ^6.7.0
+  cloud_firestore: ^6.10.0
   firebase_storage: ^13.6.0
-  cloud_functions: ^6.4.0
+  cloud_functions: ^6.5.0
   firebase_crashlytics: ^5.4.0
 
   # Ads / Purchases
