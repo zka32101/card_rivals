@@ -83,5 +83,13 @@ service cloud.firestore {
         (request.auth.uid == resource.data.renterUid || request.auth.uid == resource.data.creatorUid);
       allow write: if false;
     }
+
+    // =============== カード画像生成のレート制限カウンタ ===============
+    // generateCardImage Cloud FunctionがAdmin SDK経由でのみ読み書きする内部カウンタ。
+    // クライアントから直接書き換えられると1日の生成上限を回避できてしまうため
+    // 読み書きとも常に拒否する。
+    match /cardGenerationLimits/{userId} {
+      allow read, write: if false;
+    }
   }
 }

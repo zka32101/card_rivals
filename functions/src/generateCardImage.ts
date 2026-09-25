@@ -3,6 +3,40 @@ import * as admin from "firebase-admin";
 import {generateImageWithFallback} from "./imageProviders";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// レート制限（画像生成APIの異常課金防止）
+// コインさえあれば無制限に連打できてしまうため、ユーザー単位で
+// 1日あたりの生成回数に上限を設ける。日本向けアプリのためJST基準で日付をリセットする。
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const DAILY_CARD_GENERATION_LIMIT = 50;
+
+function todayJST(): string {
+  const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  return jst.toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+// 上限チェック＆カウントアップをトランザクションで原子的に行う。
+// 上限超過時はHttpsErrorを投げて画像生成APIを呼ばせない。
+async function checkAndIncrementDailyGenerationCount(userId: string): Promise<void> {
+  const today = todayJST();
+  const ref = admin.firestore().collection("cardGenerationLimits").doc(userId);
+
+  await admin.firestore().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = snap.data();
+    const count = data?.date === today ? (data.count as number ?? 0) : 0;
+
+    if (count >= DAILY_CARD_GENERATION_LIMIT) {
+      throw new functions.https.HttpsError(
+        "resource-exhausted",
+        `1日のカード生成回数の上限（${DAILY_CARD_GENERATION_LIMIT}回）に達しました。日付が変わってから再度お試しください。`
+      );
+    }
+
+    tx.set(ref, {date: today, count: count + 1}, {merge: true});
+  });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 属性別 ベースキャラクター
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 属性ごとに複数のキャラクター案を用意し、カード名のハッシュで決定的に選ぶ。
@@ -289,6 +323,8 @@ export const generateCardImage = functions
     if (!context.auth) {
       throw new functions.https.HttpsError("unauthenticated", "認証が必要です");
     }
+
+    await checkAndIncrementDailyGenerationCount(context.auth.uid);
 
     const attr = data.attribute ?? "joy";
     const rarity = (data.rarity ?? "n").toLowerCase();
