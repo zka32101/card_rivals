@@ -11,6 +11,7 @@ import '../widgets/daily_quests_widget.dart';
 import '../widgets/card_widget.dart';
 import '../providers/daily_mission_provider.dart';
 import '../providers/vip_provider.dart';
+import '../services/ad_service.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
 
@@ -76,7 +77,16 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
       }
       _updateQuests();
       _updateDailyMissions();
+      _maybeShowInterstitialAd();
     });
+  }
+
+  // バトル結果の表示を妨げないよう、対戦終了直後（初期演出後）に広告を挟む。
+  // VIPパス加入者には表示しない。読み込みが間に合っていなければ何もしない。
+  Future<void> _maybeShowInterstitialAd() async {
+    final isVip = await ref.read(vipStatusProvider.future).catchError((_) => false);
+    if (!mounted || isVip) return;
+    AdService.showInterstitialIfReady();
   }
 
   // PvP勝利ボーナス（1日上限🪙20をstreakBonusと共有・実際に加算する）

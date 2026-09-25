@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../providers/game_state_provider.dart';
+import '../providers/vip_provider.dart';
+import '../services/ad_service.dart';
 import '../widgets/card_widget.dart';
 import '../theme/kingdom_theme.dart';
 import 'card_creation_screen_v2.dart';
@@ -283,6 +286,62 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
           ),
           ),
         ],
+      ),
+      bottomNavigationBar: const _HomeBannerAd(),
+    );
+  }
+}
+
+// 無料ユーザー（VIP未加入）にのみ画面下部へバナー広告を表示する。
+// VIPパス加入者には広告を一切出さない。
+class _HomeBannerAd extends ConsumerStatefulWidget {
+  const _HomeBannerAd();
+
+  @override
+  ConsumerState<_HomeBannerAd> createState() => _HomeBannerAdState();
+}
+
+class _HomeBannerAdState extends ConsumerState<_HomeBannerAd> {
+  BannerAd? _bannerAd;
+  bool _loaded = false;
+
+  void _loadAd() {
+    if (_bannerAd != null) return;
+    _bannerAd = AdService.createBannerAd(
+      onLoaded: () {
+        if (mounted) setState(() => _loaded = true);
+      },
+      onFailed: (_) {
+        _bannerAd = null;
+        if (mounted) setState(() => _loaded = false);
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vipAsync = ref.watch(vipStatusProvider);
+    final isVip = vipAsync.valueOrNull ?? false;
+    if (isVip) {
+      _bannerAd?.dispose();
+      _bannerAd = null;
+      return const SizedBox.shrink();
+    }
+
+    _loadAd();
+    if (!_loaded || _bannerAd == null) return const SizedBox.shrink();
+
+    return SafeArea(
+      child: SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
       ),
     );
   }
