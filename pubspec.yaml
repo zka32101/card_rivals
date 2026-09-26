@@ -45,7 +45,7 @@ dependencies:
   purchases_flutter: ^8.0.0
 
   # Ads（無料ユーザー向け・VIPパスで非表示）
-  google_mobile_ads: ^6.0.0
+  google_mobile_ads: ^9.1.0
 
   # State Management
   riverpod: ^2.6.0
