@@ -1,5 +1,5 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {getFirestore, FieldValue, Timestamp} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // カードレンタル（サーバー権威）
@@ -64,7 +64,7 @@ export const rentCard = functions
       throw new functions.https.HttpsError("invalid-argument", "不正なレンタル期間です");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const cardRef = db.collection("users").doc(creatorId).collection("cards").doc(cardId);
     const renterWalletRef = db.collection("users").doc(renterId).collection("wallet").doc("balance");
     const creatorWalletRef = db.collection("users").doc(creatorId).collection("wallet").doc("balance");
@@ -75,7 +75,7 @@ export const rentCard = functions
     const activeRentersQuery = db.collection("rentals")
       .where("creatorUid", "==", creatorId)
       .where("cardId", "==", cardId)
-      .where("rentalEnd", ">", admin.firestore.Timestamp.now());
+      .where("rentalEnd", ">", Timestamp.now());
 
     const creatorEarnings = Math.floor((totalCost * CREATOR_SHARE_PERCENT) / 100);
 
@@ -110,24 +110,24 @@ export const rentCard = functions
       const creatorBalance: number = creatorWalletDoc.data()?.coinBalance ?? DEFAULT_COIN_BALANCE;
 
       // ── ここから書き込み ──
-      const now = admin.firestore.Timestamp.now();
-      const rentalEnd = admin.firestore.Timestamp.fromMillis(
+      const now = Timestamp.now();
+      const rentalEnd = Timestamp.fromMillis(
         now.toMillis() + rentalDays * 24 * 60 * 60 * 1000
       );
 
       tx.set(renterWalletRef, {
         coinBalance: renterBalance - totalCost,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
 
       tx.set(creatorWalletRef, {
         coinBalance: creatorBalance + creatorEarnings,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
 
       tx.update(cardRef, {
-        totalRentalCount: admin.firestore.FieldValue.increment(1),
-        totalRentalEarnings: admin.firestore.FieldValue.increment(creatorEarnings),
+        totalRentalCount: FieldValue.increment(1),
+        totalRentalEarnings: FieldValue.increment(creatorEarnings),
       });
 
       // カードのステータスをレンタル成立時点でスナップショットしておく。
@@ -150,7 +150,7 @@ export const rentCard = functions
         creatorEarnings,
         rentalStart: now,
         rentalEnd,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
       });
 
       return renterBalance - totalCost;

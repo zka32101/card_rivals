@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import fetch from "node-fetch";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;

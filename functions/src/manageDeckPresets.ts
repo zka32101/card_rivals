@@ -1,21 +1,26 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {getFirestore, Timestamp} from "firebase-admin/firestore";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// デッキプリセット管理（サーバー権威）
+// デッキプリセット管理
 // ユーザーのデッキ構成を保存・更新・削除する。
 // 複数のプリセットを管理でき、デッキビルダーで素早く切り替え可能。
+//
+// 注意: deckPresetsはfirestore.rulesで本人のみ直接read/write可能にしており、
+// クライアント（lib/providers/deck_presets_provider.dart）はFirestore SDKで
+// 直接読み書きするためこのCloud Functionsは実際には呼び出されていない。
+// 定数はクライアント側（maxPresetsPerUser / battleDeckSize）と値を揃えておく。
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-const MAX_PRESETS_PER_USER = 10;
-const MAX_CARDS_PER_DECK = 30;
+const MAX_PRESETS_PER_USER = 5;
+const BATTLE_DECK_SIZE = 5;
 
 interface DeckPresetData {
   name: string;
   description?: string;
   cardIds: string[]; // レンタルカード含む
-  createdAt?: admin.firestore.Timestamp;
-  updatedAt?: admin.firestore.Timestamp;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
 
 interface SaveDeckPresetRequest {
@@ -49,16 +54,16 @@ export const saveDeckPreset = functions
       throw new functions.https.HttpsError("invalid-argument", "プリセット名は50文字以内です");
     }
 
-    if (cardIds.length === 0 || cardIds.length > MAX_CARDS_PER_DECK) {
+    if (cardIds.length !== BATTLE_DECK_SIZE) {
       throw new functions.https.HttpsError(
         "invalid-argument",
-        `デッキには1〜${MAX_CARDS_PER_DECK}枚のカードが必要です`
+        `デッキにはちょうど${BATTLE_DECK_SIZE}枚のカードが必要です`
       );
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const presetsRef = db.collection("users").doc(userId).collection("deckPresets");
-    const now = admin.firestore.Timestamp.now();
+    const now = Timestamp.now();
 
     try {
       // 既存プリセット数をチェック
@@ -112,7 +117,7 @@ export const deleteDeckPreset = functions
       throw new functions.https.HttpsError("invalid-argument", "プリセットIDが必要です");
     }
 
-    const db = admin.firestore();
+    const db = getFirestore();
     const presetRef = db.collection("users").doc(userId).collection("deckPresets").doc(presetId);
 
     try {
@@ -151,7 +156,11 @@ export const copyDeckPreset = functions
       throw new functions.https.HttpsError("invalid-argument", "リクエストが不正です");
     }
 
-    const db = admin.firestore();
+    if (newName.length > 50) {
+      throw new functions.https.HttpsError("invalid-argument", "プリセット名は50文字以内です");
+    }
+
+    const db = getFirestore();
     const sourceRef = db.collection("users").doc(userId).collection("deckPresets").doc(sourcePresetId);
     const presetsRef = db.collection("users").doc(userId).collection("deckPresets");
 
@@ -161,8 +170,16 @@ export const copyDeckPreset = functions
         throw new functions.https.HttpsError("not-found", "ソースプリセットが見つかりません");
       }
 
+      const existingSnap = await presetsRef.count().get();
+      if (existingSnap.data().count >= MAX_PRESETS_PER_USER) {
+        throw new functions.https.HttpsError(
+          "resource-exhausted",
+          `デッキプリセットは最大${MAX_PRESETS_PER_USER}個までです`
+        );
+      }
+
       const sourceData = sourceSnap.data() as DeckPresetData;
-      const now = admin.firestore.Timestamp.now();
+      const now = Timestamp.now();
 
       const newPresetId = presetsRef.doc().id;
       const newPreset: DeckPresetData = {

@@ -1,5 +1,6 @@
-import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import * as functions from "firebase-functions/v1";
+import {getFirestore, Timestamp} from "firebase-admin/firestore";
+import {getStorage} from "firebase-admin/storage";
 import fetch from "node-fetch";
 import {generateImageWithFallback} from "./imageProviders";
 
@@ -111,7 +112,7 @@ export const generateDailyEmotionCardImage = functions
       throw new functions.https.HttpsError("internal", "Failed to generate card image");
     }
 
-    const bucket = admin.storage().bucket();
+    const bucket = getStorage().bucket();
     const userId = context.auth.uid;
     const filename = `daily_emotion_cards/${userId}/${Date.now()}.png`;
     const file = bucket.file(filename);
@@ -135,7 +136,7 @@ export const onDailyEmotionCardCreated = functions
 
     try {
       // 統計情報を更新
-      const statsRef = admin.firestore().collection("users").doc(userId).collection("daily_emotion_stats").doc("stats");
+      const statsRef = getFirestore().collection("users").doc(userId).collection("daily_emotion_stats").doc("stats");
       const statsDoc = await statsRef.get();
 
       const currentStats = statsDoc.data() ?? {
@@ -144,7 +145,7 @@ export const onDailyEmotionCardCreated = functions
         joyDays: 0,
         angerDays: 0,
         sadnessDays: 0,
-        lastEmotionDate: admin.firestore.Timestamp.now(),
+        lastEmotionDate: Timestamp.now(),
       };
 
       // 感情タイプでカウント
@@ -152,7 +153,7 @@ export const onDailyEmotionCardCreated = functions
       const updateData = {
         totalDays: (currentStats.totalDays || 0) + 1,
         [emotionKey]: (currentStats[emotionKey as keyof typeof currentStats] || 0) + 1,
-        lastEmotionDate: admin.firestore.Timestamp.now(),
+        lastEmotionDate: Timestamp.now(),
       };
 
       // ストリーク更新（昨日カードがあるかチェック）
@@ -161,13 +162,12 @@ export const onDailyEmotionCardCreated = functions
       const startOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
       const endOfYesterday = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59);
 
-      const yesterdayCards = await admin
-        .firestore()
+      const yesterdayCards = await getFirestore()
         .collection("users")
         .doc(userId)
         .collection("daily_emotions")
-        .where("createdAt", ">=", admin.firestore.Timestamp.fromDate(startOfYesterday))
-        .where("createdAt", "<=", admin.firestore.Timestamp.fromDate(endOfYesterday))
+        .where("createdAt", ">=", Timestamp.fromDate(startOfYesterday))
+        .where("createdAt", "<=", Timestamp.fromDate(endOfYesterday))
         .limit(1)
         .get();
 

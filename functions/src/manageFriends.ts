@@ -1,7 +1,7 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions/v1';
+import {getFirestore, Timestamp, Transaction, QueryDocumentSnapshot} from 'firebase-admin/firestore';
 
-const db = admin.firestore();
+const db = getFirestore();
 
 // ============================================================
 // Cloud Functions for Friend Management
@@ -45,7 +45,7 @@ export const sendFriendRequest = functions.https.onCall(
     }
 
     try {
-      return await db.runTransaction(async (transaction) => {
+      return await db.runTransaction(async (transaction: Transaction) => {
         // Check if recipient exists
         const recipientDoc = await transaction.get(
           db.collection('users').doc(recipientId)
@@ -90,7 +90,7 @@ export const sendFriendRequest = functions.https.onCall(
             .doc(recipientId)
             .collection('friendRequests')
             .where('senderId', '==', senderId)
-            .where('expiresAt', '>', admin.firestore.Timestamp.now())
+            .where('expiresAt', '>', Timestamp.now())
         );
 
         if (!existingRequest.empty) {
@@ -101,7 +101,7 @@ export const sendFriendRequest = functions.https.onCall(
         }
 
         // Create friend request
-        const now = admin.firestore.Timestamp.now();
+        const now = Timestamp.now();
         const expiresAt = new Date(now.toDate());
         expiresAt.setDate(expiresAt.getDate() + 30);
 
@@ -121,7 +121,7 @@ export const sendFriendRequest = functions.https.onCall(
           sentAt: now,
           message: message || null,
           viewedAt: false,
-          expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+          expiresAt: Timestamp.fromDate(expiresAt),
         };
 
         transaction.set(requestRef, requestData);
@@ -168,7 +168,7 @@ export const acceptFriendRequest = functions.https.onCall(
     const { requestId, userId, friendId } = data;
 
     try {
-      return await db.runTransaction(async (transaction) => {
+      return await db.runTransaction(async (transaction: Transaction) => {
         // Verify the friend request exists and is valid
         const requestRef = db
           .collection('users')
@@ -201,7 +201,7 @@ export const acceptFriendRequest = functions.https.onCall(
           throw new functions.https.HttpsError('not-found', 'User data is missing');
         }
 
-        const now = admin.firestore.Timestamp.now();
+        const now = Timestamp.now();
 
         // Add friend to user's friends list
         transaction.set(
@@ -326,7 +326,7 @@ export const removeFriend = functions.https.onCall(
     const { userId, friendId } = data;
 
     try {
-      return await db.runTransaction(async (transaction) => {
+      return await db.runTransaction(async (transaction: Transaction) => {
         // Verify friendship exists
         const friendshipDoc = await transaction.get(
           db.collection('users').doc(userId).collection('friends').doc(friendId)
@@ -446,7 +446,7 @@ export const updateFriendCachedData = functions.firestore
 
       const batch = db.batch();
 
-      reverseQuery.docs.forEach((doc) => {
+      reverseQuery.docs.forEach((doc: QueryDocumentSnapshot) => {
         // doc.ref is: users/{otherUserId}/friends/{userId}
         const friendRef = doc.ref;
 
