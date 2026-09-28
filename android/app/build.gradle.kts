@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
+import java.io.InputStreamReader
 
 plugins {
     id("com.android.application")
@@ -17,7 +18,12 @@ val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
 val hasReleaseSigningConfig = keystorePropertiesFile.exists()
 if (hasReleaseSigningConfig) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    // FileInputStreamをそのままProperties.load()に渡すとISO-8859-1として読まれ、
+    // 日本語を含むパス（H:\マイドライブ\...）が文字化けしてkeystoreが見つからなくなる。
+    // UTF-8で明示的に読み込む。
+    InputStreamReader(FileInputStream(keystorePropertiesFile), Charsets.UTF_8).use {
+        keystoreProperties.load(it)
+    }
 }
 
 android {
