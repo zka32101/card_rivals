@@ -479,7 +479,7 @@
   "home_tapToSetDeckHint": "Tap to set up your defense deck",
   "home_noCardsYetTitle": "You haven't created any cards yet",
   "home_aiAutoImageCaption": "AI automatically generates the artwork",
-  "cardCreation_appBarTitle": "Create Card — Step {step}/6",
+  "cardCreation_appBarTitle": "Create Card — Step {step}/5",
   "@cardCreation_appBarTitle": {"placeholders":{"step":{}}},
   "cardCreation_stepDesign": "Design",
   "cardCreation_stepAttribute": "Attribute",

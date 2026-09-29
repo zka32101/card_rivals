@@ -479,7 +479,7 @@
   "home_tapToSetDeckHint": "タップして防衛デッキを設定してください",
   "home_noCardsYetTitle": "カードをまだ作成していません",
   "home_aiAutoImageCaption": "AI が自動で画像を生成します",
-  "cardCreation_appBarTitle": "カード作成 — ステップ {step}/6",
+  "cardCreation_appBarTitle": "カード作成 — ステップ {step}/5",
   "@cardCreation_appBarTitle": {"placeholders":{"step":{}}},
   "cardCreation_stepDesign": "デザイン",
   "cardCreation_stepAttribute": "属性",
