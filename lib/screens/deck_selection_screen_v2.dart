@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/user_card.dart';
+import '../models/deck_preset.dart';
 import '../providers/collection_provider.dart';
 import '../widgets/card_widget.dart';
 import '../widgets/card_detail_sheet.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import 'deck_preset_manager_screen.dart';
 
 class DeckSelectionScreenV2 extends ConsumerStatefulWidget {
   final String? title;
@@ -51,6 +53,13 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
         title: Text(title, style: Kingdom.title(size: 16)),
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.star, color: Kingdom.gilt),
+            tooltip: t.deckSelection_favoritePresetsTooltip,
+            onPressed: _openPresetManager,
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -275,6 +284,54 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
         ],
       ),
     );
+  }
+
+  Future<void> _openPresetManager() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DeckPresetManagerScreen(
+          currentCardIds: _selected.map((c) => c.cardId).toList(),
+          onPresetSelected: _applyPreset,
+        ),
+      ),
+    );
+  }
+
+  void _applyPreset(DeckPreset preset) {
+    final t = AppLocalizations.of(context)!;
+    final allCards = ref.read(battleEligibleCardsProvider);
+    final byId = {for (final c in allCards) c.cardId: c};
+
+    final resolved = <PlayCard>[];
+    var missingCount = 0;
+    for (final id in preset.cardIds) {
+      final card = byId[id];
+      if (card == null) {
+        missingCount++;
+        continue;
+      }
+      resolved.add(card);
+      if (resolved.length >= widget.maxCards) break;
+    }
+
+    setState(() => _selected = resolved);
+
+    if (missingCount > 0 || preset.cardIds.length > widget.maxCards) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(t.deckSelection_presetAppliedPartial(preset.name)),
+          backgroundColor: Kingdom.sadnessIndigo,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(t.deckSelection_presetApplied(preset.name)),
+          backgroundColor: Kingdom.joyGold,
+        ),
+      );
+    }
   }
 
   Widget _buildFilterChip(String? attr, String label, String icon, Color color) {
