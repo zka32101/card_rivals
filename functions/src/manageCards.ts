@@ -59,6 +59,16 @@ function rollCardCostTier(): number {
   return RARITY_ROLL_TABLE[0].cost;
 }
 
+// レア度(cost)に応じて固定のスキルを1つ付与する。N(cost1)はスキル無し。
+// lib/models/card_skill.dart の CardSkillId と同じ文字列表現・同じ対応表
+// （高レア度ほど強い効果 — レア度が「使えるスキルのすごさ」を表す）。
+function skillIdForCostTier(cost: number): string | null {
+  if (cost === 2 || cost === 3) return "guard_up"; // R
+  if (cost === 4) return "power_strike"; // SR
+  if (cost === 5) return "double_strike"; // UR
+  return null; // N
+}
+
 interface CreateCardRequest {
   attribute: string;
   attackPower: number;
@@ -86,6 +96,7 @@ export const createCard = onCall(
 
     // レア度（cost）はクライアントには選ばせず必ずここで抽選する。
     const cost = rollCardCostTier();
+    const skillId = skillIdForCostTier(cost);
     const budget = CARD_CREATION_BUDGET;
     if (!VALID_ATTRIBUTES.includes(data.attribute)) {
       throw new HttpsError("invalid-argument", "不正な属性です");
@@ -134,6 +145,7 @@ export const createCard = onCall(
         userId,
         attribute: data.attribute,
         cost,
+        skillId,
         attackPower,
         defensePower,
         speed,
@@ -159,7 +171,7 @@ export const createCard = onCall(
       return updatedBalance;
     });
 
-    return {success: true, cardId, newCoinBalance, cost};
+    return {success: true, cardId, newCoinBalance, cost, skillId};
   });
 
 // lib/models/user_card.dart の kMaxCardLevel / cardLevelUpCost と同じ値

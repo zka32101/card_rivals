@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../widgets/card_widget.dart';
 import '../widgets/card_reveal_dialog.dart';
 import '../models/user_card.dart';
+import '../models/card_skill.dart';
 import '../models/card_design_words.dart';
 import '../providers/auth_provider.dart';
 import '../providers/collection_provider.dart';
@@ -865,6 +866,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     final newCoinBalance = result['newCoinBalance'] as int;
     // レア度(cost)はサーバーのガチャ抽選結果を正とする（クライアントの仮値は使わない）。
     final serverCost = result['cost'] as int;
+    final serverSkillId = cardSkillIdFromString(result['skillId'] as String?);
     final wallet = ref.read(walletProvider);
     ref.read(walletProvider.notifier).state = wallet.copyWith(coinBalance: newCoinBalance);
 
@@ -879,6 +881,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       nameEn: '',
       imageUrl: imageUrl,
       coCreatorName: coCreatorName.isEmpty ? null : coCreatorName,
+      skillId: serverSkillId,
     );
 
     // サーバー側で既に永続化済みなので、ローカル状態にも楽観的に反映するだけでよい。
@@ -896,6 +899,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       createdAt: Timestamp.now(),
       coCreatorId: null,
       coCreatorName: newCard.coCreatorName,
+      skillId: newCard.skillId,
     );
     ref.read(myCardsProvider.notifier).state = [...ref.read(myCardsProvider), userCard];
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/card_skill.dart';
 import '../models/user_card.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
@@ -313,6 +314,10 @@ class _Header extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
+              if (card.skillId != null) ...[
+                Text(cardSkillIsPassive(card.skillId!) ? '🛡️' : '⚡', style: const TextStyle(fontSize: 11)),
+                const SizedBox(width: 2),
+              ],
               WaxSealBadge(text: '${card.cost}', color: accent, size: 20),
             ],
           ),

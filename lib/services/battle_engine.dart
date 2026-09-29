@@ -1,5 +1,6 @@
 import 'dart:math';
 import '../models/battle_models.dart';
+import '../models/card_skill.dart';
 import '../models/user_card.dart';
 
 // クライアント側フォールバック用のバトルシミュレーション。
@@ -162,13 +163,29 @@ class BattleEngine {
         attacker.getCardType() == 'attack' ? criticalChance + typeCriticalBonus : criticalChance;
     final isCritical = _random.nextDouble() < critChance;
 
-    final raw = (attacker.attackPower - defender.defensePower).toDouble();
+    // パッシブスキル: power_strike(攻撃側)は攻撃力、guard_up(防御側)は防御力を+15%する
+    // （functions/src/pvpBattle.ts の resolveAttack と同じ係数・同じロジック）。
+    final effectiveAttack = attacker.skillId == CardSkillId.powerStrike
+        ? attacker.attackPower * kSkillStatBonusMultiplier
+        : attacker.attackPower.toDouble();
+    final effectiveDefense = defender.skillId == CardSkillId.guardUp
+        ? defender.defensePower * kSkillStatBonusMultiplier
+        : defender.defensePower.toDouble();
+
+    final raw = effectiveAttack - effectiveDefense;
     var effectiveMultiplier = multiplier;
     if (isCritical) effectiveMultiplier *= criticalMultiplier;
     if (isShielded) effectiveMultiplier *= shieldDamageReduction;
-    final dmg = (raw * effectiveMultiplier).floor();
+    var dmg = (raw * effectiveMultiplier).floor();
+    dmg = dmg < 1 ? 1 : dmg; // 最低1ダメージ保証（回避時を除く）
+
+    // アクティブスキル: double_strike(攻撃側)は命中時20%の確率で追加50%ダメージ
+    if (attacker.skillId == CardSkillId.doubleStrike && _random.nextDouble() < kDoubleStrikeChance) {
+      dmg += (dmg * kDoubleStrikeBonus).floor();
+    }
+
     return (
-      damage: dmg < 1 ? 1 : dmg, // 最低1ダメージ保証（回避時を除く）
+      damage: dmg,
       isCritical: isCritical,
       isDodged: false,
       isShielded: isShielded,
