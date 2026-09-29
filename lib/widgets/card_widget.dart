@@ -92,6 +92,14 @@ class CardWidget extends StatelessWidget {
     final frameColor = isSelected ? Kingdom.gilt : rColor;
     final glowAlpha = isUR ? 0.55 : isSR ? 0.4 : isSelected ? 0.5 : 0.28;
     final glowRadius = isUR ? 16.0 : isSR ? 12.0 : isSelected ? 12.0 : 7.0;
+    // レアリティが高いほど枠を太くし、一覧上でも見分けやすくする
+    final rarityFrameWidth = switch (card.rarity) {
+      CardRarity.n => 1.8,
+      CardRarity.r => 2.4,
+      CardRarity.sr => 3.0,
+      CardRarity.ur => 3.6,
+    };
+    final frameWidth = isSelected ? rarityFrameWidth + 0.6 : rarityFrameWidth;
 
     return GestureDetector(
       onTap: onTap,
@@ -99,7 +107,7 @@ class CardWidget extends StatelessWidget {
         width: size,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: frameColor, width: isSelected ? 2.4 : 1.8),
+          border: Border.all(color: frameColor, width: frameWidth),
           gradient: LinearGradient(
             colors: [Kingdom.nightDeep, Kingdom.night],
             begin: Alignment.topCenter,
@@ -569,6 +577,13 @@ class CardThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = _attrPrimary(card.attribute);
     final rColor = rarityColor(card.rarity);
+    // レアリティが高いほど枠を太くし、一覧上でも見分けやすくする
+    final rarityFrameWidth = switch (card.rarity) {
+      CardRarity.n => 1.4,
+      CardRarity.r => 1.9,
+      CardRarity.sr => 2.4,
+      CardRarity.ur => 2.9,
+    };
 
     return GestureDetector(
       onTap: onTap,
@@ -581,7 +596,7 @@ class CardThumbnail extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isSelected ? Kingdom.gilt : accent,
-                width: isSelected ? 2.2 : 1.4,
+                width: isSelected ? rarityFrameWidth + 0.6 : rarityFrameWidth,
               ),
               gradient: LinearGradient(
                 colors: [Kingdom.nightDeep, Kingdom.night],
