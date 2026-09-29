@@ -41,6 +41,8 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
         backgroundColor: Kingdom.nightDeep,
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           indicatorColor: Kingdom.gilt,
           indicatorWeight: 2.0,
           labelColor: Kingdom.gilt,

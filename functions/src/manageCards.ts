@@ -13,8 +13,11 @@ import {getFirestore, FieldValue} from "firebase-admin/firestore";
 // このCloud Function側のトランザクションに一本化する。
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-// lib/screens/card_creation_screen_v2.dart の _budget と同じ値
-const BUDGET_BY_COST: Record<number, number> = {1: 20, 2: 25, 3: 30, 4: 35, 5: 40};
+// lib/providers/game_state_provider.dart の kCardCreationBudget と同じ値。
+// レア度に関わらずカード1枚あたりのパラメータ総予算は一律固定
+// （以前はレア度が高いほど予算も大きく、実質「常に最高レア度一択」になる
+// 設計だったため、価格・予算とも完全固定にした上でレア度自体はガチャ抽選にした）。
+const CARD_CREATION_BUDGET = 34;
 // 同ファイルの kParamBigHitBonusPercent / _rollParameters のロール幅（±2）と同じ値。
 // ガチャ演出が生成しうる合計値の範囲を超えるステータスは詐称とみなして拒否する。
 const BIG_HIT_BONUS_PERCENT = 0.15;
@@ -22,23 +25,42 @@ const ROLL_VARIANCE = 2;
 
 const VALID_ATTRIBUTES = ["joy", "anger", "sadness"];
 
-// lib/providers/game_state_provider.dart の kCardCreationCoinCostByTier /
+// lib/providers/game_state_provider.dart の kCardCreationCoinCost /
 // kVipCardCreationDiscount と同じ値
-const CARD_CREATION_COIN_COST_BY_TIER: Record<number, number> = {1: 80, 2: 120, 3: 160, 4: 220, 5: 300};
+const CARD_CREATION_COIN_COST = 100;
 const VIP_DISCOUNT = 0.2;
 
 // ウォレット未作成（初回アクセス前）の場合のデフォルト残高。
 // lib/providers/game_state_provider.dart の WalletState() のデフォルトと同じ値。
 const DEFAULT_COIN_BALANCE = 100;
 
-function cardCreationCoinCost(isVip: boolean, cost: number): number {
-  const base = CARD_CREATION_COIN_COST_BY_TIER[cost] ?? CARD_CREATION_COIN_COST_BY_TIER[1];
-  return isVip ? Math.round(base * (1 - VIP_DISCOUNT)) : base;
+function cardCreationCoinCost(isVip: boolean): number {
+  return isVip ? Math.round(CARD_CREATION_COIN_COST * (1 - VIP_DISCOUNT)) : CARD_CREATION_COIN_COST;
+}
+
+// カードのレア度（cost 1=N, 2=R, 4=SR, 5=UR。lib/models/user_card.dart の
+// PlayCard.rarity と同じ対応表）を確率で決めるガチャ抽選。
+// クライアントには選択させず、必ずサーバー側のこの抽選のみを信用する
+// （そうしないと改造クライアントが常に最高レア度を自己申告できてしまう）。
+const RARITY_ROLL_TABLE: Array<{cost: number; weight: number}> = [
+  {cost: 1, weight: 0.50}, // N
+  {cost: 2, weight: 0.35}, // R
+  {cost: 4, weight: 0.12}, // SR
+  {cost: 5, weight: 0.03}, // UR
+];
+
+function rollCardCostTier(): number {
+  const r = Math.random();
+  let acc = 0;
+  for (const entry of RARITY_ROLL_TABLE) {
+    acc += entry.weight;
+    if (r < acc) return entry.cost;
+  }
+  return RARITY_ROLL_TABLE[0].cost;
 }
 
 interface CreateCardRequest {
   attribute: string;
-  cost: number;
   attackPower: number;
   defensePower: number;
   speed: number;
@@ -62,11 +84,9 @@ export const createCard = onCall(
     }
     const userId = request.auth.uid;
 
-    const cost = data.cost;
-    const budget = BUDGET_BY_COST[cost];
-    if (!budget) {
-      throw new HttpsError("invalid-argument", "不正なコスト帯です");
-    }
+    // レア度（cost）はクライアントには選ばせず必ずここで抽選する。
+    const cost = rollCardCostTier();
+    const budget = CARD_CREATION_BUDGET;
     if (!VALID_ATTRIBUTES.includes(data.attribute)) {
       throw new HttpsError("invalid-argument", "不正な属性です");
     }
@@ -84,11 +104,11 @@ export const createCard = onCall(
     if (total < minTotal || total > maxTotal) {
       throw new HttpsError(
         "invalid-argument",
-        "ステータス値がコスト帯の予算範囲外です"
+        "ステータス値が予算範囲外です"
       );
     }
 
-    const coinCost = cardCreationCoinCost(data.isVip === true, cost);
+    const coinCost = cardCreationCoinCost(data.isVip === true);
     const cardId = `created_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
     const cardNameJp = (data.cardNameJp ?? "").trim() || "無名のカード";
     const cardNameEn = (data.cardNameEn ?? "").trim() || cardNameJp;
@@ -139,7 +159,7 @@ export const createCard = onCall(
       return updatedBalance;
     });
 
-    return {success: true, cardId, newCoinBalance};
+    return {success: true, cardId, newCoinBalance, cost};
   });
 
 // lib/models/user_card.dart の kMaxCardLevel / cardLevelUpCost と同じ値

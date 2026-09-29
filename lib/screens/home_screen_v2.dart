@@ -271,10 +271,29 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _SectionHeader(title: t.home_yourCardsHeader),
-                    TextButton.icon(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CollectionScreen())),
-                      icon: const Icon(Icons.grid_view, size: 14, color: Kingdom.gilt),
-                      label: Text(t.home_viewAllButton, style: TextStyle(fontSize: 12, color: Kingdom.gilt)),
+                    Material(
+                      color: Kingdom.gilt.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CollectionScreen())),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.grid_view, size: 16, color: Kingdom.gilt),
+                              const SizedBox(width: 6),
+                              Text(
+                                t.home_viewAllButton,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Kingdom.gilt),
+                              ),
+                              const SizedBox(width: 2),
+                              const Icon(Icons.chevron_right, size: 16, color: Kingdom.gilt),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

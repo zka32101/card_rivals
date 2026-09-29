@@ -243,7 +243,7 @@ class _CardGrid extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 0.62,
+        childAspectRatio: 0.5,
       ),
       itemCount: cards.length,
       itemBuilder: (context, i) {
