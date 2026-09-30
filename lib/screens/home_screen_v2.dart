@@ -154,15 +154,21 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
       ),
       body: Stack(
         children: [
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Kingdom.night, Kingdom.nightDeep],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+          Positioned.fill(
+            child: Image.asset(
+              'assets/theme/screen_background.png',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Kingdom.night, Kingdom.nightDeep],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: SizedBox.expand(),
               ),
             ),
-            child: SizedBox.expand(),
           ),
           const Positioned.fill(child: EmotionMoteField()),
           RefreshIndicator(

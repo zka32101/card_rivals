@@ -56,6 +56,14 @@ String _attrEmoji(String? a) => switch (a) {
       _ => '⭐',
     };
 
+// 属性オーブ画像（AI生成アセット）。カード画像未生成時のプレースホルダーで使う。
+String _attrOrbAsset(String? a) => switch (a) {
+      'joy' => 'assets/theme/orb_joy.png',
+      'anger' => 'assets/theme/orb_anger.png',
+      'sadness' => 'assets/theme/orb_sadness.png',
+      _ => 'assets/theme/orb_joy.png',
+    };
+
 // 属性ラベル文字（喜/怒/哀）。既存キー card_attack/defense/speed と同様、
 // attribute_joy/anger/sadness（app_ja.arb / app_en.arb 既存）を再利用する。
 String _attrLabel(AppLocalizations t, String? a) => switch (a) {
@@ -397,7 +405,6 @@ class _ArtPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final emoji = _attrEmoji(card.attribute);
     final attrColor = _attrPrimary(card.attribute);
     return Container(
       decoration: BoxDecoration(
@@ -411,11 +418,16 @@ class _ArtPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(emoji,
-                style: TextStyle(
-                  fontSize: 48,
-                  shadows: [Shadow(color: attrColor.withValues(alpha: 0.7), blurRadius: 14)],
-                )),
+            Image.asset(
+              _attrOrbAsset(card.attribute),
+              width: 56,
+              height: 56,
+              errorBuilder: (_, __, ___) => Text(_attrEmoji(card.attribute),
+                  style: TextStyle(
+                    fontSize: 48,
+                    shadows: [Shadow(color: attrColor.withValues(alpha: 0.7), blurRadius: 14)],
+                  )),
+            ),
             const SizedBox(height: 8),
             Text(Kingdom.attributeRealm(card.attribute),
                 textAlign: TextAlign.center,

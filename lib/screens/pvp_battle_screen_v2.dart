@@ -400,15 +400,25 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
     final t = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Kingdom.nightDeep,
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Kingdom.nightDeep, Kingdom.night, Kingdom.nightDeep],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/theme/screen_background.png',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Kingdom.nightDeep, Kingdom.night, Kingdom.nightDeep],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: SizedBox.expand(),
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
+          SafeArea(
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -475,7 +485,8 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
               ],
             ),
           ),
-        ),
+          ),
+        ],
       ),
     );
   }
