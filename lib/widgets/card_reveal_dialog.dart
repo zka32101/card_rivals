@@ -150,19 +150,26 @@ class _CardRevealDialogState extends State<CardRevealDialog>
                               tier: _tier,
                             ),
                           ),
-                        Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.001)
-                            ..rotateY(angle),
-                          child: isFront
-                              ? Transform(
-                                  alignment: Alignment.center,
-                                  transform: Matrix4.identity()..rotateY(math.pi),
-                                  child: _buildFront(),
-                                )
-                              : _buildBack(rColor),
-                        ),
+                        // フリップ完了後は3D Transformを外して素の状態で描画する。
+                        // 回転Transform配下でImage.networkを合成し続けると、Impellerで
+                        // 画像が白いまま固まって二度と再合成されないことがあるため
+                        // （実機検証で確認）、静止後は通常のウィジェットツリーに戻す。
+                        if (_flipController.isCompleted)
+                          _buildFront()
+                        else
+                          Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.identity()
+                              ..setEntry(3, 2, 0.001)
+                              ..rotateY(angle),
+                            child: isFront
+                                ? Transform(
+                                    alignment: Alignment.center,
+                                    transform: Matrix4.identity()..rotateY(math.pi),
+                                    child: _buildFront(),
+                                  )
+                                : _buildBack(rColor),
+                          ),
                       ],
                     );
                   },
