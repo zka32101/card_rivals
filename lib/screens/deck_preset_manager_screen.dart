@@ -11,10 +11,18 @@ class DeckPresetManagerScreen extends ConsumerStatefulWidget {
   /// 保存モードの場合、現在のカードリストを渡す
   final List<String>? currentCardIds;
 
+  /// 呼び出し元（デッキ選択画面）が直近で読み込んだプリセット。
+  /// 指定されている場合、「新規保存」に加えて「このプリセットを上書き」も
+  /// 提示する（プリセットを選択→編集→保存、を1つのプリセットに対して行えるように）。
+  final String? editingPresetId;
+  final String? editingPresetName;
+
   const DeckPresetManagerScreen({
     super.key,
     this.onPresetSelected,
     this.currentCardIds,
+    this.editingPresetId,
+    this.editingPresetName,
   });
 
   @override
@@ -129,6 +137,32 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
         ],
       ),
     );
+  }
+
+  // 読み込み元プリセットに現在のデッキ内容をそのまま上書き保存する
+  // （名前・説明は変更しない。プリセットの「編集」フロー用）
+  Future<void> _overwriteEditingPreset() async {
+    final presetId = widget.editingPresetId;
+    if (presetId == null) return;
+    try {
+      await saveDeckPreset(
+        ref,
+        name: widget.editingPresetName ?? '',
+        cardIds: widget.currentCardIds ?? [],
+        existingPresetId: presetId,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('「${widget.editingPresetName}」を更新しました')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラー: $e')),
+        );
+      }
+    }
   }
 
   void _showDeleteConfirmDialog(DeckPreset preset) {
@@ -266,6 +300,21 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
         ),
         data: (presets) => Column(
           children: [
+            // 上書き保存ボタン（プリセットを読み込んで編集中の場合のみ）
+            if (widget.currentCardIds != null && widget.editingPresetId != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                child: ElevatedButton.icon(
+                  onPressed: _overwriteEditingPreset,
+                  icon: const Icon(Icons.edit),
+                  label: Text('「${widget.editingPresetName}」を上書き保存'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Kingdom.sadnessIndigo,
+                    foregroundColor: Kingdom.parchment,
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                ),
+              ),
             // 保存ボタン（カード選択中の場合のみ）
             if (widget.currentCardIds != null)
               Padding(

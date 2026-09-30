@@ -30,6 +30,11 @@ class DeckSelectionScreenV2 extends ConsumerStatefulWidget {
 class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
   late List<PlayCard> _selected;
   String? _attrFilter;
+  // 直近で読み込んだプリセット（編集中の対象）。読み込み後にカードを
+  // 入れ替えても保持し続け、保存時に「このプリセットを上書き」を選べるようにする
+  // （プリセットの「選択して編集」を成立させるための状態）。
+  String? _loadedPresetId;
+  String? _loadedPresetName;
 
   @override
   void initState() {
@@ -293,6 +298,8 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
         builder: (_) => DeckPresetManagerScreen(
           currentCardIds: _selected.map((c) => c.cardId).toList(),
           onPresetSelected: _applyPreset,
+          editingPresetId: _loadedPresetId,
+          editingPresetName: _loadedPresetName,
         ),
       ),
     );
@@ -315,7 +322,11 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
       if (resolved.length >= widget.maxCards) break;
     }
 
-    setState(() => _selected = resolved);
+    setState(() {
+      _selected = resolved;
+      _loadedPresetId = preset.id;
+      _loadedPresetName = preset.name;
+    });
 
     if (missingCount > 0 || preset.cardIds.length > widget.maxCards) {
       ScaffoldMessenger.of(context).showSnackBar(
