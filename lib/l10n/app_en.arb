@@ -820,5 +820,10 @@
   "explanation_page7Detail1": "You earn 40% of the rental fee",
   "explanation_page7Detail2": "Rental earnings accumulate monthly",
   "explanation_page7Detail3": "Toggle Public to make cards available for rental",
+  "explanation_page8Title": "Card Skills",
+  "explanation_page8Description": "Some cards carry a special skill, sometimes chosen when the card is created. There are two kinds: passives that are always active, and actives that trigger with a chance.",
+  "explanation_page8Detail1": "Passive \"Power Strike\": +15% attack power when attacking",
+  "explanation_page8Detail2": "Passive \"Guard Up\": +15% defense power when defending",
+  "explanation_page8Detail3": "Active \"Double Strike\": 20% chance to deal +50% bonus damage when attacking",
   "home_explanationTooltip": "Game Guide"
 }

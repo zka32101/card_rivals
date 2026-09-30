@@ -99,6 +99,18 @@ class _ExplanationScreenState extends State<ExplanationScreen> {
         t.explanation_page7Detail3,
       ],
     ),
+    _ExplanationPage(
+      title: '✨ ${t.explanation_page8Title}',
+      description: t.explanation_page8Description,
+      icon: '✨',
+      imageId: 'page8_skills',
+      color: Kingdom.gilt,
+      details: [
+        t.explanation_page8Detail1,
+        t.explanation_page8Detail2,
+        t.explanation_page8Detail3,
+      ],
+    ),
   ];
 
   @override
