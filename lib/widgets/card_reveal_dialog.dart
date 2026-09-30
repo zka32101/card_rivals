@@ -230,11 +230,6 @@ class _CardRevealDialogState extends State<CardRevealDialog>
       width: 170,
       height: 238,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Kingdom.sadnessIndigo, Kingdom.sadnessIndigoDeep],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Kingdom.gilt, width: 2),
         boxShadow: [
@@ -246,8 +241,24 @@ class _CardRevealDialogState extends State<CardRevealDialog>
                 spreadRadius: 2 + _tier * 2),
         ],
       ),
-      child: Center(
-        child: Text(_tier >= 2 ? '👑' : '🎴', style: const TextStyle(fontSize: 64)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.asset(
+          'assets/theme/card_back.png',
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Kingdom.sadnessIndigo, Kingdom.sadnessIndigoDeep],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Center(
+              child: Text(_tier >= 2 ? '👑' : '🎴', style: const TextStyle(fontSize: 64)),
+            ),
+          ),
+        ),
       ),
     );
   }

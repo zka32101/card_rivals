@@ -22,7 +22,16 @@ interface CardInput {
   attackPower: number;
   defensePower: number;
   speed: number;
+  // 作成時にレア度に応じて付与されたスキル（null = スキル無し）。
+  // lib/models/card_skill.dart の CardSkillId と同じ文字列表現。
+  skillId?: string | null;
 }
+
+// スキル効果の係数。lib/models/card_skill.dart の同名定数と同じ値
+// （クライアント側フォールバック battle_engine.dart もこの値を使う）。
+const SKILL_STAT_BONUS_MULTIPLIER = 1.15; // guard_up / power_strike
+const DOUBLE_STRIKE_CHANCE = 0.2;
+const DOUBLE_STRIKE_BONUS = 0.5;
 
 // カード育成（特訓）のレベルボーナス。lib/models/user_card.dart の
 // kCardLevelAttackBonus/kCardLevelDefenseBonus/kCardLevelSpeedBonus と同じ値。
@@ -50,6 +59,7 @@ async function resolveCustomCard(ownerUid: string, cardId: string): Promise<Card
     attackPower: (data.attackPower ?? 0) + level * CARD_LEVEL_ATTACK_BONUS,
     defensePower: (data.defensePower ?? 0) + level * CARD_LEVEL_DEFENSE_BONUS,
     speed: (data.speed ?? 0) + level * CARD_LEVEL_SPEED_BONUS,
+    skillId: data.skillId ?? null,
   };
 }
 
@@ -74,6 +84,9 @@ async function resolveRentedCard(renterUid: string, cardId: string): Promise<Car
     attackPower: data.attackPower ?? 0,
     defensePower: data.defensePower ?? 0,
     speed: data.speed ?? 0,
+    // レンタル契約スナップショット(rentCard.ts)はskillIdを保存していないため、
+    // レンタル中カードのスキルは常に無効（見た目のみ引き継ぎ、対戦効果は不発）。
+    skillId: data.skillId ?? null,
   };
 }
 
@@ -199,12 +212,25 @@ function resolveAttack(attacker: CardInput, defender: CardInput, multiplier: num
   const critChance = getCardType(attacker) === "attack" ? CRITICAL_CHANCE + TYPE_CRITICAL_BONUS : CRITICAL_CHANCE;
   const isCritical = Math.random() < critChance;
 
-  const raw = attacker.attackPower - defender.defensePower;
+  // パッシブスキル: power_strike(攻撃側)は攻撃力、guard_up(防御側)は防御力を+15%する
+  const effectiveAttack = attacker.skillId === "power_strike" ?
+    attacker.attackPower * SKILL_STAT_BONUS_MULTIPLIER : attacker.attackPower;
+  const effectiveDefense = defender.skillId === "guard_up" ?
+    defender.defensePower * SKILL_STAT_BONUS_MULTIPLIER : defender.defensePower;
+
+  const raw = effectiveAttack - effectiveDefense;
   let effectiveMultiplier = multiplier;
   if (isCritical) effectiveMultiplier *= CRITICAL_MULTIPLIER;
   if (isShielded) effectiveMultiplier *= SHIELD_DAMAGE_REDUCTION;
-  const dmg = Math.floor(raw * effectiveMultiplier);
-  return {damage: dmg < 1 ? 1 : dmg, isCritical, isDodged: false, isShielded};
+  let dmg = Math.floor(raw * effectiveMultiplier);
+  dmg = dmg < 1 ? 1 : dmg;
+
+  // アクティブスキル: double_strike(攻撃側)は命中時20%の確率で追加50%ダメージ
+  if (attacker.skillId === "double_strike" && Math.random() < DOUBLE_STRIKE_CHANCE) {
+    dmg += Math.floor(dmg * DOUBLE_STRIKE_BONUS);
+  }
+
+  return {damage: dmg, isCritical, isDodged: false, isShielded};
 }
 
 function simulateBattle(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'card_skill.dart';
 
 // カード育成（特訓）システム
 // レベルはcopyWith可能な進捗値としてFirestoreに保存し、実数値への反映は
@@ -46,6 +47,9 @@ class UserCard {
   // 累計レンタル回数・累計レンタル収益（rentCard Cloud FunctionがAdmin SDK経由で更新する）
   final int totalRentalCount;
   final int totalRentalEarnings;
+  // 作成時にレア度に応じて付与されたスキル（null = スキル無し／N）。
+  // manageCards.ts のガチャ抽選と同時にサーバー側で決まり、後から変更されない。
+  final CardSkillId? skillId;
 
   UserCard({
     required this.cardId,
@@ -72,6 +76,7 @@ class UserCard {
     this.rentalCostPerDay = 50,
     this.totalRentalCount = 0,
     this.totalRentalEarnings = 0,
+    this.skillId,
   });
 
   String get nameJp => cardName['jp'] ?? '';
@@ -118,6 +123,7 @@ class UserCard {
     'rentalCostPerDay': rentalCostPerDay,
     'totalRentalCount': totalRentalCount,
     'totalRentalEarnings': totalRentalEarnings,
+    'skillId': skillId != null ? cardSkillIdToString(skillId!) : null,
   };
 
   factory UserCard.fromMap(Map<String, dynamic> map) => UserCard(
@@ -145,6 +151,7 @@ class UserCard {
     rentalCostPerDay: map['rentalCostPerDay'] ?? 50,
     totalRentalCount: map['totalRentalCount'] ?? 0,
     totalRentalEarnings: map['totalRentalEarnings'] ?? 0,
+    skillId: cardSkillIdFromString(map['skillId'] as String?),
   );
 
   UserCard copyWith({
@@ -186,6 +193,7 @@ class UserCard {
       rentalCostPerDay: rentalCostPerDay ?? this.rentalCostPerDay,
       totalRentalCount: totalRentalCount ?? this.totalRentalCount,
       totalRentalEarnings: totalRentalEarnings ?? this.totalRentalEarnings,
+      skillId: skillId,
     );
   }
 
@@ -204,6 +212,7 @@ class UserCard {
         isSeedCard: false,
         coCreatorName: coCreatorName,
         level: level,
+        skillId: skillId,
       );
 }
 
@@ -232,6 +241,8 @@ class PlayCard {
   // battleEligibleCardsProvider（collection_provider.dart）が有効なレンタル記録から
   // 生成するもので、通常はこのフラグを手動でtrueにしない。
   final bool isRented;
+  // 作成時にレア度に応じて付与されたスキル（null = スキル無し／N、シードカードも常にnull）。
+  final CardSkillId? skillId;
 
   PlayCard({
     required this.cardId,
@@ -247,6 +258,7 @@ class PlayCard {
     this.coCreatorName,
     this.level = 0,
     this.isRented = false,
+    this.skillId,
   });
 
   bool get isCoCreated => coCreatorName != null && coCreatorName!.isNotEmpty;

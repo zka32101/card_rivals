@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../models/card_skill.dart';
 import '../models/user_card.dart';
 import '../providers/collection_provider.dart';
 import '../providers/game_state_provider.dart';
@@ -127,6 +128,11 @@ class CardDetailSheet extends ConsumerWidget {
             ),
           ),
 
+          if (displayCard.skillId != null) ...[
+            const SizedBox(height: Kingdom.spaceLg),
+            _SkillSection(skillId: displayCard.skillId!, accent: rc),
+          ],
+
           if (liveCard != null) ...[
             const SizedBox(height: Kingdom.spaceLg),
             _TrainingSection(card: liveCard),
@@ -188,6 +194,70 @@ class CardDetailSheet extends ConsumerWidget {
         'anger' => t.collection_weakAgainst('☀️ ${t.attribute_joy}'),
         _ => t.collection_weakAgainst('🔥 ${t.attribute_anger}'),
       };
+}
+
+String _skillName(AppLocalizations t, CardSkillId id) => switch (id) {
+      CardSkillId.guardUp => t.cardSkill_guardUpName,
+      CardSkillId.powerStrike => t.cardSkill_powerStrikeName,
+      CardSkillId.doubleStrike => t.cardSkill_doubleStrikeName,
+    };
+
+String _skillDesc(AppLocalizations t, CardSkillId id) => switch (id) {
+      CardSkillId.guardUp => t.cardSkill_guardUpDesc,
+      CardSkillId.powerStrike => t.cardSkill_powerStrikeDesc,
+      CardSkillId.doubleStrike => t.cardSkill_doubleStrikeDesc,
+    };
+
+// カードスキル（パッシブ/アクティブ）表示セクション
+class _SkillSection extends StatelessWidget {
+  final CardSkillId skillId;
+  final Color accent;
+  const _SkillSection({required this.skillId, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final isPassive = cardSkillIsPassive(skillId);
+    return OrnateFrame(
+      accent: accent,
+      padding: const EdgeInsets.all(Kingdom.spaceMd),
+      child: Row(
+        children: [
+          Text(isPassive ? '🛡️' : '⚡', style: const TextStyle(fontSize: 22)),
+          const SizedBox(width: Kingdom.spaceMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(_skillName(t, skillId),
+                        style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: accent.withValues(alpha: 0.5)),
+                      ),
+                      child: Text(
+                        isPassive ? t.cardSkill_passiveLabel : t.cardSkill_activeLabel,
+                        style: TextStyle(color: accent, fontSize: 9, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(_skillDesc(t, skillId),
+                    style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.65), fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // マイカード限定の特訓（レベルアップ）UI。コインを払って恒久的にステータスを底上げする。

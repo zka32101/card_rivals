@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/card_skill.dart';
 import '../models/user_card.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
@@ -55,6 +56,14 @@ String _attrEmoji(String? a) => switch (a) {
       _ => '⭐',
     };
 
+// 属性オーブ画像（AI生成アセット）。カード画像未生成時のプレースホルダーで使う。
+String _attrOrbAsset(String? a) => switch (a) {
+      'joy' => 'assets/theme/orb_joy.png',
+      'anger' => 'assets/theme/orb_anger.png',
+      'sadness' => 'assets/theme/orb_sadness.png',
+      _ => 'assets/theme/orb_joy.png',
+    };
+
 // 属性ラベル文字（喜/怒/哀）。既存キー card_attack/defense/speed と同様、
 // attribute_joy/anger/sadness（app_ja.arb / app_en.arb 既存）を再利用する。
 String _attrLabel(AppLocalizations t, String? a) => switch (a) {
@@ -92,6 +101,14 @@ class CardWidget extends StatelessWidget {
     final frameColor = isSelected ? Kingdom.gilt : rColor;
     final glowAlpha = isUR ? 0.55 : isSR ? 0.4 : isSelected ? 0.5 : 0.28;
     final glowRadius = isUR ? 16.0 : isSR ? 12.0 : isSelected ? 12.0 : 7.0;
+    // レアリティが高いほど枠を太くし、一覧上でも見分けやすくする
+    final rarityFrameWidth = switch (card.rarity) {
+      CardRarity.n => 1.8,
+      CardRarity.r => 2.4,
+      CardRarity.sr => 3.0,
+      CardRarity.ur => 3.6,
+    };
+    final frameWidth = isSelected ? rarityFrameWidth + 0.6 : rarityFrameWidth;
 
     return GestureDetector(
       onTap: onTap,
@@ -99,7 +116,7 @@ class CardWidget extends StatelessWidget {
         width: size,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: frameColor, width: isSelected ? 2.4 : 1.8),
+          border: Border.all(color: frameColor, width: frameWidth),
           gradient: LinearGradient(
             colors: [Kingdom.nightDeep, Kingdom.night],
             begin: Alignment.topCenter,
@@ -305,6 +322,10 @@ class _Header extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
+              if (card.skillId != null) ...[
+                Text(cardSkillIsPassive(card.skillId!) ? '🛡️' : '⚡', style: const TextStyle(fontSize: 11)),
+                const SizedBox(width: 2),
+              ],
               WaxSealBadge(text: '${card.cost}', color: accent, size: 20),
             ],
           ),
@@ -384,7 +405,6 @@ class _ArtPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final emoji = _attrEmoji(card.attribute);
     final attrColor = _attrPrimary(card.attribute);
     return Container(
       decoration: BoxDecoration(
@@ -398,11 +418,16 @@ class _ArtPlaceholder extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(emoji,
-                style: TextStyle(
-                  fontSize: 48,
-                  shadows: [Shadow(color: attrColor.withValues(alpha: 0.7), blurRadius: 14)],
-                )),
+            Image.asset(
+              _attrOrbAsset(card.attribute),
+              width: 56,
+              height: 56,
+              errorBuilder: (_, __, ___) => Text(_attrEmoji(card.attribute),
+                  style: TextStyle(
+                    fontSize: 48,
+                    shadows: [Shadow(color: attrColor.withValues(alpha: 0.7), blurRadius: 14)],
+                  )),
+            ),
             const SizedBox(height: 8),
             Text(Kingdom.attributeRealm(card.attribute),
                 textAlign: TextAlign.center,
@@ -569,6 +594,13 @@ class CardThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = _attrPrimary(card.attribute);
     final rColor = rarityColor(card.rarity);
+    // レアリティが高いほど枠を太くし、一覧上でも見分けやすくする
+    final rarityFrameWidth = switch (card.rarity) {
+      CardRarity.n => 1.4,
+      CardRarity.r => 1.9,
+      CardRarity.sr => 2.4,
+      CardRarity.ur => 2.9,
+    };
 
     return GestureDetector(
       onTap: onTap,
@@ -581,7 +613,7 @@ class CardThumbnail extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isSelected ? Kingdom.gilt : accent,
-                width: isSelected ? 2.2 : 1.4,
+                width: isSelected ? rarityFrameWidth + 0.6 : rarityFrameWidth,
               ),
               gradient: LinearGradient(
                 colors: [Kingdom.nightDeep, Kingdom.night],

@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../widgets/card_widget.dart';
 import '../widgets/card_reveal_dialog.dart';
 import '../models/user_card.dart';
+import '../models/card_skill.dart';
 import '../models/card_design_words.dart';
 import '../providers/auth_provider.dart';
 import '../providers/collection_provider.dart';
@@ -27,8 +28,14 @@ class CardCreationScreenV2 extends ConsumerStatefulWidget {
 class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
   int _step = 0;
   final List<String> _selectedDesignWords = []; // カードデザイン選択
+  String _designSearchQuery = ''; // 言葉検索フィルタ
+  String? _designCategoryFilter; // null = 全カテゴリ
   String? _attribute;
-  int? _cost;
+  // レア度(cost)はプレイヤーには選ばせない。サーバー側のcreateCard Cloud Functionが
+  // ガチャ抽選で決定する（改造クライアントが最高レア度を自己申告できないようにする
+  // ため）。ここでの値は作成完了前のプレビュー演出専用の仮値で、実際に付与される
+  // レア度はサーバーからのレスポンス(result['cost'])を正とする。
+  final int _cost = 1;
   int _attack = 0;
   int _defense = 0;
   int _speed = 0;
@@ -45,12 +52,12 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
   int _rerollsUsed = 0;
   final _random = Random();
 
-  // パラメータ総数: 最小30～最大40 のバランス
-  int get _budget => switch (_cost ?? 1) { 1 => 30, 2 => 32, 3 => 34, 4 => 36, _ => 38 };
+  // パラメータ総数: レア度に関わらず一律固定
+  int get _budget => kCardCreationBudget;
   // build内(Widgetツリー構築中)でのみ使用。ref.watchはbuildフェーズ外(onPressed等)から
   // 呼ぶとエラーになるため、イベントハンドラー側では ref.read(vipStatusProvider) を直接使うこと。
   bool get _isVipWatched => ref.watch(vipStatusProvider).valueOrNull ?? false;
-  int get _creationCostWatched => cardCreationCoinCost(isVip: _isVipWatched, cost: _cost ?? 1);
+  int get _creationCostWatched => cardCreationCoinCost(isVip: _isVipWatched);
   bool get _isParamValid => _hasRolled;
   int get _remainingRerolls => kParamRerollMaxCount - _rerollsUsed;
 
@@ -76,7 +83,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
-                value: (_step + 1) / 6,
+                value: (_step + 1) / 5,
                 backgroundColor: Kingdom.night,
                 valueColor: const AlwaysStoppedAnimation<Color>(Kingdom.gilt),
                 minHeight: 4,
@@ -95,7 +102,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
             Padding(
               padding: const EdgeInsets.all(Kingdom.spaceLg),
               child: Row(
-                children: List.generate(6, (i) {
+                children: List.generate(5, (i) {
                   final isActive = i == _step;
                   final isDone = i < _step;
                   final stepColor = isDone ? Kingdom.joyGold : isActive ? Kingdom.gilt : Kingdom.bronze.withValues(alpha: 0.4);
@@ -126,7 +133,6 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                           [
                             t.cardCreation_stepDesign,
                             t.cardCreation_stepAttribute,
-                            t.cardCreation_stepCost,
                             t.cardCreation_stepParameters,
                             t.cardCreation_stepTone,
                             t.cardCreation_stepNaming,
@@ -148,10 +154,9 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                 child: switch (_step) {
                   0 => _buildDesignStep(t),
                   1 => _buildAttributeStep(t),
-                  2 => _buildCostStep(t),
-                  3 => _buildParameterStep(t),
-                  4 => _buildToneStep(t),
-                  5 => _buildNamingStep(t),
+                  2 => _buildParameterStep(t),
+                  3 => _buildToneStep(t),
+                  4 => _buildNamingStep(t),
                   _ => const SizedBox.shrink(),
                 },
               ),
@@ -231,7 +236,57 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
           ),
           const SizedBox(height: Kingdom.spaceLg),
         ],
-        GridView.builder(
+        // 検索フィルタ
+        TextField(
+          style: TextStyle(color: Kingdom.parchment),
+          decoration: InputDecoration(
+            hintText: t.cardCreation_designSearchHint,
+            hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.4)),
+            prefixIcon: Icon(Icons.search, color: Kingdom.parchment.withValues(alpha: 0.5)),
+            filled: true,
+            fillColor: Kingdom.nightDeep,
+            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: Kingdom.spaceMd),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Kingdom.parchment.withValues(alpha: 0.15)),
+            ),
+          ),
+          onChanged: (v) => setState(() => _designSearchQuery = v.trim()),
+        ),
+        const SizedBox(height: Kingdom.spaceSm),
+        // カテゴリフィルタ
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildCategoryChip(null, t.cardCreation_designCategoryAll),
+              for (final category in kCardDesignWordsByCategory.keys) ...[
+                const SizedBox(width: 6),
+                _buildCategoryChip(category, category),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: Kingdom.spaceMd),
+        Builder(builder: (context) {
+          final pool = _designCategoryFilter == null
+              ? kCardDesignWords
+              : kCardDesignWordsByCategory[_designCategoryFilter]!;
+          final filteredWords = _designSearchQuery.isEmpty
+              ? pool
+              : pool.where((w) => w.contains(_designSearchQuery)).toList();
+          if (filteredWords.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: Kingdom.spaceXl),
+              child: Center(
+                child: Text(
+                  t.cardCreation_designNoResults,
+                  style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
+                ),
+              ),
+            );
+          }
+          return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -240,9 +295,9 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
             mainAxisSpacing: 6,
             childAspectRatio: 1.6,
           ),
-          itemCount: kCardDesignWords.length,
+          itemCount: filteredWords.length,
           itemBuilder: (context, index) {
-            final word = kCardDesignWords[index];
+            final word = filteredWords[index];
             final isSelected = _selectedDesignWords.contains(word);
             final canSelect = !isSelected && _selectedDesignWords.length < 3;
 
@@ -279,8 +334,32 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
               ),
             );
           },
-        ),
+        );
+        }),
       ],
+    );
+  }
+
+  Widget _buildCategoryChip(String? category, String label) {
+    final isActive = _designCategoryFilter == category;
+    return GestureDetector(
+      onTap: () => setState(() => _designCategoryFilter = category),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? Kingdom.gilt : Kingdom.nightDeep,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isActive ? Kingdom.gilt : Kingdom.parchment.withValues(alpha: 0.2)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            color: isActive ? Kingdom.night : Kingdom.parchment.withValues(alpha: 0.8),
+          ),
+        ),
+      ),
     );
   }
 
@@ -321,62 +400,6 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                       ),
                     ),
                     if (isSelected) Icon(Icons.check_circle, color: item.$4),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildCostStep(AppLocalizations t) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildStepTitle(t.cardCreation_costStepTitle, t.cardCreation_costStepSub),
-        ...List.generate(5, (i) {
-          final c = i + 1;
-          final budget = switch (c) { 1 => 20, 2 => 25, 3 => 30, 4 => 35, _ => 40 };
-          final isSelected = _cost == c;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: Kingdom.spaceMd),
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _cost = c;
-                  _attack = 0;
-                  _defense = 0;
-                  _speed = 0;
-                  _hasRolled = false;
-                  _isBigHit = false;
-                  _rerollsUsed = 0;
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: isSelected ? Kingdom.gilt.withValues(alpha: 0.12) : Kingdom.nightDeep,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isSelected ? Kingdom.gilt : Kingdom.parchment.withValues(alpha: 0.15), width: isSelected ? 2 : 1),
-                ),
-                child: Row(
-                  children: [
-                    Text(List.generate(c, (_) => '★').join(), style: const TextStyle(fontSize: 18, color: Kingdom.gilt)),
-                    const SizedBox(width: Kingdom.spaceMd),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(t.cardCreation_costLabel(c), style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.parchment)),
-                          Text(t.cardCreation_costBudget(budget), style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.5))),
-                          Text(t.cardCreation_costPrice(cardCreationCoinCost(isVip: _isVipWatched, cost: c)),
-                              style: TextStyle(fontSize: 12, color: Kingdom.gilt.withValues(alpha: 0.8))),
-                        ],
-                      ),
-                    ),
-                    if (isSelected) const Icon(Icons.check_circle, color: Kingdom.gilt),
                   ],
                 ),
               ),
@@ -507,7 +530,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                 card: PlayCard(
                   cardId: 'preview',
                   attribute: _attribute ?? 'joy',
-                  cost: _cost ?? 1,
+                  cost: _cost,
                   attackPower: _attack,
                   defensePower: _defense,
                   speed: _speed,
@@ -704,22 +727,17 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       case 2:
         return RoyalButton(
           label: t.cardCreation_next,
-          onPressed: _cost != null ? () => setState(() => _step = 3) : null,
+          onPressed: _isParamValid ? () => setState(() => _step = 3) : null,
         );
       case 3:
         return RoyalButton(
-          label: t.cardCreation_next,
-          onPressed: _isParamValid ? () => setState(() => _step = 4) : null,
-        );
-      case 4:
-        return RoyalButton(
           label: t.cardCreation_generateNameButton,
           onPressed: () {
-            setState(() => _step = 5);
+            setState(() => _step = 4);
             _generateNames();
           },
         );
-      case 5:
+      case 4:
         return RoyalButton(
           label: t.cardCreation_createForCoins(_creationCostWatched),
           accent: Kingdom.angerCrimson,
@@ -742,7 +760,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     try {
       final names = await FunctionsService.generateCardName(
         attribute: _attribute ?? 'joy',
-        cost: _cost ?? 1,
+        cost: _cost,
         attack: _attack,
         defense: _defense,
         speed: _speed,
@@ -776,7 +794,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     final t = AppLocalizations.of(context)!;
     final wallet = ref.read(walletProvider);
     final isVip = ref.read(vipStatusProvider).valueOrNull ?? false;
-    final cost = cardCreationCoinCost(isVip: isVip, cost: _cost ?? 1);
+    final cost = cardCreationCoinCost(isVip: isVip);
     if (wallet.coinBalance < cost) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -832,7 +850,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
   Future<void> _processPurchase() async {
     final wallet = ref.read(walletProvider);
     final isVip = ref.read(vipStatusProvider).valueOrNull ?? false;
-    final cost = cardCreationCoinCost(isVip: isVip, cost: _cost ?? 1);
+    final cost = cardCreationCoinCost(isVip: isVip);
     if (wallet.coinBalance < cost) {
       // _confirmAndPay側で確認済みだが、確認ダイアログ表示中の消費と競合した場合の保険
       return;
@@ -854,7 +872,6 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
         barrierDismissible: false,
         builder: (_) => _ImageGenLoadingDialog(
           attribute: _attribute ?? 'joy',
-          rarity: _costToRarity(_cost ?? 1),
         ),
       );
     }
@@ -864,18 +881,20 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       final previewCard = PlayCard(
         cardId: 'tmp',
         attribute: _attribute ?? 'joy',
-        cost: _cost ?? 1,
+        cost: _cost,
         attackPower: _attack,
         defensePower: _defense,
         speed: _speed,
         nameJp: _selectedName ?? t.cardCreation_defaultCardName,
         nameEn: '',
       );
+      // レア度はまだサーバー抽選前なので、画像は仮のレア度(_cost)で生成する
+      // （演出上の見た目のみに影響し、実際に付与されるレア度とは無関係）。
       imageUrl = await FunctionsService.generateCardImage(
         attribute: _attribute ?? 'joy',
         cardName: _selectedName ?? '',
         cardType: previewCard.getCardType(),
-        rarity: _costToRarity(_cost ?? 1),
+        rarity: _costToRarity(_cost),
         designWords: List<String>.from(_selectedDesignWords),
         tone: _tone,
       );
@@ -892,7 +911,6 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     try {
       result = await FunctionsService.createCard(
         attribute: _attribute ?? 'joy',
-        cost: _cost ?? 1,
         attackPower: _attack,
         defensePower: _defense,
         speed: _speed,
@@ -922,13 +940,16 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
 
     final newCardId = result['cardId'] as String;
     final newCoinBalance = result['newCoinBalance'] as int;
+    // レア度(cost)はサーバーのガチャ抽選結果を正とする（クライアントの仮値は使わない）。
+    final serverCost = result['cost'] as int;
+    final serverSkillId = cardSkillIdFromString(result['skillId'] as String?);
     final wallet = ref.read(walletProvider);
     ref.read(walletProvider.notifier).state = wallet.copyWith(coinBalance: newCoinBalance);
 
     final newCard = PlayCard(
       cardId: newCardId,
       attribute: _attribute ?? 'joy',
-      cost: _cost ?? 1,
+      cost: serverCost,
       attackPower: _attack,
       defensePower: _defense,
       speed: _speed,
@@ -936,6 +957,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       nameEn: '',
       imageUrl: imageUrl,
       coCreatorName: coCreatorName.isEmpty ? null : coCreatorName,
+      skillId: serverSkillId,
     );
 
     // サーバー側で既に永続化済みなので、ローカル状態にも楽観的に反映するだけでよい。
@@ -953,6 +975,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       createdAt: Timestamp.now(),
       coCreatorId: null,
       coCreatorName: newCard.coCreatorName,
+      skillId: newCard.skillId,
     );
     ref.read(myCardsProvider.notifier).state = [...ref.read(myCardsProvider), userCard];
 
@@ -986,9 +1009,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class _ImageGenLoadingDialog extends StatelessWidget {
   final String attribute;
-  final String rarity;
-  const _ImageGenLoadingDialog(
-      {required this.attribute, required this.rarity});
+  const _ImageGenLoadingDialog({required this.attribute});
 
   @override
   Widget build(BuildContext context) {
@@ -999,12 +1020,6 @@ class _ImageGenLoadingDialog extends StatelessWidget {
       _ => '🌙',
     };
     final color = Kingdom.attributeColor(attribute);
-    final rarityLabel = switch (rarity) {
-      'ur' => t.cardCreation_rarityUr,
-      'sr' => t.cardCreation_raritySr,
-      'r' => t.cardCreation_rarityR,
-      _ => t.cardCreation_rarityN,
-    };
     return Dialog(
       backgroundColor: Kingdom.nightDeep,
       shape: RoundedRectangleBorder(
@@ -1019,8 +1034,6 @@ class _ImageGenLoadingDialog extends StatelessWidget {
             Text(emoji, style: const TextStyle(fontSize: 52)),
             const SizedBox(height: Kingdom.spaceLg),
             Text(t.cardCreation_generatingImage, style: Kingdom.label(size: Kingdom.textSubheading, color: color)),
-            const SizedBox(height: 6),
-            Text(rarityLabel, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: 12)),
             const SizedBox(height: Kingdom.spaceXl),
             LinearProgressIndicator(
               backgroundColor: Kingdom.night,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import '../models/battle_models.dart';
 import '../models/user_card.dart';
 import '../providers/auth_provider.dart';
 import '../providers/game_state_provider.dart';
@@ -202,6 +203,47 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
         .fold<int>(0, (prev, l) => prev + l.damage);
   }
 
+  // 敗因候補分析（敗北時のみ）。対戦相手デッキと自デッキをマッチアップ順（simulateBattle
+  // と同じくインデックス対応）で比較し、属性相性・スピード・ステータス総量・クリティカルの
+  // 4観点で「不利だった可能性が高い要因」を機械的に拾う。占い的な断定ではなく候補の提示。
+  List<String> get _defeatFactors {
+    final t = AppLocalizations.of(context)!;
+    final my = widget.myDeck;
+    final opp = widget.opponentDeck;
+    final n = my.length < opp.length ? my.length : opp.length;
+    final factors = <String>[];
+    if (n == 0) return factors;
+
+    var attrDisadvantage = 0;
+    var speedDisadvantage = 0;
+    var myStatTotal = 0;
+    var oppStatTotal = 0;
+    for (var i = 0; i < n; i++) {
+      final mine = my[i];
+      final theirs = opp[i];
+      if (getAttributeMultiplier(theirs.attribute, mine.attribute) > 1.0) attrDisadvantage++;
+      if (theirs.speed > mine.speed) speedDisadvantage++;
+      myStatTotal += mine.attackPower + mine.defensePower + mine.speed;
+      oppStatTotal += theirs.attackPower + theirs.defensePower + theirs.speed;
+    }
+
+    if (attrDisadvantage > n / 2) factors.add(t.battleResult_factorAttributeDisadvantage);
+    if (speedDisadvantage > n / 2) factors.add(t.battleResult_factorSpeedDisadvantage);
+    if (oppStatTotal > myStatTotal + n * 3) factors.add(t.battleResult_factorStatDisadvantage);
+
+    final myCardIds = my.map((c) => c.cardId).toSet();
+    final oppCritsAgainstMe = widget.result.logs
+        .where((l) => l.isCritical && l.defendingCard != null && myCardIds.contains(l.defendingCard!.cardId))
+        .length;
+    final myCritsAgainstOpp = widget.result.logs
+        .where((l) => l.isCritical && l.attackingCard != null && myCardIds.contains(l.attackingCard!.cardId))
+        .length;
+    if (oppCritsAgainstMe > myCritsAgainstOpp) factors.add(t.battleResult_factorCriticalHits);
+
+    if (factors.isEmpty) factors.add(t.battleResult_factorCloseBattle);
+    return factors;
+  }
+
   void _updateQuests() {
     final quests = ref.read(dailyQuestsProvider);
     final updated = quests.map((q) {
@@ -268,6 +310,12 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
                   _buildStatsPanel(accent),
 
                   const SizedBox(height: 24),
+
+                  // 敗因候補分析（敗北時のみ）
+                  if (!isWin) ...[
+                    _buildDefeatFactorsPanel(),
+                    const SizedBox(height: 24),
+                  ],
 
                   // MVPカード（勝利時のみ・達成感を演出）
                   if (isWin && _mvpCard != null) ...[
@@ -481,6 +529,45 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDefeatFactorsPanel() {
+    final t = AppLocalizations.of(context)!;
+    final factors = _defeatFactors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: OrnateFrame(
+        accent: Kingdom.sadnessIndigo,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text('🔍', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 8),
+                Text(t.battleResult_factorsTitle, style: Kingdom.label(size: 14, color: Kingdom.sadnessIndigo)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            for (final factor in factors)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('・', style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7))),
+                    Expanded(
+                      child: Text(factor,
+                          style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.85), fontSize: 13, height: 1.4)),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );

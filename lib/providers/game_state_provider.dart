@@ -318,29 +318,22 @@ final myRatingProvider = FutureProvider<int>((ref) async {
   return rank.rating;
 });
 
-// カード作成1回あたりのコイン消費量。選択したコスト（レアリティ帯 1〜5、
-// ステータス予算 20/25/30/35/40 に対応）ごとに価格が変わる。
-// 以前は全レアリティで完全に同額（100コイン）だったため、デッキ編成側に
-// コストを消費する仏組み（マナ制限など）が無いのと相まって、常に最高レアリティ
-// (cost=5)を選ぶこと以外に合理的な選択肢が存在しないバグになっていた。
-// レア度が上がるほど「コインあたりの取得ステータス量」が下がる（＝レア度自体に
-// プレミアムが付く）設計にしてあり、これは一般的なガチャゲームの経済設計に倦う。
-const Map<int, int> kCardCreationCoinCostByTier = {
-  1: 80,
-  2: 120,
-  3: 160,
-  4: 220,
-  5: 300,
-};
-// VIPパス加入者向け割引率（全レアリティ帯に一律適用）
+// カード作成1回あたりのコイン消費量。1枚あたり一律固定（レア度による差はなし）。
+// パラメータ総予算（kCardCreationBudget）も一律固定にしており、カードのレア度は
+// createCard Cloud Function 側のガチャ抽選のみで決まる（クライアントは選択・自己
+// 申告できない。functions/src/manageCards.ts の RARITY_ROLL_TABLE と同じ値）。
+const int kCardCreationCoinCost = 100;
+// カード作成1枚あたりのステータス総予算（攻撃+防御+速度の合計。レア度に関わらず一律）。
+// functions/src/manageCards.ts の CARD_CREATION_BUDGET と同じ値。
+const int kCardCreationBudget = 34;
+// VIPパス加入者向け割引率
 const double kVipCardCreationDiscount = 0.2;
 
 // VIPパス特典
 const int kVipDailyBonusCapBoost = 10; // デイリーボーナス基本上限への上乗せ
 
-int cardCreationCoinCost({required bool isVip, required int cost}) {
-  final base = kCardCreationCoinCostByTier[cost] ?? kCardCreationCoinCostByTier[1]!;
-  return isVip ? (base * (1 - kVipCardCreationDiscount)).round() : base;
+int cardCreationCoinCost({required bool isVip}) {
+  return isVip ? (kCardCreationCoinCost * (1 - kVipCardCreationDiscount)).round() : kCardCreationCoinCost;
 }
 
 // カード作成: パラメータ抽選（ガチャ）関連

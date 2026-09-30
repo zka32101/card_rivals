@@ -192,13 +192,14 @@ class FunctionsService {
     return Map<String, dynamic>.from(result.data as Map);
   }
 
-  // カード作成（サーバーサイド・コスト帯の予算範囲チェックとコイン消費をアトミックに
-  // 行う。ステータス値はcard_creation_screen_v2.dartのガチャ演出が生成しうる範囲を
-  // 超えていると拒否される。attackPower/defensePower/speedはpvpBattleの実ダメージ
-  // 計算にそのまま使われるため、クライアントの直接Firestore書き込みは許可していない）
+  // カード作成（サーバーサイド・予算範囲チェックとコイン消費をアトミックに行う。
+  // ステータス値はcard_creation_screen_v2.dartのガチャ演出が生成しうる範囲を
+  // 超えていると拒否される。レア度(cost)はクライアントには選ばせず、サーバー側の
+  // ガチャ抽選のみで決まる（戻り値のcostが実際に付与されたレア度）。
+  // attackPower/defensePower/speedはpvpBattleの実ダメージ計算にそのまま使われる
+  // ため、クライアントの直接Firestore書き込みは許可していない）
   static Future<Map<String, dynamic>> createCard({
     required String attribute,
-    required int cost,
     required int attackPower,
     required int defensePower,
     required int speed,
@@ -211,7 +212,6 @@ class FunctionsService {
     final callable = _functions.httpsCallable('createCard');
     final result = await callable.call({
       'attribute': attribute,
-      'cost': cost,
       'attackPower': attackPower,
       'defensePower': defensePower,
       'speed': speed,
