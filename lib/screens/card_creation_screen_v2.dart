@@ -28,6 +28,8 @@ class CardCreationScreenV2 extends ConsumerStatefulWidget {
 class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
   int _step = 0;
   final List<String> _selectedDesignWords = []; // カードデザイン選択
+  String _designSearchQuery = ''; // 言葉検索フィルタ
+  String? _designCategoryFilter; // null = 全カテゴリ
   String? _attribute;
   // レア度(cost)はプレイヤーには選ばせない。サーバー側のcreateCard Cloud Functionが
   // ガチャ抽選で決定する（改造クライアントが最高レア度を自己申告できないようにする
@@ -234,7 +236,57 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
           ),
           const SizedBox(height: Kingdom.spaceLg),
         ],
-        GridView.builder(
+        // 検索フィルタ
+        TextField(
+          style: TextStyle(color: Kingdom.parchment),
+          decoration: InputDecoration(
+            hintText: t.cardCreation_designSearchHint,
+            hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.4)),
+            prefixIcon: Icon(Icons.search, color: Kingdom.parchment.withValues(alpha: 0.5)),
+            filled: true,
+            fillColor: Kingdom.nightDeep,
+            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: Kingdom.spaceMd),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Kingdom.parchment.withValues(alpha: 0.15)),
+            ),
+          ),
+          onChanged: (v) => setState(() => _designSearchQuery = v.trim()),
+        ),
+        const SizedBox(height: Kingdom.spaceSm),
+        // カテゴリフィルタ
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildCategoryChip(null, t.cardCreation_designCategoryAll),
+              for (final category in kCardDesignWordsByCategory.keys) ...[
+                const SizedBox(width: 6),
+                _buildCategoryChip(category, category),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: Kingdom.spaceMd),
+        Builder(builder: (context) {
+          final pool = _designCategoryFilter == null
+              ? kCardDesignWords
+              : kCardDesignWordsByCategory[_designCategoryFilter]!;
+          final filteredWords = _designSearchQuery.isEmpty
+              ? pool
+              : pool.where((w) => w.contains(_designSearchQuery)).toList();
+          if (filteredWords.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: Kingdom.spaceXl),
+              child: Center(
+                child: Text(
+                  t.cardCreation_designNoResults,
+                  style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
+                ),
+              ),
+            );
+          }
+          return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -243,9 +295,9 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
             mainAxisSpacing: 6,
             childAspectRatio: 1.6,
           ),
-          itemCount: kCardDesignWords.length,
+          itemCount: filteredWords.length,
           itemBuilder: (context, index) {
-            final word = kCardDesignWords[index];
+            final word = filteredWords[index];
             final isSelected = _selectedDesignWords.contains(word);
             final canSelect = !isSelected && _selectedDesignWords.length < 3;
 
@@ -282,8 +334,32 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
               ),
             );
           },
-        ),
+        );
+        }),
       ],
+    );
+  }
+
+  Widget _buildCategoryChip(String? category, String label) {
+    final isActive = _designCategoryFilter == category;
+    return GestureDetector(
+      onTap: () => setState(() => _designCategoryFilter = category),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? Kingdom.gilt : Kingdom.nightDeep,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isActive ? Kingdom.gilt : Kingdom.parchment.withValues(alpha: 0.2)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            color: isActive ? Kingdom.night : Kingdom.parchment.withValues(alpha: 0.8),
+          ),
+        ),
+      ),
     );
   }
 
