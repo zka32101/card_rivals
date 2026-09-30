@@ -1,92 +1,66 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/leaderboard.dart';
+import '../services/functions_service.dart';
+import 'game_state_provider.dart';
 
-// 現在の週情報
-final currentWeekProvider = Provider<(int, int)>((ref) {
-  final now = DateTime.now();
-  final firstDayOfYear = DateTime(now.year, 1, 1);
-  final daysFromFirstDay = now.difference(firstDayOfYear).inDays;
-  final weekNumber = (daysFromFirstDay / 7).ceil();
-  return (weekNumber, now.year);
-});
+// ランキング一覧は本人以外のusersドキュメントを直接読めない（firestore.rules）ため、
+// getPeriodLeaderboard Cloud Function（Admin SDK経由）に集計を任せる。
+// 以前はここに固定5人のダミーデータを返すStateProviderが置かれていた。
 
-// 現在の月情報
-final currentMonthProvider = Provider<(int, int)>((ref) {
+List<LeaderboardEntry> _entriesFromResponse(Map<String, dynamic> data) {
+  final list = (data['leaderboard'] as List?) ?? const [];
   final now = DateTime.now();
-  return (now.month, now.year);
-});
+  return list.map((raw) {
+    final m = Map<String, dynamic>.from(raw as Map);
+    final rating = (m['rating'] as num?)?.toInt() ?? 0;
+    return LeaderboardEntry(
+      rank: (m['rank'] as num?)?.toInt() ?? 0,
+      userId: m['userId'] as String? ?? '',
+      userName: m['userName'] as String? ?? 'Unknown',
+      tier: PlayerRank.tierForRating(rating),
+      rating: rating,
+      wins: (m['wins'] as num?)?.toInt() ?? 0,
+      losses: (m['losses'] as num?)?.toInt() ?? 0,
+      updatedAt: now,
+    );
+  }).toList();
+}
 
 // オールタイムランキング（ELO順）
-final allTimeLeaderboardProvider = StateProvider<List<LeaderboardEntry>>((ref) {
-  // ダミーデータ（本実装では Firestore から取得）
-  return _generateDummyLeaderboard();
+final allTimeLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((ref) async {
+  final data = await FunctionsService.getPeriodLeaderboard(periodType: 'allTime');
+  return _entriesFromResponse(data);
+});
+
+// 日次ランキング
+final dailyLeaderboardProvider = FutureProvider<DailyLeaderboard?>((ref) async {
+  final data = await FunctionsService.getPeriodLeaderboard(periodType: 'daily');
+  return DailyLeaderboard(day: DateTime.now(), entries: _entriesFromResponse(data));
 });
 
 // 週間ランキング
-final weeklyLeaderboardProvider = StateProvider<WeeklyLeaderboard?>((ref) {
-  final (week, year) = ref.watch(currentWeekProvider);
-  // ダミーデータ（本実装では Firestore から取得）
+final weeklyLeaderboardProvider = FutureProvider<WeeklyLeaderboard?>((ref) async {
+  final data = await FunctionsService.getPeriodLeaderboard(periodType: 'weekly');
+  final now = DateTime.now();
+  final firstDayOfYear = DateTime(now.year, 1, 1);
+  final weekNumber = (now.difference(firstDayOfYear).inDays / 7).ceil();
   return WeeklyLeaderboard(
-    weekNumber: week,
-    year: year,
-    entries: _generateDummyLeaderboard(),
-    weekStart: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
-    weekEnd: DateTime.now().add(Duration(days: 7 - DateTime.now().weekday)),
+    weekNumber: weekNumber,
+    year: now.year,
+    entries: _entriesFromResponse(data),
+    weekStart: now.subtract(Duration(days: now.weekday - 1)),
+    weekEnd: now.add(Duration(days: 7 - now.weekday)),
   );
 });
 
 // 月間ランキング
-final monthlyLeaderboardProvider = StateProvider<MonthlyLeaderboard?>((ref) {
-  final (month, year) = ref.watch(currentMonthProvider);
-  // ダミーデータ（本実装では Firestore から取得）
+final monthlyLeaderboardProvider = FutureProvider<MonthlyLeaderboard?>((ref) async {
+  final data = await FunctionsService.getPeriodLeaderboard(periodType: 'monthly');
+  final now = DateTime.now();
   return MonthlyLeaderboard(
-    month: month,
-    year: year,
-    entries: _generateDummyLeaderboard(),
-    updatedAt: DateTime.now(),
+    month: now.month,
+    year: now.year,
+    entries: _entriesFromResponse(data),
+    updatedAt: now,
   );
 });
-
-// 属性別ランキング（喜）
-final joyLeaderboardProvider = StateProvider<AttributeLeaderboard?>((ref) {
-  return AttributeLeaderboard(
-    attribute: 'joy',
-    entries: _generateDummyLeaderboard().take(10).toList(),
-    updatedAt: DateTime.now(),
-  );
-});
-
-// 属性別ランキング（怒）
-final angerLeaderboardProvider = StateProvider<AttributeLeaderboard?>((ref) {
-  return AttributeLeaderboard(
-    attribute: 'anger',
-    entries: _generateDummyLeaderboard().take(10).toList(),
-    updatedAt: DateTime.now(),
-  );
-});
-
-// 属性別ランキング（哀）
-final sadnessLeaderboardProvider = StateProvider<AttributeLeaderboard?>((ref) {
-  return AttributeLeaderboard(
-    attribute: 'sadness',
-    entries: _generateDummyLeaderboard().take(10).toList(),
-    updatedAt: DateTime.now(),
-  );
-});
-
-List<LeaderboardEntry> _generateDummyLeaderboard() {
-  final names = ['KamiCard_99', 'EmotionMaster', 'SadnessKing', 'JoyHunter', 'AngerBurst'];
-  final tiers = ['diamond', 'platinum', 'gold', 'gold', 'silver'];
-  final ratings = [2450, 1920, 1750, 1620, 1400];
-
-  return List.generate(5, (i) => LeaderboardEntry(
-    rank: i + 1,
-    userId: 'user_${i + 1}',
-    userName: names[i],
-    tier: tiers[i],
-    rating: ratings[i],
-    wins: 100 - (i * 20),
-    losses: 30 + (i * 10),
-    updatedAt: DateTime.now(),
-  ));
-}

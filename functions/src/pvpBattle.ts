@@ -310,6 +310,65 @@ interface PvpBattleRequest {
 }
 
 // pvpMatch記録の有効期限（この時間を過ぎたmatchIdは失効させ、古いマッチの使い回しを防ぐ）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 期間別ランキング（日次/週次/月次）の集計
+// バッチ処理や定期リセットは行わず、「期間キーが変わったら新しいドキュメントに
+// なる」方式で自然にリセットする（例: 日次なら d:2026-09-30 → 翌日は
+// d:2026-10-01 という別ドキュメントになるため、過去分は単にランキング対象外になる）。
+// 集計はバトル結果確定のたびにここでインクリメントするインクリメンタル方式。
+// 全期間ランキングは既存のusers/{uid}/rating/currentをそのまま使う。
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function dailyKeyJST(d: Date): string {
+  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return `d:${jst.toISOString().slice(0, 10)}`;
+}
+
+function weeklyKeyJST(d: Date): string {
+  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return `w:${jst.getUTCFullYear()}-${isoWeekNumber(jst)}`;
+}
+
+function monthlyKeyJST(d: Date): string {
+  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return `m:${jst.getUTCFullYear()}-${String(jst.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+const POINTS_PER_WIN = 10;
+
+async function updatePeriodLeaderboardStats(userId: string, won: boolean): Promise<void> {
+  const db = getFirestore();
+  const now = new Date();
+
+  let displayName = "Unknown";
+  try {
+    const userDoc = await db.collection("users").doc(userId).get();
+    displayName = (userDoc.data()?.displayName as string | undefined) ?? "Unknown";
+  } catch {
+    // 表示名取得に失敗しても集計自体は続行する（ランキングにUnknownと出るだけ）
+  }
+
+  const periods: {periodType: string; periodKey: string}[] = [
+    {periodType: "daily", periodKey: dailyKeyJST(now)},
+    {periodType: "weekly", periodKey: weeklyKeyJST(now)},
+    {periodType: "monthly", periodKey: monthlyKeyJST(now)},
+  ];
+
+  await Promise.all(periods.map(({periodType, periodKey}) => {
+    const ref = db.collection("users").doc(userId)
+      .collection("leaderboardStats").doc(periodKey);
+    return ref.set({
+      userId,
+      displayName,
+      periodType,
+      periodKey,
+      wins: FieldValue.increment(won ? 1 : 0),
+      losses: FieldValue.increment(won ? 0 : 1),
+      points: FieldValue.increment(won ? POINTS_PER_WIN : 0),
+      updatedAt: FieldValue.serverTimestamp(),
+    }, {merge: true});
+  }));
+}
+
 const MATCH_TTL_MS = 10 * 60 * 1000;
 
 // デッキ枚数。lib/screens/deck_selection_screen_v2.dartのmaxCards(デフォルト5)と同じ値。
@@ -478,6 +537,14 @@ export const pvpBattle = onCall(
       .collection("users").doc(userId)
       .collection("rating").doc("current");
 
+    let displayNameForRating = "Unknown";
+    try {
+      const userDoc = await getFirestore().collection("users").doc(userId).get();
+      displayNameForRating = (userDoc.data()?.displayName as string | undefined) ?? "Unknown";
+    } catch {
+      // 表示名取得に失敗してもレーティング更新自体は続行する
+    }
+
     const newRating = await getFirestore().runTransaction(async (tx) => {
       const doc = await tx.get(ratingRef);
       const before = doc.data() ?? {};
@@ -489,12 +556,16 @@ export const pvpBattle = onCall(
         rating: updatedRating,
         wins: wins + (result.attackerWon ? 1 : 0),
         losses: losses + (result.attackerWon ? 0 : 1),
+        // 全期間ランキング(collectionGroupクエリ)表示用に表示名を非正規化して保持。
+        // ランキング取得のたびにusersドキュメントをN+1取得しなくて済むようにするため。
+        displayName: displayNameForRating,
         updatedAt: FieldValue.serverTimestamp(),
       }, {merge: true});
       return updatedRating;
     });
 
     const season = await updateSeasonProgress(userId, result.attackerWon);
+    await updatePeriodLeaderboardStats(userId, result.attackerWon);
 
     return {...result, newRating, ratingDelta, season};
   });

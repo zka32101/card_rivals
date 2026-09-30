@@ -43,7 +43,25 @@
         { "fieldPath": "currentRankPoints", "order": "DESCENDING" },
         { "fieldPath": "totalSeasonPoints", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "leaderboardStats",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "periodType", "order": "ASCENDING" },
+        { "fieldPath": "periodKey", "order": "ASCENDING" },
+        { "fieldPath": "points", "order": "DESCENDING" }
+      ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "rating",
+      "fieldPath": "rating",
+      "indexes": [
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    }
+  ]
 }

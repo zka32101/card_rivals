@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../providers/auth_provider.dart';
 import '../providers/game_state_provider.dart';
 import '../providers/leaderboard_provider.dart';
 import '../models/leaderboard.dart';
@@ -19,7 +20,7 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -49,10 +50,9 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
           unselectedLabelColor: Kingdom.parchment.withValues(alpha: 0.5),
           tabs: [
             Tab(text: '📊 ${t.rankingV3_tabAllTime}'),
+            Tab(text: '🗓️ ${t.rankingV3_tabDaily}'),
             Tab(text: '📅 ${t.rankingV3_tabWeekly}'),
             Tab(text: '📆 ${t.rankingV3_tabMonthly}'),
-            Tab(text: '☀️ ${t.attribute_joy}'),
-            Tab(text: '🔥 ${t.attribute_anger}'),
           ],
         ),
       ),
@@ -68,12 +68,11 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
-                  children: [
+                  children: const [
                     _AllTimeLeaderboard(),
+                    _DailyLeaderboard(),
                     _WeeklyLeaderboard(),
                     _MonthlyLeaderboard(),
-                    _AttributeLeaderboard(attribute: 'joy'),
-                    _AttributeLeaderboard(attribute: 'anger'),
                   ],
                 ),
               ),
@@ -86,6 +85,20 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
 
   Widget _buildMyRankCard(BuildContext context, PlayerRank rank) {
     final t = AppLocalizations.of(context)!;
+    final userId = ref.watch(currentUserIdProvider);
+    // 全期間ランキング(上位100件)の中に自分がいれば実際の順位を表示する。
+    // 圏外の場合は「-」（以前は rating ~/ 100 という意味のない式で常に何らかの
+    // 数字を表示していたが、実際の順位ではなかった）。
+    final myRank = ref.watch(allTimeLeaderboardProvider).maybeWhen(
+          data: (entries) {
+            for (final e in entries) {
+              if (e.userId == userId) return e.rank;
+            }
+            return null;
+          },
+          orElse: () => null,
+        );
+
     return Padding(
       padding: const EdgeInsets.all(Kingdom.spaceMd),
       child: OrnateFrame(
@@ -114,7 +127,7 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                '#${rank.rating ~/ 100}',
+                myRank != null ? '#$myRank' : '-',
                 style: const TextStyle(fontSize: Kingdom.textBody, fontWeight: FontWeight.bold, color: Color(0xFF7C9CDB)),
               ),
             ),
@@ -126,86 +139,118 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
 }
 
 class _AllTimeLeaderboard extends ConsumerWidget {
+  const _AllTimeLeaderboard();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final entries = ref.watch(allTimeLeaderboardProvider);
-    return _LeaderboardListView(entries: entries);
+    final async = ref.watch(allTimeLeaderboardProvider);
+    return _AsyncLeaderboardListView(async: async);
+  }
+}
+
+class _DailyLeaderboard extends ConsumerWidget {
+  const _DailyLeaderboard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context)!;
+    final async = ref.watch(dailyLeaderboardProvider);
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => _ErrorView(),
+      data: (leaderboard) {
+        if (leaderboard == null) return const SizedBox.shrink();
+        final day = leaderboard.day;
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(Kingdom.spaceMd),
+              child: Text(t.rankingV3_dayLabel(day.year, day.month, day.day),
+                  style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.joyGold)),
+            ),
+            Expanded(child: _LeaderboardListView(entries: leaderboard.entries)),
+          ],
+        );
+      },
+    );
   }
 }
 
 class _WeeklyLeaderboard extends ConsumerWidget {
+  const _WeeklyLeaderboard();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
-    final leaderboard = ref.watch(weeklyLeaderboardProvider);
-    if (leaderboard == null) return const SizedBox.shrink();
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(Kingdom.spaceMd),
-          child: Text(t.rankingV3_weekLabel(leaderboard.weekNumber, leaderboard.year),
-              style: Kingdom.label(size: Kingdom.textBody, color: const Color(0xFF7C9CDB))),
-        ),
-        Expanded(child: _LeaderboardListView(entries: leaderboard.entries)),
-      ],
+    final async = ref.watch(weeklyLeaderboardProvider);
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => _ErrorView(),
+      data: (leaderboard) {
+        if (leaderboard == null) return const SizedBox.shrink();
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(Kingdom.spaceMd),
+              child: Text(t.rankingV3_weekLabel(leaderboard.weekNumber, leaderboard.year),
+                  style: Kingdom.label(size: Kingdom.textBody, color: const Color(0xFF7C9CDB))),
+            ),
+            Expanded(child: _LeaderboardListView(entries: leaderboard.entries)),
+          ],
+        );
+      },
     );
   }
 }
 
 class _MonthlyLeaderboard extends ConsumerWidget {
+  const _MonthlyLeaderboard();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
-    final leaderboard = ref.watch(monthlyLeaderboardProvider);
-    if (leaderboard == null) return const SizedBox.shrink();
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(Kingdom.spaceMd),
-          child: Text(t.rankingV3_monthLabel(leaderboard.year, leaderboard.month),
-              style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.angerCrimson)),
-        ),
-        Expanded(child: _LeaderboardListView(entries: leaderboard.entries)),
-      ],
+    final async = ref.watch(monthlyLeaderboardProvider);
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => _ErrorView(),
+      data: (leaderboard) {
+        if (leaderboard == null) return const SizedBox.shrink();
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(Kingdom.spaceMd),
+              child: Text(t.rankingV3_monthLabel(leaderboard.year, leaderboard.month),
+                  style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.angerCrimson)),
+            ),
+            Expanded(child: _LeaderboardListView(entries: leaderboard.entries)),
+          ],
+        );
+      },
     );
   }
 }
 
-class _AttributeLeaderboard extends ConsumerWidget {
-  final String attribute;
+class _AsyncLeaderboardListView extends StatelessWidget {
+  final AsyncValue<List<LeaderboardEntry>> async;
 
-  const _AttributeLeaderboard({required this.attribute});
+  const _AsyncLeaderboardListView({required this.async});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => _ErrorView(),
+      data: (entries) => _LeaderboardListView(entries: entries),
+    );
+  }
+}
+
+class _ErrorView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    final leaderboard = switch (attribute) {
-      'joy' => ref.watch(joyLeaderboardProvider),
-      'anger' => ref.watch(angerLeaderboardProvider),
-      'sadness' => ref.watch(sadnessLeaderboardProvider),
-      _ => null,
-    };
-
-    if (leaderboard == null) return const SizedBox.shrink();
-
-    final attrLabel = switch (attribute) {
-      'joy' => t.attribute_joy,
-      'anger' => t.attribute_anger,
-      'sadness' => t.attribute_sadness,
-      _ => attribute,
-    };
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(Kingdom.spaceMd),
-          child: Text(
-            '${leaderboard.attributeEmoji} ${t.rankingV3_attributeLeague(attrLabel)}',
-            style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.attributeColor(attribute)),
-          ),
-        ),
-        Expanded(child: _LeaderboardListView(entries: leaderboard.entries)),
-      ],
+    return Center(
+      child: Text(t.rankingV3_noData, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
     );
   }
 }

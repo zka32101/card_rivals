@@ -255,4 +255,12 @@ class FunctionsService {
     final result = await callable.call({'seasonId': seasonId});
     return Map<String, dynamic>.from(result.data as Map);
   }
+
+  // 全期間/日次/週次/月次ランキング取得（サーバーサイド集計。
+  // periodTypeは 'allTime' | 'daily' | 'weekly' | 'monthly'）
+  static Future<Map<String, dynamic>> getPeriodLeaderboard({required String periodType}) async {
+    final callable = _functions.httpsCallable('getPeriodLeaderboard');
+    final result = await callable.call({'periodType': periodType});
+    return Map<String, dynamic>.from(result.data as Map);
+  }
 }

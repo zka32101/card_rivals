@@ -72,6 +72,14 @@ service cloud.firestore {
         allow read: if request.auth != null && request.auth.uid == userId;
         allow write: if false;
       }
+
+      // 期間別ランキング集計（pvpBattle Cloud Functionのみが更新。
+      // クライアントは本人の分を読み取りのみ。ランキング一覧自体は
+      // getPeriodLeaderboard Cloud Function経由でAdmin SDKから取得する）
+      match /leaderboardStats/{document=**} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false;
+      }
     }
 
     // =============== カードレンタル取引記録 ===============
