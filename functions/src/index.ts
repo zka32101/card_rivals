@@ -42,4 +42,5 @@ export {
   fillCurrencyListing,
 } from "./marketplace";
 export {claimSeasonReward, getSeasonLeaderboard} from "./manageSeasons";
+export {getPeriodLeaderboard} from "./manageLeaderboard";
 export {createCard, levelUpCard} from "./manageCards";

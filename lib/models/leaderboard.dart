@@ -90,6 +90,13 @@ class AttributeLeaderboard {
   }
 }
 
+class DailyLeaderboard {
+  final DateTime day;
+  final List<LeaderboardEntry> entries;
+
+  DailyLeaderboard({required this.day, required this.entries});
+}
+
 class WeeklyLeaderboard {
   final int weekNumber;
   final int year;
