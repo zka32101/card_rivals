@@ -820,5 +820,10 @@
   "explanation_page7Detail1": "レンタル手数料の40%を獲得",
   "explanation_page7Detail2": "レンタル収益は月ごとに蓄積",
   "explanation_page7Detail3": "公開に切り替えてレンタル可能にする",
+  "explanation_page8Title": "カードスキル",
+  "explanation_page8Description": "一部のカードには特別なスキルが付いています。カード作成時に選ばれることがあり、常時発動のパッシブと、発動確率のあるアクティブの2種類があります。",
+  "explanation_page8Detail1": "パッシブ「攻撃強化」：攻撃時、自分の攻撃力+15%",
+  "explanation_page8Detail2": "パッシブ「守り強化」：防御時、自分の防御力+15%",
+  "explanation_page8Detail3": "アクティブ「連撃」：攻撃時20%の確率で追加ダメージ+50%",
   "home_explanationTooltip": "ゲームガイド"
 }
