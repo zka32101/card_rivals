@@ -41,9 +41,21 @@ Widget _cardArt(
   }
   return Image.network(
     imageUrl,
+    key: ValueKey(imageUrl),
     fit: fit,
     width: width,
     errorBuilder: (_, err, stack) => placeholderBuilder(),
+    // 3D回転Transform(カード開封演出)配下だと、画像フレーム到着時の再描画が
+    // 反映されずカードアートが白いまま固まることがあった（実機で確認）。
+    // frameBuilderで明示的にAnimatedOpacityを挟むと毎回確実に再合成される。
+    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+      if (wasSynchronouslyLoaded) return child;
+      return AnimatedOpacity(
+        opacity: frame == null ? 0 : 1,
+        duration: const Duration(milliseconds: 200),
+        child: child,
+      );
+    },
   );
 }
 
