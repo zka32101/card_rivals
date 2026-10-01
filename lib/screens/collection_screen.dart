@@ -6,30 +6,46 @@ import '../widgets/card_widget.dart';
 import '../widgets/card_detail_sheet.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import 'card_creation_screen_v2.dart';
 
+enum _CardScope { all, mine, seed }
+
+enum _CardView { grid3, grid2, list }
+
+/// カード閲覧画面（検索・属性/レア度の絞り込み・多軸ソート・3種の表示形式）
 class CollectionScreen extends ConsumerStatefulWidget {
-  const CollectionScreen({super.key});
+  // 下部ナビのタブに組み込む場合は戻るボタンを出さない
+  final bool embedded;
+  const CollectionScreen({super.key, this.embedded = false});
 
   @override
   ConsumerState<CollectionScreen> createState() => _CollectionScreenState();
 }
 
-class _CollectionScreenState extends ConsumerState<CollectionScreen> with SingleTickerProviderStateMixin {
-  String? _attrFilter;      // null = 全て
+class _CollectionScreenState extends ConsumerState<CollectionScreen> {
+  String? _attrFilter; // null = 全て
   CardRarity? _rarityFilter;
-  String _sort = 'rarity';  // 'rarity' | 'attr' | 'cost'
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
+  String _sort = 'rarity'; // rarity | attr | cost | attack | defense | speed | level
+  _CardScope _scope = _CardScope.all;
+  _CardView _view = _CardView.grid3;
+  String _query = '';
+  final _searchController = TextEditingController();
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  bool get _hasActiveFilter => _attrFilter != null || _rarityFilter != null || _query.isNotEmpty;
+
+  void _resetFilters() {
+    _searchController.clear();
+    setState(() {
+      _attrFilter = null;
+      _rarityFilter = null;
+      _query = '';
+    });
   }
 
   @override
@@ -37,64 +53,114 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> with Single
     final allCards = ref.watch(myCollectionProvider);
     final t = AppLocalizations.of(context)!;
 
+    final mineCount = allCards.where((c) => !c.isSeedCard).length;
+    final scoped = switch (_scope) {
+      _CardScope.all => allCards,
+      _CardScope.mine => allCards.where((c) => !c.isSeedCard).toList(),
+      _CardScope.seed => allCards.where((c) => c.isSeedCard).toList(),
+    };
+    final shown = _filtered(scoped);
+
     return Scaffold(
       backgroundColor: Kingdom.night,
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Kingdom.gilt,
+        foregroundColor: Kingdom.night,
+        icon: const Icon(Icons.add),
+        label: Text(t.home_createCardButton, style: const TextStyle(fontWeight: FontWeight.bold)),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CardCreationScreenV2())),
+      ),
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
         title: Text(t.collection_title, style: Kingdom.title(size: 17)),
         backgroundColor: Kingdom.nightDeep,
         elevation: 0,
         actions: [
+          IconButton(
+            tooltip: t.collection_viewToggleTooltip,
+            icon: Icon(
+              switch (_view) {
+                _CardView.grid3 => Icons.grid_view,
+                _CardView.grid2 => Icons.view_agenda_outlined,
+                _CardView.list => Icons.view_list,
+              },
+              color: Kingdom.gilt,
+            ),
+            onPressed: () => setState(() => _view = _CardView.values[(_view.index + 1) % _CardView.values.length]),
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.sort, color: Kingdom.gilt),
             tooltip: t.collection_sortTooltip,
             color: Kingdom.nightDeep,
+            initialValue: _sort,
             onSelected: (v) => setState(() => _sort = v),
             itemBuilder: (_) => [
-              PopupMenuItem(value: 'rarity', child: Text(t.collection_sortByRarity, style: TextStyle(color: Kingdom.parchment))),
-              PopupMenuItem(value: 'attr', child: Text(t.collection_sortByAttribute, style: TextStyle(color: Kingdom.parchment))),
-              PopupMenuItem(value: 'cost', child: Text(t.collection_sortByCost, style: TextStyle(color: Kingdom.parchment))),
+              for (final e in {
+                'rarity': t.collection_sortByRarity,
+                'attr': t.collection_sortByAttribute,
+                'cost': t.collection_sortByCost,
+                'attack': t.collection_sortByAttack,
+                'defense': t.collection_sortByDefense,
+                'speed': t.collection_sortBySpeed,
+                'level': t.collection_sortByLevel,
+              }.entries)
+                PopupMenuItem(
+                  value: e.key,
+                  child: Row(children: [
+                    Icon(Icons.check, size: 16, color: _sort == e.key ? Kingdom.gilt : Colors.transparent),
+                    const SizedBox(width: 8),
+                    Text(e.value, style: const TextStyle(color: Kingdom.parchment)),
+                  ]),
+                ),
             ],
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Kingdom.gilt,
-          labelColor: Kingdom.gilt,
-          unselectedLabelColor: Kingdom.parchment.withValues(alpha: 0.5),
-          tabs: [
-            Tab(text: t.collection_tabSeedCards),
-            Tab(text: t.collection_tabMyCards),
-          ],
-        ),
       ),
       body: Stack(
         children: [
           const Positioned.fill(child: EmotionMoteField(count: 12)),
           Column(
             children: [
-              // フィルターバー
+              _SearchAndScopeBar(
+                controller: _searchController,
+                scope: _scope,
+                onScopeChanged: (s) => setState(() => _scope = s),
+                onQueryChanged: (q) => setState(() => _query = q.trim()),
+                allCount: allCards.length,
+                mineCount: mineCount,
+                seedCount: allCards.length - mineCount,
+              ),
               _FilterBar(
                 attrFilter: _attrFilter,
                 rarityFilter: _rarityFilter,
                 onAttrChanged: (v) => setState(() => _attrFilter = v),
                 onRarityChanged: (v) => setState(() => _rarityFilter = v),
               ),
-
-              // カードグリッド
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceMd, vertical: 6),
+                child: Row(
                   children: [
-                    // シードカード
-                    _CardGrid(
-                      cards: _filtered(allCards.where((c) => c.isSeedCard).toList()),
+                    Text(
+                      t.collection_resultCount(shown.length, scoped.length),
+                      style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.6)),
                     ),
-                    // マイカード（現状はシードから未所持分を除外 ― Firebase 接続後は Firestore から取得）
-                    _CardGrid(
-                      cards: _filtered(allCards.where((c) => !c.isSeedCard).toList()),
-                      emptyMessage: t.collection_emptyMyCards,
-                    ),
+                    const Spacer(),
+                    if (_hasActiveFilter)
+                      GestureDetector(
+                        onTap: _resetFilters,
+                        child: Text(t.collection_resetFilters,
+                            style: const TextStyle(fontSize: 12, color: Kingdom.gilt, fontWeight: FontWeight.bold)),
+                      ),
                   ],
+                ),
+              ),
+              Expanded(
+                child: _CardResults(
+                  cards: shown,
+                  view: _view,
+                  emptyMessage: (!_hasActiveFilter && _scope == _CardScope.mine)
+                      ? t.collection_emptyMyCards
+                      : t.collection_emptyNoCards,
                 ),
               ),
             ],
@@ -105,19 +171,125 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> with Single
   }
 
   List<PlayCard> _filtered(List<PlayCard> cards) {
-    var result = cards.where((c) {
+    final q = _query.toLowerCase();
+    final result = cards.where((c) {
       if (_attrFilter != null && c.attribute != _attrFilter) return false;
       if (_rarityFilter != null && c.rarity != _rarityFilter) return false;
+      if (q.isNotEmpty && !c.nameJp.toLowerCase().contains(q) && !c.nameEn.toLowerCase().contains(q)) {
+        return false;
+      }
       return true;
     }).toList();
 
-    result.sort((a, b) => switch (_sort) {
-      'attr' => a.attribute.compareTo(b.attribute),
-      'cost' => b.cost.compareTo(a.cost),
-      _ => b.rarity.index.compareTo(a.rarity.index), // rarity: UR→SR→R→N
+    result.sort((a, b) {
+      final primary = switch (_sort) {
+        'attr' => a.attribute.compareTo(b.attribute),
+        'cost' => b.cost.compareTo(a.cost),
+        'attack' => b.attackPower.compareTo(a.attackPower),
+        'defense' => b.defensePower.compareTo(a.defensePower),
+        'speed' => b.speed.compareTo(a.speed),
+        'level' => b.level.compareTo(a.level),
+        _ => b.rarity.index.compareTo(a.rarity.index), // UR→SR→R→N
+      };
+      return primary != 0 ? primary : b.cost.compareTo(a.cost);
     });
-
     return result;
+  }
+}
+
+class _SearchAndScopeBar extends StatelessWidget {
+  final TextEditingController controller;
+  final _CardScope scope;
+  final ValueChanged<_CardScope> onScopeChanged;
+  final ValueChanged<String> onQueryChanged;
+  final int allCount;
+  final int mineCount;
+  final int seedCount;
+
+  const _SearchAndScopeBar({
+    required this.controller,
+    required this.scope,
+    required this.onScopeChanged,
+    required this.onQueryChanged,
+    required this.allCount,
+    required this.mineCount,
+    required this.seedCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    Widget seg(_CardScope s, String label, int n) {
+      final selected = scope == s;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => onScopeChanged(s),
+          child: Container(
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: selected ? Kingdom.gilt : Colors.transparent,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Text(
+              '$label $n',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: selected ? Kingdom.night : Kingdom.parchment.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      color: Kingdom.nightDeep,
+      padding: const EdgeInsets.fromLTRB(Kingdom.spaceMd, Kingdom.spaceSm, Kingdom.spaceMd, 0),
+      child: Column(
+        children: [
+          TextField(
+            controller: controller,
+            onChanged: onQueryChanged,
+            style: const TextStyle(color: Kingdom.parchment, fontSize: 14),
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: t.collection_searchHint,
+              hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.4)),
+              prefixIcon: const Icon(Icons.search, color: Kingdom.gilt, size: 20),
+              suffixIcon: controller.text.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.close, size: 18, color: Kingdom.parchment),
+                      onPressed: () {
+                        controller.clear();
+                        onQueryChanged('');
+                      },
+                    ),
+              filled: true,
+              fillColor: Kingdom.night,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+            ),
+          ),
+          const SizedBox(height: Kingdom.spaceSm),
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: Kingdom.night,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Kingdom.gilt.withValues(alpha: 0.3)),
+            ),
+            child: Row(children: [
+              seg(_CardScope.all, t.collection_tabAll, allCount),
+              seg(_CardScope.mine, t.collection_tabMyCards, mineCount),
+              seg(_CardScope.seed, t.collection_tabSeedCards, seedCount),
+            ]),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -208,16 +380,16 @@ class _FilterBar extends StatelessWidget {
   }
 }
 
-class _CardGrid extends StatelessWidget {
+class _CardResults extends StatelessWidget {
   final List<PlayCard> cards;
-  final String? emptyMessage;
+  final _CardView view;
+  final String emptyMessage;
 
-  const _CardGrid({required this.cards, this.emptyMessage});
+  const _CardResults({required this.cards, required this.view, required this.emptyMessage});
 
   @override
   Widget build(BuildContext context) {
     if (cards.isEmpty) {
-      final t = AppLocalizations.of(context)!;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(Kingdom.spaceXxxl),
@@ -227,7 +399,7 @@ class _CardGrid extends StatelessWidget {
               const Text('🎴', style: TextStyle(fontSize: 48)),
               const SizedBox(height: Kingdom.spaceMd),
               Text(
-                emptyMessage ?? t.collection_emptyNoCards,
+                emptyMessage,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: 14, height: 1.6),
               ),
@@ -237,13 +409,23 @@ class _CardGrid extends StatelessWidget {
       );
     }
 
+    if (view == _CardView.list) {
+      return ListView.separated(
+        padding: const EdgeInsets.all(Kingdom.spaceMd),
+        itemCount: cards.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (context, i) => _CardRow(card: cards[i]),
+      );
+    }
+
+    final cols = view == _CardView.grid2 ? 2 : 3;
     return GridView.builder(
       padding: const EdgeInsets.all(Kingdom.spaceMd),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: cols,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 0.5,
+        childAspectRatio: cols == 2 ? 0.58 : 0.5,
       ),
       itemCount: cards.length,
       itemBuilder: (context, i) {
@@ -253,6 +435,101 @@ class _CardGrid extends StatelessWidget {
           child: CardWidget(card: card, size: double.infinity),
         );
       },
+    );
+  }
+}
+
+// 一覧表示用の1行（ステータスを一目で比べられる）
+class _CardRow extends StatelessWidget {
+  final PlayCard card;
+  const _CardRow({required this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    final rColor = rarityColor(card.rarity);
+    final attrEmoji = switch (card.attribute) {
+      'joy' => '☀️',
+      'anger' => '🔥',
+      _ => '🌙',
+    };
+    final name = Localizations.localeOf(context).languageCode == 'en' && card.nameEn.isNotEmpty
+        ? card.nameEn
+        : card.nameJp;
+    Widget stat(String label, int v) => Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: Text('$label $v', style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.75))),
+        );
+    return Material(
+      color: Kingdom.nightDeep,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => showCardDetailSheet(context, card),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: rColor.withValues(alpha: 0.5)),
+          ),
+          child: Row(
+            children: [
+              // CardWidgetは小サイズ前提で作られていないため、一覧では簡易サムネイルにする
+              Container(
+                width: 56,
+                height: 72,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Kingdom.night,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: rColor, width: 1.5),
+                ),
+                child: card.imageUrl.isEmpty
+                    ? Center(child: Text(attrEmoji, style: const TextStyle(fontSize: 24)))
+                    : (card.imageUrl.startsWith('assets/')
+                        ? Image.asset(card.imageUrl, fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Center(child: Text(attrEmoji, style: const TextStyle(fontSize: 24))))
+                        : Image.network(card.imageUrl, fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Center(child: Text(attrEmoji, style: const TextStyle(fontSize: 24))))),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(color: rColor, borderRadius: BorderRadius.circular(6)),
+                        child: Text(card.rarityLabel,
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Kingdom.night)),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(attrEmoji),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
+                      ),
+                    ]),
+                    const SizedBox(height: 6),
+                    Row(children: [
+                      stat('ATK', card.attackPower),
+                      stat('DEF', card.defensePower),
+                      stat('SPD', card.speed),
+                    ]),
+                    const SizedBox(height: 2),
+                    Text('COST ${card.cost}${card.level > 0 ? '  Lv.${card.level}' : ''}',
+                        style: TextStyle(fontSize: 11, color: Kingdom.parchment.withValues(alpha: 0.5))),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Kingdom.gilt.withValues(alpha: 0.7)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
