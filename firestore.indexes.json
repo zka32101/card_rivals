@@ -52,6 +52,16 @@
         { "fieldPath": "periodKey", "order": "ASCENDING" },
         { "fieldPath": "points", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "leaderboardStats",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "periodType", "order": "ASCENDING" },
+        { "fieldPath": "periodKey", "order": "ASCENDING" },
+        { "fieldPath": "attribute", "order": "ASCENDING" },
+        { "fieldPath": "points", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

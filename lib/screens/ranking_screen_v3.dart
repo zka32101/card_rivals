@@ -20,7 +20,7 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -53,6 +53,7 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
             Tab(text: '🗓️ ${t.rankingV3_tabDaily}'),
             Tab(text: '📅 ${t.rankingV3_tabWeekly}'),
             Tab(text: '📆 ${t.rankingV3_tabMonthly}'),
+            Tab(text: '🎭 ${t.rankingV3_tabAttribute}'),
           ],
         ),
       ),
@@ -73,6 +74,7 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
                     _DailyLeaderboard(),
                     _WeeklyLeaderboard(),
                     _MonthlyLeaderboard(),
+                    _AttributeLeaderboard(),
                   ],
                 ),
               ),
@@ -145,6 +147,68 @@ class _AllTimeLeaderboard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(allTimeLeaderboardProvider);
     return _AsyncLeaderboardListView(async: async);
+  }
+}
+
+class _AttributeLeaderboard extends ConsumerStatefulWidget {
+  const _AttributeLeaderboard();
+
+  @override
+  ConsumerState<_AttributeLeaderboard> createState() => _AttributeLeaderboardState();
+}
+
+class _AttributeLeaderboardState extends ConsumerState<_AttributeLeaderboard> {
+  String _attribute = 'joy';
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final async = ref.watch(attributeLeaderboardProvider(_attribute));
+    final options = [
+      ('joy', '☀️ ${t.attribute_joy}', Kingdom.joyGold),
+      ('anger', '🔥 ${t.attribute_anger}', Kingdom.angerCrimson),
+      ('sadness', '🌙 ${t.attribute_sadness}', Kingdom.sadnessIndigo),
+    ];
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(Kingdom.spaceMd, Kingdom.spaceMd, Kingdom.spaceMd, 0),
+          child: Row(
+            children: [
+              for (final o in options) ...[
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _attribute = o.$1),
+                    child: Container(
+                      height: Kingdom.minTapTarget,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: _attribute == o.$1 ? o.$3 : Kingdom.nightDeep,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: o.$3.withValues(alpha: 0.6)),
+                      ),
+                      child: Text(o.$2,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _attribute == o.$1 ? Kingdom.night : Kingdom.parchment,
+                          )),
+                    ),
+                  ),
+                ),
+                if (o != options.last) const SizedBox(width: 8),
+              ],
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(Kingdom.spaceMd),
+          child: Text(t.rankingV3_attributeNote,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.6))),
+        ),
+        Expanded(child: _AsyncLeaderboardListView(async: async)),
+      ],
+    );
   }
 }
 

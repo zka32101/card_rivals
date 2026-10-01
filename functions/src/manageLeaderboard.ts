@@ -13,7 +13,9 @@ import {onCall, HttpsError} from "firebase-functions/v2/https";
 
 const LEADERBOARD_LIMIT = 100;
 
-type PeriodType = "allTime" | "daily" | "weekly" | "monthly";
+type PeriodType = "allTime" | "daily" | "weekly" | "monthly" | "attribute";
+
+const ATTRIBUTES = ["joy", "anger", "sadness"];
 
 function currentPeriodKey(periodType: "daily" | "weekly" | "monthly"): string {
   const now = new Date();
@@ -39,9 +41,12 @@ export const getPeriodLeaderboard = onCall(
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "認証が必要です");
     }
-    const {periodType} = request.data as {periodType: PeriodType};
-    if (!periodType || !["allTime", "daily", "weekly", "monthly"].includes(periodType)) {
+    const {periodType, attribute} = request.data as {periodType: PeriodType; attribute?: string};
+    if (!periodType || !["allTime", "daily", "weekly", "monthly", "attribute"].includes(periodType)) {
       throw new HttpsError("invalid-argument", "periodTypeが不正です");
+    }
+    if (periodType === "attribute" && (!attribute || !ATTRIBUTES.includes(attribute))) {
+      throw new HttpsError("invalid-argument", "attributeが不正です");
     }
 
     try {
@@ -69,11 +74,17 @@ export const getPeriodLeaderboard = onCall(
         return {leaderboard};
       }
 
-      const periodKey = currentPeriodKey(periodType);
-      const snapshot = await getFirestore()
+      // 属性別は「今週その属性の国に移住して戦った人」の週間ポイントランキング
+      const isAttribute = periodType === "attribute";
+      const periodKey = currentPeriodKey(isAttribute ? "weekly" : periodType);
+      let query = getFirestore()
         .collectionGroup("leaderboardStats")
-        .where("periodType", "==", periodType)
-        .where("periodKey", "==", periodKey)
+        .where("periodType", "==", isAttribute ? "weekly" : periodType)
+        .where("periodKey", "==", periodKey);
+      if (isAttribute) {
+        query = query.where("attribute", "==", attribute);
+      }
+      const snapshot = await query
         .orderBy("points", "desc")
         .limit(LEADERBOARD_LIMIT)
         .get();

@@ -258,9 +258,13 @@ class FunctionsService {
 
   // 全期間/日次/週次/月次ランキング取得（サーバーサイド集計。
   // periodTypeは 'allTime' | 'daily' | 'weekly' | 'monthly'）
-  static Future<Map<String, dynamic>> getPeriodLeaderboard({required String periodType}) async {
+  // 属性別は periodType='attribute' + attribute('joy'|'anger'|'sadness')。
+  static Future<Map<String, dynamic>> getPeriodLeaderboard({required String periodType, String? attribute}) async {
     final callable = _functions.httpsCallable('getPeriodLeaderboard');
-    final result = await callable.call({'periodType': periodType});
+    final result = await callable.call({
+      'periodType': periodType,
+      if (attribute != null) 'attribute': attribute,
+    });
     return Map<String, dynamic>.from(result.data as Map);
   }
 }
