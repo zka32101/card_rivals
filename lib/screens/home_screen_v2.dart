@@ -13,8 +13,6 @@ import 'tutorial_battle_screen.dart';
 import 'pvp_battle_screen_v2.dart';
 import 'defense_deck_screen.dart';
 import 'ranking_screen_v3.dart';
-import 'tutorial_screen.dart';
-import 'achievements_screen.dart';
 import 'event_challenges_widget.dart';
 import '../services/sound_service.dart';
 import '../widgets/daily_quests_widget.dart';
@@ -130,26 +128,7 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.card_giftcard_outlined, color: Kingdom.gilt),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AchievementsScreen())),
-            tooltip: t.home_achievementsTooltip,
-          ),
-          IconButton(
-            icon: const Icon(Icons.help_outline, color: Kingdom.gilt),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TutorialScreen())),
-            tooltip: t.home_tutorialTooltip,
-          ),
-          IconButton(
-            icon: const Icon(Icons.library_books_outlined, color: Kingdom.gilt),
-            onPressed: () => context.push('/explanation'),
-            tooltip: t.home_explanationTooltip,
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Kingdom.gilt),
-            onPressed: () => context.push('/settings'),
-            tooltip: t.home_settingsTooltip,
-          ),
+          // 実績・チュートリアル・ガイド・設定は下部ナビの「メニュー」タブへ集約
         ],
       ),
       body: Stack(

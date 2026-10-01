@@ -16,7 +16,7 @@ import 'providers/migration_provider.dart';
 import 'screens/bonus_detail_screen.dart';
 import 'screens/contact_screen.dart';
 import 'screens/explanation_screen.dart';
-import 'screens/home_screen_v2.dart';
+import 'screens/main_shell.dart';
 import 'screens/purchase_history_screen.dart';
 import 'screens/season_screen.dart';
 import 'screens/settings_screen.dart';
@@ -140,7 +140,7 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const HomeScreenV2(),
+      builder: (context, state) => const MainShell(),
     ),
     GoRoute(
       path: '/settings',
