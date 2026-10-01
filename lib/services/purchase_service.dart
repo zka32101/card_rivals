@@ -135,9 +135,36 @@ class PurchaseService {
   static Future<PurchaseResult> purchaseStarterPack() =>
       _purchaseFirstPackage(kStarterPackOffering);
 
-  // VIPパス（月額サブスクリプション）
-  static Future<PurchaseResult> purchaseVipPass() =>
-      _purchaseFirstPackage(kVipPassOffering);
+  // VIPパス（月額/年額サブスクリプション）
+  // vip_pass Offeringには$rc_monthlyと$rc_annualの2パッケージがあるため、
+  // 先頭決め打ちではなく期間区分で選ぶ。
+  static Future<PurchaseResult> purchaseVipPass({bool yearly = false}) async {
+    try {
+      final offerings = await Purchases.getOfferings();
+      final offering = offerings.getOffering(kVipPassOffering);
+      final type = yearly ? PackageType.annual : PackageType.monthly;
+      Package? package;
+      for (final p in offering?.availablePackages ?? const <Package>[]) {
+        if (p.packageType == type) {
+          package = p;
+          break;
+        }
+      }
+      if (package == null) return PurchaseResult.noProduct;
+      await Purchases.purchasePackage(package);
+      return PurchaseResult.success;
+    } on PlatformException catch (e) {
+      final code = PurchasesErrorHelper.getErrorCode(e);
+      if (code == PurchasesErrorCode.purchaseCancelledError) {
+        return PurchaseResult.cancelled;
+      }
+      debugPrint('Purchase error ($kVipPassOffering): ${e.message}');
+      return PurchaseResult.error;
+    } catch (e) {
+      debugPrint('Purchase error ($kVipPassOffering): $e');
+      return PurchaseResult.error;
+    }
+  }
 
   // VIPパスが現在有効かどうか（RevenueCatのEntitlementで判定）
   static Future<bool> isVipActive() async {
