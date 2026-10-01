@@ -96,10 +96,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     }
   }
 
-  Future<void> _buyVipPass() async {
+  Future<void> _buyVipPass({bool yearly = false}) async {
     if (_isBuyingVip) return;
     setState(() => _isBuyingVip = true);
-    final result = await PurchaseService.purchaseVipPass();
+    final result = await PurchaseService.purchaseVipPass(yearly: yearly);
     if (!mounted) return;
     setState(() => _isBuyingVip = false);
     // サブスクリプションはEntitlement経由で有効判定するため、購入直後にプロバイダを再取得する
@@ -234,7 +234,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 _VipPassTile(
                   isVip: isVip,
                   isProcessing: _isBuyingVip,
-                  onTap: _buyVipPass,
+                  onTapMonthly: () => _buyVipPass(),
+                  onTapYearly: () => _buyVipPass(yearly: true),
                 ),
                 const SizedBox(height: Kingdom.spaceXl),
 
@@ -312,9 +313,15 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 class _VipPassTile extends StatelessWidget {
   final bool isVip;
   final bool isProcessing;
-  final VoidCallback onTap;
+  final VoidCallback onTapMonthly;
+  final VoidCallback onTapYearly;
 
-  const _VipPassTile({required this.isVip, required this.isProcessing, required this.onTap});
+  const _VipPassTile({
+    required this.isVip,
+    required this.isProcessing,
+    required this.onTapMonthly,
+    required this.onTapYearly,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -350,17 +357,27 @@ class _VipPassTile extends StatelessWidget {
           Text(t.shop_vipBenefit2, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontSize: 12)),
           Text(t.shop_vipBenefit3, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontSize: 12)),
           const SizedBox(height: Kingdom.spaceMd),
-          if (!isVip)
+          if (!isVip) ...[
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: isProcessing ? null : onTap,
+                onPressed: isProcessing ? null : onTapMonthly,
                 style: ElevatedButton.styleFrom(backgroundColor: Kingdom.gilt, foregroundColor: Kingdom.night),
                 child: isProcessing
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Kingdom.night))
                     : Text(t.shop_vipSubscribeButton, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
+            const SizedBox(height: Kingdom.spaceSm),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: isProcessing ? null : onTapYearly,
+                style: OutlinedButton.styleFrom(foregroundColor: Kingdom.gilt, side: const BorderSide(color: Kingdom.gilt)),
+                child: Text(t.shop_vipSubscribeYearlyButton, style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
         ],
       ),
     );
