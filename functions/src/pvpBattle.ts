@@ -347,6 +347,15 @@ async function updatePeriodLeaderboardStats(userId: string, won: boolean): Promi
     // 表示名取得に失敗しても集計自体は続行する（ランキングにUnknownと出るだけ）
   }
 
+  // 属性別ランキング用: 今週その属性の国へ移住済みならstatsに属性を記録する
+  // （移住していない週はフィールドを書かず、属性別ランキングの対象外）。
+  let attribute: string | undefined;
+  try {
+    attribute = await resolveMigratedAttribute(userId);
+  } catch {
+    // 取得失敗時は属性なしで集計を続行する
+  }
+
   const periods: {periodType: string; periodKey: string}[] = [
     {periodType: "daily", periodKey: dailyKeyJST(now)},
     {periodType: "weekly", periodKey: weeklyKeyJST(now)},
@@ -364,6 +373,7 @@ async function updatePeriodLeaderboardStats(userId: string, won: boolean): Promi
       wins: FieldValue.increment(won ? 1 : 0),
       losses: FieldValue.increment(won ? 0 : 1),
       points: FieldValue.increment(won ? POINTS_PER_WIN : 0),
+      ...(attribute ? {attribute} : {}),
       updatedAt: FieldValue.serverTimestamp(),
     }, {merge: true});
   }));

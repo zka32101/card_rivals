@@ -32,6 +32,13 @@ final allTimeLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((ref) 
   return _entriesFromResponse(data);
 });
 
+// 属性別ランキング（今週その属性の国へ移住して戦ったプレイヤーの週間ポイント順）
+final attributeLeaderboardProvider =
+    FutureProvider.family<List<LeaderboardEntry>, String>((ref, attribute) async {
+  final data = await FunctionsService.getPeriodLeaderboard(periodType: 'attribute', attribute: attribute);
+  return _entriesFromResponse(data);
+});
+
 // 日次ランキング
 final dailyLeaderboardProvider = FutureProvider<DailyLeaderboard?>((ref) async {
   final data = await FunctionsService.getPeriodLeaderboard(periodType: 'daily');
