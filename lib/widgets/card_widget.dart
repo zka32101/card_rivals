@@ -291,6 +291,11 @@ class _RarityGem extends StatelessWidget {
   }
 }
 
+/// CardWidgetをグリッドに並べるときの1マスの高さ。
+/// カードは「正方形のアート + ヘッダー/種別/ステータス3行」の縦積みなので、幅に応じて
+/// 高さを決めないと固定の縦横比ではステータスが見切れる。
+double cardGridItemHeight(double itemWidth) => itemWidth + 166;
+
 // ─── ヘッダー（属性紋章 + 名前 + コスト） ───
 class _Header extends StatelessWidget {
   final PlayCard card;

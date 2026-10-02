@@ -7,7 +7,9 @@ import '../widgets/card_widget.dart';
 import '../widgets/card_detail_sheet.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/deck_presets_provider.dart';
 import 'deck_preset_manager_screen.dart';
+import 'deck_list_screen.dart';
 
 class DeckSelectionScreenV2 extends ConsumerStatefulWidget {
   final String? title;
@@ -100,6 +102,9 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
           const Positioned.fill(child: EmotionMoteField(count: 10)),
           Column(
         children: [
+          // マイデッキ（保存済みデッキをワンタップで適用。適用後もカードの入れ替えは自由）
+          _buildMyDecksStrip(t),
+
           // 属性フィルター
           Padding(
             padding: const EdgeInsets.all(14),
@@ -192,11 +197,11 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                 Expanded(
                   child: GridView.builder(
                     padding: const EdgeInsets.all(Kingdom.spaceMd),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       crossAxisSpacing: 10,
                       mainAxisSpacing: 10,
-                      childAspectRatio: 0.62,
+                      mainAxisExtent: cardGridItemHeight((MediaQuery.of(context).size.width - Kingdom.spaceMd * 2 - 20) / 3),
                     ),
                     itemCount: filtered.length,
                     itemBuilder: (context, i) {
@@ -285,6 +290,51 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
             ),
           ),
         ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 保存済みデッキの一覧（ワンタップで適用）。デッキが無ければ何も表示しない。
+  Widget _buildMyDecksStrip(AppLocalizations t) {
+    final presets = ref.watch(userDeckPresetsProvider).valueOrNull ?? const <DeckPreset>[];
+    if (presets.isEmpty) return const SizedBox.shrink();
+    return Container(
+      color: Kingdom.nightDeep,
+      padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+      child: Row(
+        children: [
+          Text(t.deckSelection_myDecksLabel, style: Kingdom.label(size: 12, color: Kingdom.gilt)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final p in presets)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(p.name, style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _loadedPresetId == p.id ? Kingdom.night : Kingdom.parchment,
+                        )),
+                        selected: _loadedPresetId == p.id,
+                        selectedColor: Kingdom.gilt,
+                        backgroundColor: Kingdom.night,
+                        side: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.4)),
+                        onSelected: (_) => _applyPreset(p),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeckListScreen())),
+            child: Text(t.deckSelection_manageDecks, style: const TextStyle(color: Kingdom.gilt, fontSize: 12)),
           ),
         ],
       ),
