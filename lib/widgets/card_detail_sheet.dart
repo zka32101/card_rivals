@@ -303,6 +303,9 @@ class _TrainingSection extends ConsumerWidget {
               );
             }),
           ),
+          const SizedBox(height: 6),
+          Text(t.collection_trainingBenefit,
+              style: TextStyle(fontSize: 11, height: 1.5, color: Kingdom.parchment.withValues(alpha: 0.65))),
           const SizedBox(height: Kingdom.spaceMd),
           SizedBox(
             width: double.infinity,

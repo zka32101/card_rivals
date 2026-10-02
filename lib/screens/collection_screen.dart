@@ -60,6 +60,26 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       _CardScope.seed => allCards.where((c) => c.isSeedCard).toList(),
     };
     final shown = _filtered(scoped);
+    final sortLabels = <String, String>{
+      'rarity': t.collection_sortByRarity,
+      'attr': t.collection_sortByAttribute,
+      'cost': t.collection_sortByCost,
+      'attack': t.collection_sortByAttack,
+      'defense': t.collection_sortByDefense,
+      'speed': t.collection_sortBySpeed,
+      'level': t.collection_sortByLevel,
+    };
+    List<PopupMenuEntry<String>> sortMenuItems(BuildContext _) => [
+          for (final e in sortLabels.entries)
+            PopupMenuItem<String>(
+              value: e.key,
+              child: Row(children: [
+                Icon(Icons.check, size: 16, color: _sort == e.key ? Kingdom.gilt : Colors.transparent),
+                const SizedBox(width: 8),
+                Text(e.value, style: const TextStyle(color: Kingdom.parchment)),
+              ]),
+            ),
+        ];
 
     return Scaffold(
       backgroundColor: Kingdom.night,
@@ -94,25 +114,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             color: Kingdom.nightDeep,
             initialValue: _sort,
             onSelected: (v) => setState(() => _sort = v),
-            itemBuilder: (_) => [
-              for (final e in {
-                'rarity': t.collection_sortByRarity,
-                'attr': t.collection_sortByAttribute,
-                'cost': t.collection_sortByCost,
-                'attack': t.collection_sortByAttack,
-                'defense': t.collection_sortByDefense,
-                'speed': t.collection_sortBySpeed,
-                'level': t.collection_sortByLevel,
-              }.entries)
-                PopupMenuItem(
-                  value: e.key,
-                  child: Row(children: [
-                    Icon(Icons.check, size: 16, color: _sort == e.key ? Kingdom.gilt : Colors.transparent),
-                    const SizedBox(width: 8),
-                    Text(e.value, style: const TextStyle(color: Kingdom.parchment)),
-                  ]),
-                ),
-            ],
+            itemBuilder: sortMenuItems,
           ),
         ],
       ),
@@ -145,6 +147,27 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.6)),
                     ),
                     const Spacer(),
+                    PopupMenuButton<String>(
+                      tooltip: t.collection_sortTooltip,
+                      color: Kingdom.nightDeep,
+                      initialValue: _sort,
+                      onSelected: (v) => setState(() => _sort = v),
+                      itemBuilder: sortMenuItems,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.sort, size: 14, color: Kingdom.gilt),
+                            const SizedBox(width: 4),
+                            Text(sortLabels[_sort] ?? '',
+                                style: const TextStyle(fontSize: 12, color: Kingdom.gilt, fontWeight: FontWeight.bold)),
+                            const Icon(Icons.arrow_drop_down, size: 16, color: Kingdom.gilt),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (_hasActiveFilter) const SizedBox(width: 8),
                     if (_hasActiveFilter)
                       GestureDetector(
                         onTap: _resetFilters,
@@ -420,20 +443,30 @@ class _CardResults extends StatelessWidget {
     }
 
     final cols = view == _CardView.grid2 ? 2 : 3;
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(Kingdom.spaceMd, Kingdom.spaceMd, Kingdom.spaceMd, 96),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: cols,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: cols == 2 ? 0.58 : 0.5,
-      ),
-      itemCount: cards.length,
-      itemBuilder: (context, i) {
-        final card = cards[i];
-        return GestureDetector(
-          onTap: () => showCardDetailSheet(context, card),
-          child: CardWidget(card: card, size: double.infinity),
+    const pad = Kingdom.spaceMd;
+    const gap = 10.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // カードは「正方形のアート + ヘッダー/種別/ステータス3行」の縦積み。幅に応じて
+        // 高さを決めないと、固定の縦横比ではステータス(攻撃/防御/速度)が見切れる。
+        final itemWidth = (constraints.maxWidth - pad * 2 - gap * (cols - 1)) / cols;
+        final itemHeight = itemWidth + 166;
+        return GridView.builder(
+          padding: const EdgeInsets.fromLTRB(pad, pad, pad, 96),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            crossAxisSpacing: gap,
+            mainAxisSpacing: gap,
+            mainAxisExtent: itemHeight,
+          ),
+          itemCount: cards.length,
+          itemBuilder: (context, i) {
+            final card = cards[i];
+            return GestureDetector(
+              onTap: () => showCardDetailSheet(context, card),
+              child: CardWidget(card: card, size: double.infinity),
+            );
+          },
         );
       },
     );

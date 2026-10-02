@@ -50,7 +50,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         );
       case PurchaseResult.error:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.shop_purchaseError), backgroundColor: Colors.red),
+          SnackBar(content: Text(_purchaseErrorText(t)), backgroundColor: Colors.red),
         );
     }
   }
@@ -91,7 +91,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.shop_productComingSoon)));
       case PurchaseResult.error:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.shop_purchaseError), backgroundColor: Colors.red),
+          SnackBar(content: Text(_purchaseErrorText(t)), backgroundColor: Colors.red),
         );
     }
   }
@@ -115,7 +115,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.shop_productComingSoon)));
       case PurchaseResult.error:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.shop_purchaseError), backgroundColor: Colors.red),
+          SnackBar(content: Text(_purchaseErrorText(t)), backgroundColor: Colors.red),
         );
     }
   }
@@ -175,9 +175,17 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     );
   }
 
+  // 購入失敗時は、原因の切り分けができるようエラーコードを併記する
+  String _purchaseErrorText(AppLocalizations t) {
+    final detail = PurchaseService.lastErrorDetail;
+    return detail == null ? t.shop_purchaseError : t.shop_purchaseErrorWithDetail(detail);
+  }
+
   Future<void> _restore() async {
     final ok = await PurchaseService.restorePurchases();
     if (!mounted) return;
+    // 復元したEntitlementをVIP表示へ反映する
+    ref.invalidate(vipStatusProvider);
     final t = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(ok ? t.shop_restoreSuccess : t.shop_restoreNotFound)),
