@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 import '../theme/kingdom_theme.dart';
+import '../widgets/account_link_section.dart';
 
 const String kPrivacyPolicyUrl = 'https://sites.google.com/view/yourwishapps/privacy-policy';
 
@@ -43,6 +44,11 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: Kingdom.spaceXxl),
+
+                _SectionLabel(t.settings_accountSection),
+                const SizedBox(height: Kingdom.spaceMd),
+                const AccountLinkSection(),
                 const SizedBox(height: Kingdom.spaceXxl),
 
                 _SectionLabel(t.settings_purchaseHistorySection),
