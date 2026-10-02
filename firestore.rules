@@ -82,6 +82,16 @@ service cloud.firestore {
       }
     }
 
+    // =============== 公開カードの横断取得（collectionGroup） ===============
+    // 「カードを借りる」の人気度ランキング（popularCardsProvider）は
+    // collectionGroup('cards').where('isPublic', isEqualTo: true) で全ユーザーの公開カードを
+    // 取得する。users/{userId}/cards 配下のルールだけではコレクショングループ
+    // クエリは許可されず、常にpermission-deniedになっていた。公開カードの読み取りのみ許可し、
+    // 非公開カードは従来どおり本人のみ（上のusers配下ルール）。
+    match /{path=**}/cards/{cardId} {
+      allow read: if request.auth != null && resource.data.isPublic == true;
+    }
+
     // =============== カードレンタル取引記録 ===============
     // renterUid/creatorUid 双方の当事者のみ読み取り可能。書き込みは常にfalse
     // —— rentCard Cloud FunctionがAdmin SDK経由でのみ作成する（通貨移動を伴うため
