@@ -281,7 +281,9 @@ class _CardRevealDialogState extends State<CardRevealDialog>
             borderRadius: BorderRadius.circular(12),
             child: IgnorePointer(
               child: ShaderMask(
-                blendMode: BlendMode.srcATop,
+                // dstIn: 白い面をグラデーションのアルファで抜き、光の帯だけを残す。
+                // （srcATopだと透明部分でも白がそのまま残り、カード全面が白く覆われていた）
+                blendMode: BlendMode.dstIn,
                 shaderCallback: (rect) {
                   final slide = _shineController.value * 2 - 0.5;
                   return LinearGradient(
