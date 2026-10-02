@@ -110,7 +110,11 @@ class _Section extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: Kingdom.gilt.withValues(alpha: 0.25)),
             ),
-            child: Column(
+            // 色付きContainerの中でListTileの波紋が見えなくなる(assertion)のを防ぐため、
+            // 透明なMaterialで包む
+            child: Material(
+              type: MaterialType.transparency,
+              child: Column(
               children: [
                 for (var i = 0; i < items.length; i++) ...[
                   items[i],
@@ -118,6 +122,7 @@ class _Section extends StatelessWidget {
                     Divider(height: 1, indent: 56, color: Kingdom.parchment.withValues(alpha: 0.1)),
                 ],
               ],
+            ),
             ),
           ),
         ],

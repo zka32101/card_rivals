@@ -391,6 +391,7 @@
   "collection_deckTooltip": "My Decks",
   "deckSelection_myDecksLabel": "My Decks",
   "deckSelection_manageDecks": "Manage",
+  "home_deckTileSubtitle": "Save your 5-card decks",
   "collection_title": "🎴 Card Collection",
   "collection_sortTooltip": "Sort",
   "collection_sortByRarity": "By Rarity",

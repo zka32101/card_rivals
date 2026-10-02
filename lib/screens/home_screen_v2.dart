@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../providers/collection_provider.dart';
 import '../providers/game_state_provider.dart';
 import '../providers/vip_provider.dart';
 import '../services/ad_service.dart';
@@ -18,9 +19,7 @@ import '../services/sound_service.dart';
 import '../widgets/daily_quests_widget.dart';
 import '../widgets/daily_missions_widget.dart';
 import '../widgets/daily_reward_dialog.dart';
-import 'collection_screen.dart';
-import 'popular_cards_screen.dart';
-import 'card_rental_settings_screen.dart';
+import 'deck_list_screen.dart';
 import 'season_screen.dart';
 import '../providers/migration_provider.dart';
 import '../l10n/app_localizations.dart';
@@ -158,132 +157,41 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // セクション1: ボーナス情報
+                // セクション1: バトル（いちばん目立たせる）。補助メニューは下部ナビの
+                // 「カード／ランキング／メニュー」に集約したので、ここは遊ぶ導線だけにする。
+                _MainActionsV2(context: context),
+                const SizedBox(height: Kingdom.spaceXl),
+
+                // セクション2: 今日のやること（ボーナス・クエスト・ミッション）
                 _SectionHeader(title: t.home_todayStatusHeader),
                 const SizedBox(height: Kingdom.spaceSm),
                 GestureDetector(
                   onTap: () => context.push('/bonus-detail'),
                   child: _BonusBannerV2(wallet: wallet),
                 ),
-                const SizedBox(height: Kingdom.spaceXxl),
-
-                // セクション1.5: デイリークエスト
-                _SectionHeader(title: t.home_dailyQuestsHeader),
-                const SizedBox(height: Kingdom.spaceSm),
+                const SizedBox(height: Kingdom.spaceLg),
                 const DailyQuestsWidget(),
-                const SizedBox(height: Kingdom.spaceXxl),
-
-                // セクション1.75: 本日のミッション
+                const SizedBox(height: Kingdom.spaceLg),
                 const DailyMissionsWidget(),
-                const SizedBox(height: Kingdom.spaceXxl),
+                const SizedBox(height: Kingdom.spaceLg),
 
-                // セクション1.9: 属性の国への移住
+                // セクション3: 属性の国への移住・イベント
                 const _MigrationBannerV2(),
-                const SizedBox(height: Kingdom.spaceXxl),
-
-                // セクション2: メインアクション
-                _SectionHeader(title: t.home_startBattleHeader),
-                const SizedBox(height: Kingdom.spaceSm),
-                _MainActionsV2(context: context),
-                const SizedBox(height: Kingdom.spaceXxl),
-
-                // セクション2.5: イベントチャレンジ
+                const SizedBox(height: Kingdom.spaceLg),
                 const EventChallengesWidget(),
-                const SizedBox(height: Kingdom.spaceXxl),
+                const SizedBox(height: Kingdom.spaceLg),
 
-                // セクション2.75: カードマーケット
-                _SectionHeader(title: t.home_cardMarketHeader),
-                const SizedBox(height: Kingdom.spaceSm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const PopularCardsScreen()),
-                        ),
-                        child: OrnateFrame(
-                          accent: Kingdom.sadnessIndigo,
-                          padding: const EdgeInsets.all(Kingdom.spaceMd),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(t.home_rentCardTitle,
-                                  style: Kingdom.label(size: 12, color: const Color(0xFF7C9CDB))),
-                              const SizedBox(height: Kingdom.spaceXs),
-                              Text(t.home_popularityRankingLabel,
-                                  style: TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.parchment.withValues(alpha: 0.6))),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: Kingdom.spaceSm),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const CardRentalSettingsScreen()),
-                        ),
-                        child: OrnateFrame(
-                          accent: Kingdom.joyGold,
-                          padding: const EdgeInsets.all(Kingdom.spaceMd),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(t.home_lendCardTitle,
-                                  style: Kingdom.label(size: 12, color: const Color(0xFFE8C368))),
-                              const SizedBox(height: Kingdom.spaceXs),
-                              Text(t.home_publicSettingsRevenueLabel,
-                                  style: TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.parchment.withValues(alpha: 0.6))),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Kingdom.spaceXxl),
-
-                // セクション3: デッキ管理
+                // セクション4: 防衛デッキ
                 _SectionHeader(title: t.home_defenseDeckHeader),
                 const SizedBox(height: Kingdom.spaceSm),
                 _DefenseDeckSectionV2(defenseDeck: defenseDeck, context: context),
-                const SizedBox(height: Kingdom.spaceXxl),
 
-                // セクション4: カード管理
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _SectionHeader(title: t.home_yourCardsHeader),
-                    Material(
-                      color: Kingdom.gilt.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(20),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CollectionScreen())),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.grid_view, size: 16, color: Kingdom.gilt),
-                              const SizedBox(width: 6),
-                              Text(
-                                t.home_viewAllButton,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Kingdom.gilt),
-                              ),
-                              const SizedBox(width: 2),
-                              const Icon(Icons.chevron_right, size: 16, color: Kingdom.gilt),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Kingdom.spaceSm),
-                _CardSectionV2(context: context),
+                // カードをまだ1枚も作っていない人にだけ、作成の導線を出す
+                // （作成済みのカードは下部ナビの「カード」タブで見る）
+                if (ref.watch(myCardsProvider).isEmpty) ...[
+                  const SizedBox(height: Kingdom.spaceLg),
+                  _CardSectionV2(context: context),
+                ],
                 SizedBox(height: Kingdom.spaceLg + MediaQuery.of(context).padding.bottom),
               ],
             ),
@@ -584,10 +492,10 @@ class _MainActionsV2 extends StatelessWidget {
             Expanded(
               child: _KingdomActionTile(
                 accent: Kingdom.joyGold,
-                emoji: '🏆',
-                title: t.home_rankingTitle,
-                subtitle: t.home_checkRankLabel,
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RankingScreenV3())),
+                emoji: '🃏',
+                title: t.deckList_title,
+                subtitle: t.home_deckTileSubtitle,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeckListScreen())),
               ),
             ),
           ],
