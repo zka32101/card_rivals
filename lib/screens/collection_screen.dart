@@ -7,6 +7,7 @@ import '../widgets/card_detail_sheet.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
 import 'card_creation_screen_v2.dart';
+import 'deck_list_screen.dart';
 
 enum _CardScope { all, mine, seed }
 
@@ -96,6 +97,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         backgroundColor: Kingdom.nightDeep,
         elevation: 0,
         actions: [
+          IconButton(
+            tooltip: t.collection_deckTooltip,
+            icon: const Icon(Icons.dashboard_customize_outlined, color: Kingdom.gilt),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeckListScreen())),
+          ),
           IconButton(
             tooltip: t.collection_viewToggleTooltip,
             icon: Icon(
@@ -450,7 +456,7 @@ class _CardResults extends StatelessWidget {
         // カードは「正方形のアート + ヘッダー/種別/ステータス3行」の縦積み。幅に応じて
         // 高さを決めないと、固定の縦横比ではステータス(攻撃/防御/速度)が見切れる。
         final itemWidth = (constraints.maxWidth - pad * 2 - gap * (cols - 1)) / cols;
-        final itemHeight = itemWidth + 166;
+        final itemHeight = cardGridItemHeight(itemWidth);
         return GridView.builder(
           padding: const EdgeInsets.fromLTRB(pad, pad, pad, 96),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
