@@ -98,6 +98,13 @@ class CardRivalsApp extends ConsumerWidget {
       if (ref.read(walletHydratedForUidProvider) == uid) return;
       ref.read(walletProvider.notifier).state = wallet;
       ref.read(walletHydratedForUidProvider.notifier).state = uid;
+      markWalletHydrated(uid);
+    });
+
+    // 課金(RevenueCat)のユーザーをFirebaseのuidに紐付ける。再インストール・復元時に
+    // 同じアカウントの購入として扱えるようにするため。
+    ref.listen<String?>(currentUserIdProvider, (previous, next) {
+      if (next != null) PurchaseService.syncUser(next);
     });
 
     // 属性移住状態も同様に、ユーザーごとに1回だけFirestoreから復元する。

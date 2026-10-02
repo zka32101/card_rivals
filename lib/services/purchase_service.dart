@@ -88,6 +88,22 @@ const List<CurrencyPackageDef> kGemPackages = [
 class PurchaseService {
   static bool _initialized = false;
 
+  // 直近の購入エラーの内容(エラーコード名)。購入失敗時に画面へ出して原因を特定しやすくする。
+  static String? lastErrorDetail;
+
+  // RevenueCatのユーザーをFirebase uidに紐付ける（購入が端末/再インストールをまたいで
+  // 同じアカウントに残るようにする）。未初期化・失敗時は何もしない。
+  static Future<void> syncUser(String uid) async {
+    if (!_initialized) return;
+    try {
+      if (await Purchases.appUserID != uid) {
+        await Purchases.logIn(uid);
+      }
+    } catch (e) {
+      debugPrint('RevenueCat logIn failed: $e');
+    }
+  }
+
   static Future<void> init() async {
     if (_initialized) return;
 
@@ -124,6 +140,7 @@ class PurchaseService {
         return PurchaseResult.cancelled;
       }
       debugPrint('Purchase error ($offeringId): ${e.message}');
+      lastErrorDetail = code.name;
       return PurchaseResult.error;
     } catch (e) {
       debugPrint('Purchase error ($offeringId): $e');
@@ -159,6 +176,7 @@ class PurchaseService {
         return PurchaseResult.cancelled;
       }
       debugPrint('Purchase error ($kVipPassOffering): ${e.message}');
+      lastErrorDetail = code.name;
       return PurchaseResult.error;
     } catch (e) {
       debugPrint('Purchase error ($kVipPassOffering): $e');
@@ -201,6 +219,7 @@ class PurchaseService {
         return PurchaseResult.cancelled;
       }
       debugPrint('Purchase error ($packageId): ${e.message}');
+      lastErrorDetail = code.name;
       return PurchaseResult.error;
     } catch (e) {
       debugPrint('Purchase error ($packageId): $e');
@@ -215,10 +234,11 @@ class PurchaseService {
   }
 
   // 購入復元
+  // 戻り値: 復元できる購入（有効なEntitlementまたは購入履歴）が見つかったか。
   static Future<bool> restorePurchases() async {
     try {
-      await Purchases.restorePurchases();
-      return true;
+      final info = await Purchases.restorePurchases();
+      return info.entitlements.active.isNotEmpty || info.nonSubscriptionTransactions.isNotEmpty;
     } catch (e) {
       debugPrint('Restore purchases failed: $e');
       return false;

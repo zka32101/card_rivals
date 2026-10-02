@@ -277,8 +277,11 @@ final userWalletProvider = FutureProvider<WalletState>((ref) async {
       return initialWallet;
     }
   } catch (e) {
+    // 読み込み失敗時に初期値のウォレット(コイン100・受取日なし)を返すと、それが「正」として
+    // 反映され、デイリーボーナスを再度受け取れたうえ、以降の保存で実際の残高を初期値で
+    // 上書きしてしまう。失敗はエラーとして伝え、ハイドレートも保存もさせない。
     debugPrint('Error loading wallet: $e');
-    return const WalletState();
+    rethrow;
   }
 });
 
@@ -346,7 +349,16 @@ const double kParamBigHitBonusPercent = 0.15; // 当たり時の予算上乗せ�
 // 一時的なネットワーク断でコイン/ジェム付与（特に課金直後）が消えてしまわないよう、
 // 数回リトライしてから諾める。呼び出し側は戻り値のbool（永続化に成功したか）を見て、
 // 課金など重要な操作では失敗時にユーザーへ警告を出すこと。
+// Firestoreから実データを読み込めたユーザー(=ハイドレート済み)のみ保存を許可する。
+// 未ハイドレートの初期値ウォレットを書き込むと実残高を上書きしてしまうため。
+String? _walletHydratedUid;
+void markWalletHydrated(String uid) => _walletHydratedUid = uid;
+
 Future<bool> updateWallet(String userId, WalletState wallet) async {
+  if (_walletHydratedUid != userId) {
+    debugPrint('updateWallet skipped: wallet not hydrated for $userId');
+    return false;
+  }
   const maxAttempts = 3;
   for (var attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
