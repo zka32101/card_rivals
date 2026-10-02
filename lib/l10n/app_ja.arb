@@ -391,6 +391,7 @@
   "collection_deckTooltip": "マイデッキ",
   "deckSelection_myDecksLabel": "マイデッキ",
   "deckSelection_manageDecks": "管理",
+  "home_deckTileSubtitle": "対戦用の5枚を保存",
   "collection_title": "🎴 カードコレクション",
   "collection_sortTooltip": "並び替え",
   "collection_sortByRarity": "レアリティ順",
