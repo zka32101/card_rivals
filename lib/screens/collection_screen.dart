@@ -310,9 +310,11 @@ class _FilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return Container(
+      width: double.infinity,
       color: Kingdom.nightDeep,
-      padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceSm, vertical: Kingdom.spaceSm),
+      padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceSm, vertical: Kingdom.spaceXs),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 属性フィルタ
           SingleChildScrollView(
@@ -329,7 +331,6 @@ class _FilterBar extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 6),
           // レアリティフィルタ
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -411,7 +412,7 @@ class _CardResults extends StatelessWidget {
 
     if (view == _CardView.list) {
       return ListView.separated(
-        padding: const EdgeInsets.all(Kingdom.spaceMd),
+        padding: const EdgeInsets.fromLTRB(Kingdom.spaceMd, Kingdom.spaceMd, Kingdom.spaceMd, 96),
         itemCount: cards.length,
         separatorBuilder: (_, __) => const SizedBox(height: 8),
         itemBuilder: (context, i) => _CardRow(card: cards[i]),
@@ -420,7 +421,7 @@ class _CardResults extends StatelessWidget {
 
     final cols = view == _CardView.grid2 ? 2 : 3;
     return GridView.builder(
-      padding: const EdgeInsets.all(Kingdom.spaceMd),
+      padding: const EdgeInsets.fromLTRB(Kingdom.spaceMd, Kingdom.spaceMd, Kingdom.spaceMd, 96),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: cols,
         crossAxisSpacing: 10,
