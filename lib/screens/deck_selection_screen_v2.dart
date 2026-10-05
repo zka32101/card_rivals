@@ -201,7 +201,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                       crossAxisCount: 3,
                       crossAxisSpacing: 10,
                       mainAxisSpacing: 10,
-                      mainAxisExtent: cardGridItemHeight((MediaQuery.of(context).size.width - Kingdom.spaceMd * 2 - 20) / 3),
+                      mainAxisExtent: cardGridItemHeight((MediaQuery.of(context).size.width - Kingdom.spaceMd * 2 - 20) / 3, compact: true),
                     ),
                     itemCount: filtered.length,
                     itemBuilder: (context, i) {
@@ -213,6 +213,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                           children: [
                             CardWidget(
                               card: card,
+                              compact: true,
                               isSelected: isSelected,
                               onTap: () {
                                 setState(() {
@@ -316,7 +317,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
-                        label: Text(p.name, style: TextStyle(
+                        label: Text(p.isFavorite ? '★ ${p.name}' : p.name, style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: _loadedPresetId == p.id ? Kingdom.night : Kingdom.parchment,

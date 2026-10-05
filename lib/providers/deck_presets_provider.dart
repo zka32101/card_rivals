@@ -30,13 +30,20 @@ final userDeckPresetsProvider = FutureProvider<List<DeckPreset>>((ref) async {
         .orderBy('updatedAt', descending: true)
         .get();
 
-    return querySnapshot.docs
+    final presets = querySnapshot.docs
         .map((doc) => DeckPreset.fromMap(
           doc.data(),
           id: doc.id,
           userId: userId,
         ))
         .toList();
+    // お気に入りを先頭に（それぞれ更新が新しい順は維持。Dartのsortは安定ではないので位置も添える）
+    final indexed = presets.asMap().entries.toList()
+      ..sort((a, b) {
+        if (a.value.isFavorite != b.value.isFavorite) return a.value.isFavorite ? -1 : 1;
+        return a.key.compareTo(b.key);
+      });
+    return [for (final e in indexed) e.value];
   } catch (e) {
     debugPrint('Error loading deck presets: $e');
     return [];
@@ -158,6 +165,41 @@ Future<String?> saveDeckPreset(
     debugPrint('Error saving deck preset: $e');
     rethrow;
   }
+}
+
+/// デッキの名前を変更
+Future<void> renameDeckPreset(WidgetRef ref, String presetId, String newName) async {
+  final userId = ref.read(currentUserIdProvider);
+  if (userId == null) throw Exception('User not authenticated');
+  final name = newName.trim();
+  if (presetId.isEmpty || name.isEmpty) throw Exception('プリセット名は空にできません');
+  if (name.length > 50) throw Exception('プリセット名は50文字以内です');
+
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(userId)
+      .collection('deckPresets')
+      .doc(presetId)
+      .update({'name': name, 'updatedAt': Timestamp.fromDate(DateTime.now())});
+  ref.invalidate(userDeckPresetsProvider);
+  ref.invalidate(deckPresetProvider(presetId));
+}
+
+/// デッキのお気に入りを切り替え
+Future<void> setDeckPresetFavorite(WidgetRef ref, String presetId, bool favorite) async {
+  final userId = ref.read(currentUserIdProvider);
+  if (userId == null) throw Exception('User not authenticated');
+  if (presetId.isEmpty) throw Exception('プリセットIDが必要です');
+
+  // 並び順（更新日時）を変えないよう updatedAt は触らない
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(userId)
+      .collection('deckPresets')
+      .doc(presetId)
+      .update({'isFavorite': favorite});
+  ref.invalidate(userDeckPresetsProvider);
+  ref.invalidate(deckPresetProvider(presetId));
 }
 
 /// デッキプリセットを削除

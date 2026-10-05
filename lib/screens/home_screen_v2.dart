@@ -3,16 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/auth_provider.dart';
-import '../providers/collection_provider.dart';
 import '../providers/game_state_provider.dart';
 import '../providers/vip_provider.dart';
 import '../services/ad_service.dart';
-import '../widgets/card_widget.dart';
 import '../theme/kingdom_theme.dart';
-import 'card_creation_screen_v2.dart';
 import 'tutorial_battle_screen.dart';
 import 'pvp_battle_screen_v2.dart';
-import 'defense_deck_screen.dart';
 import 'ranking_screen_v3.dart';
 import 'event_challenges_widget.dart';
 import '../services/sound_service.dart';
@@ -62,7 +58,6 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
     final t = AppLocalizations.of(context)!;
     final rank = ref.watch(myPlayerRankProvider).valueOrNull ?? const PlayerRank();
     final wallet = ref.watch(walletProvider);
-    final defenseDeck = ref.watch(defenseDeckProvider);
 
     // walletProviderのハイドレーション完了（Firestoreからの実データ反映）を待ってから
     // デイリーログイン受取可否を判定する。ハイドレーション前のデフォルト値
@@ -181,17 +176,7 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
                 const EventChallengesWidget(),
                 const SizedBox(height: Kingdom.spaceLg),
 
-                // セクション4: 防衛デッキ
-                _SectionHeader(title: t.home_defenseDeckHeader),
-                const SizedBox(height: Kingdom.spaceSm),
-                _DefenseDeckSectionV2(defenseDeck: defenseDeck, context: context),
-
-                // カードをまだ1枚も作っていない人にだけ、作成の導線を出す
-                // （作成済みのカードは下部ナビの「カード」タブで見る）
-                if (ref.watch(myCardsProvider).isEmpty) ...[
-                  const SizedBox(height: Kingdom.spaceLg),
-                  _CardSectionV2(context: context),
-                ],
+                // 防衛デッキ・カード作成・マーケットは下部ナビの「カード」タブに集約した
                 SizedBox(height: Kingdom.spaceLg + MediaQuery.of(context).padding.bottom),
               ],
             ),
@@ -564,101 +549,5 @@ class _KingdomActionTile extends StatelessWidget {
     );
 
     return tile;
-  }
-}
-
-class _DefenseDeckSectionV2 extends StatelessWidget {
-  final List<dynamic> defenseDeck;
-  final BuildContext context;
-  const _DefenseDeckSectionV2({required this.defenseDeck, required this.context});
-
-  @override
-  Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
-    return OrnateFrame(
-      accent: Kingdom.bronze,
-      padding: const EdgeInsets.all(Kingdom.spaceMd),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                defenseDeck.isEmpty ? t.home_notSetLabel : t.home_deckCountSet(defenseDeck.length),
-                style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.6)),
-              ),
-              TextButton.icon(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const DefenseDeckScreen()),
-                ),
-                icon: const Icon(Icons.edit, size: 16, color: Kingdom.gilt),
-                label: Text(t.home_changeButton, style: TextStyle(fontSize: 12, color: Kingdom.gilt)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          defenseDeck.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: Kingdom.spaceXl),
-                    child: Text(
-                      t.home_tapToSetDeckHint,
-                      style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: 12),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : SizedBox(
-                  height: 90,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: defenseDeck.length,
-                    itemBuilder: (_, i) => Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: CardThumbnail(card: defenseDeck[i], size: 70),
-                    ),
-                  ),
-                ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CardSectionV2 extends StatelessWidget {
-  final BuildContext context;
-  const _CardSectionV2({required this.context});
-
-  @override
-  Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
-    return OrnateFrame(
-      accent: Kingdom.sadnessIndigo,
-      padding: const EdgeInsets.all(Kingdom.spaceLg),
-      child: Column(
-        children: [
-          const Icon(Icons.auto_awesome, size: 40, color: Kingdom.sadnessIndigo),
-          const SizedBox(height: Kingdom.spaceSm),
-          Text(t.home_noCardsYetTitle,
-              style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.85)),
-              textAlign: TextAlign.center),
-          const SizedBox(height: Kingdom.spaceXs),
-          Text(t.home_aiAutoImageCaption,
-              style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: 12),
-              textAlign: TextAlign.center),
-          const SizedBox(height: Kingdom.spaceMd),
-          RoyalButton(
-            label: t.home_createCardButton,
-            icon: Icons.add,
-            onPressed: () {
-              playSound(SoundEffect.tap);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CardCreationScreenV2()));
-            },
-          ),
-        ],
-      ),
-    );
   }
 }

@@ -6,6 +6,9 @@ class DeckPreset {
   final String name;
   final String description;
   final List<String> cardIds;
+
+  /// お気に入り。対戦開始時のデッキ選択で先頭に並ぶ。
+  final bool isFavorite;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -15,6 +18,7 @@ class DeckPreset {
     required this.name,
     this.description = '',
     required this.cardIds,
+    this.isFavorite = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -29,6 +33,7 @@ class DeckPreset {
     String? name,
     String? description,
     List<String>? cardIds,
+    bool? isFavorite,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -38,6 +43,7 @@ class DeckPreset {
       name: name ?? this.name,
       description: description ?? this.description,
       cardIds: cardIds ?? this.cardIds,
+      isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -48,6 +54,7 @@ class DeckPreset {
     'name': name,
     'description': description,
     'cardIds': cardIds,
+    'isFavorite': isFavorite,
     'createdAt': Timestamp.fromDate(createdAt),
     'updatedAt': Timestamp.fromDate(updatedAt),
   };
@@ -64,6 +71,7 @@ class DeckPreset {
       name: map['name'] ?? 'Unnamed Deck',
       description: map['description'] ?? '',
       cardIds: List<String>.from(map['cardIds'] ?? []),
+      isFavorite: map['isFavorite'] == true,
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (map['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );

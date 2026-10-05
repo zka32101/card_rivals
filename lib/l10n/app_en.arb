@@ -389,7 +389,7 @@
   "deckList_missingCards": "{count} card(s) are unavailable (e.g. expired rentals). Edit the deck to swap them.",
   "@deckList_missingCards": {"placeholders":{"count":{"type":"int"}}},
   "collection_deckTooltip": "My Decks",
-  "deckSelection_myDecksLabel": "My Decks",
+  "deckSelection_myDecksLabel": "★ Favorites",
   "deckSelection_manageDecks": "Manage",
   "home_deckTileSubtitle": "Save your 5-card decks",
   "settings_accountSection": "Account transfer",
@@ -894,5 +894,12 @@
   "explanation_page8Detail1": "Passive \"Power Strike\": +15% attack power when attacking",
   "explanation_page8Detail2": "Passive \"Guard Up\": +15% defense power when defending",
   "explanation_page8Detail3": "Active \"Double Strike\": 20% chance to deal +50% bonus damage when attacking",
-  "home_explanationTooltip": "Game Guide"
+  "home_explanationTooltip": "Game Guide",
+  "cardHub_tabCards": "Cards",
+  "cardHub_tabDecks": "Decks",
+  "cardHub_tabMarket": "Market",
+  "deckList_battleDecksHeader": "⚔️ Battle Decks (Favorites)",
+  "deckList_favorite": "Add to favorites",
+  "deckList_unfavorite": "Remove from favorites",
+  "deckList_rename": "Rename"
 }
