@@ -117,7 +117,6 @@ class _MenuItem extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String label;
-  final String? caption;
   final VoidCallback onTap;
 
   const _MenuItem({
@@ -125,7 +124,6 @@ class _MenuItem extends StatelessWidget {
     required this.color,
     required this.label,
     required this.onTap,
-    this.caption,
   });
 
   @override
@@ -134,9 +132,6 @@ class _MenuItem extends StatelessWidget {
       minTileHeight: Kingdom.minTapTarget,
       leading: Icon(icon, color: color),
       title: Text(label, style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold)),
-      subtitle: caption == null
-          ? null
-          : Text(caption!, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 12)),
       trailing: Icon(Icons.chevron_right, color: Kingdom.parchment.withValues(alpha: 0.4)),
       onTap: onTap,
     );
