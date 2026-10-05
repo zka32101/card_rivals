@@ -56,7 +56,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
   int get _budget => kCardCreationBudget;
   // build内(Widgetツリー構築中)でのみ使用。ref.watchはbuildフェーズ外(onPressed等)から
   // 呼ぶとエラーになるため、イベントハンドラー側では ref.read(vipStatusProvider) を直接使うこと。
-  bool get _isVipWatched => ref.watch(vipStatusProvider).valueOrNull ?? false;
+  bool get _isVipWatched => ref.watch(vipStatusProvider).value ?? false;
   int get _creationCostWatched => cardCreationCoinCost(isVip: _isVipWatched);
   bool get _isParamValid => _hasRolled;
   int get _remainingRerolls => kParamRerollMaxCount - _rerollsUsed;
@@ -793,7 +793,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
   void _confirmAndPay() {
     final t = AppLocalizations.of(context)!;
     final wallet = ref.read(walletProvider);
-    final isVip = ref.read(vipStatusProvider).valueOrNull ?? false;
+    final isVip = ref.read(vipStatusProvider).value ?? false;
     final cost = cardCreationCoinCost(isVip: isVip);
     if (wallet.coinBalance < cost) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -849,7 +849,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
 
   Future<void> _processPurchase() async {
     final wallet = ref.read(walletProvider);
-    final isVip = ref.read(vipStatusProvider).valueOrNull ?? false;
+    final isVip = ref.read(vipStatusProvider).value ?? false;
     final cost = cardCreationCoinCost(isVip: isVip);
     if (wallet.coinBalance < cost) {
       // _confirmAndPay側で確認済みだが、確認ダイアログ表示中の消費と競合した場合の保険

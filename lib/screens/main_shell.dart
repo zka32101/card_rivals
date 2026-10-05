@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/kingdom_theme.dart';
-import 'collection_screen.dart';
+import 'card_hub_screen.dart';
 import 'home_screen_v2.dart';
 import 'menu_screen.dart';
 import 'ranking_screen_v3.dart';
@@ -27,7 +27,7 @@ class _MainShellState extends State<MainShell> {
         index: _index,
         children: const [
           HomeScreenV2(),
-          CollectionScreen(embedded: true),
+          CardHubScreen(),
           RankingScreenV3(),
           MenuScreen(),
         ],

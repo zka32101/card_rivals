@@ -389,7 +389,7 @@
   "deckList_missingCards": "使えないカードが{count}枚あります（レンタル期限切れなど）。編集して入れ替えてください",
   "@deckList_missingCards": {"placeholders":{"count":{"type":"int"}}},
   "collection_deckTooltip": "マイデッキ",
-  "deckSelection_myDecksLabel": "マイデッキ",
+  "deckSelection_myDecksLabel": "★ お気に入り",
   "deckSelection_manageDecks": "管理",
   "home_deckTileSubtitle": "対戦用の5枚を保存",
   "settings_accountSection": "アカウントの引き継ぎ",
@@ -894,5 +894,12 @@
   "explanation_page8Detail1": "パッシブ「攻撃強化」：攻撃時、自分の攻撃力+15%",
   "explanation_page8Detail2": "パッシブ「守り強化」：防御時、自分の防御力+15%",
   "explanation_page8Detail3": "アクティブ「連撃」：攻撃時20%の確率で追加ダメージ+50%",
-  "home_explanationTooltip": "ゲームガイド"
+  "home_explanationTooltip": "ゲームガイド",
+  "cardHub_tabCards": "カード",
+  "cardHub_tabDecks": "デッキ",
+  "cardHub_tabMarket": "マーケット",
+  "deckList_battleDecksHeader": "⚔️ 対戦用デッキ（お気に入り）",
+  "deckList_favorite": "お気に入りにする",
+  "deckList_unfavorite": "お気に入りを外す",
+  "deckList_rename": "名前を変更"
 }

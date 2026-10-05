@@ -16,7 +16,7 @@ class RankingScreenV2 extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rank = ref.watch(myPlayerRankProvider).valueOrNull ?? const PlayerRank();
+    final rank = ref.watch(myPlayerRankProvider).value ?? const PlayerRank();
 
     return Scaffold(
       appBar: AppBar(

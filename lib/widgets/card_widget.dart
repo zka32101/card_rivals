@@ -94,12 +94,17 @@ class CardWidget extends StatelessWidget {
   final bool isSelected;
   final VoidCallback? onTap;
 
+  /// 一覧用の簡易表示。ステータスをバーではなく数字だけで1行にまとめ、
+  /// 属性ラベルも省いて小さいマスでも見切れないようにする。
+  final bool compact;
+
   const CardWidget({
     super.key,
     required this.card,
     this.size = 150,
     this.isSelected = false,
     this.onTap,
+    this.compact = false,
   });
 
   @override
@@ -150,10 +155,10 @@ class CardWidget extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _Header(card: card, accent: accent),
+                  _Header(card: card, accent: accent, compact: compact),
                   _ArtArea(card: card, accent: accent),
                   _TypeBar(card: card, accent: accent),
-                  _StatsSection(card: card),
+                  compact ? _CompactStats(card: card) : _StatsSection(card: card),
                 ],
               ),
               // UR カードのみ、金箔の光沢が斜めに走る
@@ -294,13 +299,17 @@ class _RarityGem extends StatelessWidget {
 /// CardWidgetをグリッドに並べるときの1マスの高さ。
 /// カードは「正方形のアート + ヘッダー/種別/ステータス3行」の縦積みなので、幅に応じて
 /// 高さを決めないと固定の縦横比ではステータスが見切れる。
-double cardGridItemHeight(double itemWidth) => itemWidth + 166;
+/// [compact]（数字だけの簡易表示）は縦が短く済む。グリッド側は上寄せ(Align)で描画して
+/// 余白は下に逃がすので、見切れない側に少し余裕を持たせてある。
+double cardGridItemHeight(double itemWidth, {bool compact = false}) =>
+    itemWidth + (compact ? 104 : 166);
 
 // ─── ヘッダー（属性紋章 + 名前 + コスト） ───
 class _Header extends StatelessWidget {
   final PlayCard card;
   final Color accent;
-  const _Header({required this.card, required this.accent});
+  final bool compact;
+  const _Header({required this.card, required this.accent, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
@@ -313,17 +322,23 @@ class _Header extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (!compact) ...[
+            Row(
+              children: [
+                Text(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 12)),
+                const SizedBox(width: 6),
+                Text(Kingdom.attributeRealm(card.attribute),
+                    style: Kingdom.label(size: 8, color: accent.withValues(alpha: 0.85))),
+              ],
+            ),
+            const SizedBox(height: 3),
+          ],
           Row(
             children: [
-              Text(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 12)),
-              const SizedBox(width: 6),
-              Text(Kingdom.attributeRealm(card.attribute),
-                  style: Kingdom.label(size: 8, color: accent.withValues(alpha: 0.85))),
-            ],
-          ),
-          const SizedBox(height: 3),
-          Row(
-            children: [
+              if (compact) ...[
+                Text(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 12)),
+                const SizedBox(width: 4),
+              ],
               Expanded(
                 child: Text(
                   _getCardDisplayName(context, card),
@@ -520,6 +535,50 @@ class _StatsSection extends StatelessWidget {
           const SizedBox(height: 3),
           _StatRow(icon: '⚡', label: t.card_speed, value: card.speed, maxVal: maxStat, color: Kingdom.joyGold),
         ],
+      ),
+    );
+  }
+}
+
+// ─── 一覧用ステータス（数字だけを1行で） ───
+class _CompactStats extends StatelessWidget {
+  final PlayCard card;
+  const _CompactStats({required this.card});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    Widget stat(String icon, String label, int v, Color color) => Semantics(
+          label: '$label $v',
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(icon, style: const TextStyle(fontSize: 11)),
+              const SizedBox(width: 2),
+              Text('$v',
+                  style: TextStyle(
+                    fontFamily: Kingdom.displayFont,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    color: color,
+                  )),
+            ],
+          ),
+        );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 6, 6, 7),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            stat('⚔', t.card_attack, card.attackPower, Kingdom.angerCrimson),
+            const SizedBox(width: 8),
+            stat('🛡', t.card_defense, card.defensePower, Kingdom.sadnessIndigo),
+            const SizedBox(width: 8),
+            stat('⚡', t.card_speed, card.speed, Kingdom.joyGold),
+          ],
+        ),
       ),
     );
   }

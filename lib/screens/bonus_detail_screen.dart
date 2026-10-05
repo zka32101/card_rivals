@@ -13,7 +13,7 @@ class BonusDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
     final wallet = ref.watch(walletProvider);
-    final isVip = ref.watch(vipStatusProvider).valueOrNull ?? false;
+    final isVip = ref.watch(vipStatusProvider).value ?? false;
     final remainingCap = wallet.remainingDailyBonusCap(isVip: isVip);
     final totalCapToday = kDailyBonusCoinCap +
         (wallet.dailyBonusCapExtensionsUsedToday * kDailyBonusCapExtensionAmount) +

@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/kingdom_theme.dart';
 import 'achievements_screen.dart';
-import 'card_rental_settings_screen.dart';
-import 'popular_cards_screen.dart';
 import 'tutorial_screen.dart';
 
 /// 「メニュー」タブ。ホーム上部に散らばっていたアイコン類（実績・チュートリアル・
@@ -44,22 +42,6 @@ class MenuScreen extends StatelessWidget {
               color: Kingdom.joyGold,
               label: t.achievements_title,
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AchievementsScreen())),
-            ),
-          ]),
-          _Section(title: t.home_cardMarketHeader, items: [
-            _MenuItem(
-              icon: Icons.download_outlined,
-              color: Kingdom.sadnessIndigo,
-              label: t.home_rentCardTitle,
-              caption: t.home_popularityRankingLabel,
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PopularCardsScreen())),
-            ),
-            _MenuItem(
-              icon: Icons.upload_outlined,
-              color: Kingdom.joyGold,
-              label: t.home_lendCardTitle,
-              caption: t.home_publicSettingsRevenueLabel,
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CardRentalSettingsScreen())),
             ),
           ]),
           _Section(title: t.menu_sectionHelp, items: [
@@ -135,7 +117,6 @@ class _MenuItem extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String label;
-  final String? caption;
   final VoidCallback onTap;
 
   const _MenuItem({
@@ -143,7 +124,6 @@ class _MenuItem extends StatelessWidget {
     required this.color,
     required this.label,
     required this.onTap,
-    this.caption,
   });
 
   @override
@@ -152,9 +132,6 @@ class _MenuItem extends StatelessWidget {
       minTileHeight: Kingdom.minTapTarget,
       leading: Icon(icon, color: color),
       title: Text(label, style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold)),
-      subtitle: caption == null
-          ? null
-          : Text(caption!, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 12)),
       trailing: Icon(Icons.chevron_right, color: Kingdom.parchment.withValues(alpha: 0.4)),
       onTap: onTap,
     );

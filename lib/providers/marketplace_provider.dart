@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 import '../models/marketplace_models.dart';
 import '../models/user_card.dart';
 import '../services/functions_service.dart';
@@ -76,7 +77,7 @@ final filteredCardListingsProvider = FutureProvider.family<
 
 /// Search card listings by name (client-side)
 final searchCardListingsProvider = Provider.family<List<CardListing>, String>((ref, query) {
-  final listings = ref.watch(activeCardListingsProvider).valueOrNull ?? [];
+  final listings = ref.watch(activeCardListingsProvider).value ?? [];
   final lowerQuery = query.toLowerCase();
   return listings.where((l) {
     final jpName = (l.cardName['jp'] ?? '').toLowerCase();
@@ -110,7 +111,7 @@ final myCardListingsProvider = FutureProvider<List<CardListing>>((ref) async {
 
 /// Count of user's active listings (for UI badge)
 final myActiveListingCountProvider = Provider<int>((ref) {
-  final listings = ref.watch(myCardListingsProvider).valueOrNull ?? [];
+  final listings = ref.watch(myCardListingsProvider).value ?? [];
   return listings.where((l) => l.status == 'active').length;
 });
 
@@ -139,7 +140,7 @@ final marketplaceHistoryProvider = FutureProvider<List<MarketplaceTransaction>>(
 
 /// Filter transactions by type (card_sale, trade_accepted, currency_exchange)
 final filteredTransactionsProvider = Provider.family<List<MarketplaceTransaction>, String>((ref, type) {
-  final history = ref.watch(marketplaceHistoryProvider).valueOrNull ?? [];
+  final history = ref.watch(marketplaceHistoryProvider).value ?? [];
   if (type.isEmpty) return history;
   return history.where((t) => t.type == type).toList();
 });
@@ -183,7 +184,7 @@ final myTradeOffersProvider = FutureProvider<List<TradeOffer>>((ref) async {
 
 /// Pending (incoming) trade offers only
 final pendingTradeOffersProvider = Provider<List<TradeOffer>>((ref) {
-  final offers = ref.watch(myTradeOffersProvider).valueOrNull ?? [];
+  final offers = ref.watch(myTradeOffersProvider).value ?? [];
   return offers.where((o) => o.status == 'pending' && o.recipientId == ref.watch(currentUserIdProvider)).toList();
 });
 
@@ -213,7 +214,7 @@ final activeCurrencyListingsProvider = FutureProvider<List<CurrencyListing>>((re
 
 /// Filter currency listings by type (sell_gems or buy_gems)
 final currencyListingsByTypeProvider = Provider.family<List<CurrencyListing>, String>((ref, type) {
-  final listings = ref.watch(activeCurrencyListingsProvider).valueOrNull ?? [];
+  final listings = ref.watch(activeCurrencyListingsProvider).value ?? [];
   return listings.where((l) => l.type == type).toList();
 });
 

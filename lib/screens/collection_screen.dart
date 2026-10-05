@@ -7,7 +7,6 @@ import '../widgets/card_detail_sheet.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
 import 'card_creation_screen_v2.dart';
-import 'deck_list_screen.dart';
 
 enum _CardScope { all, mine, seed }
 
@@ -82,6 +81,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             ),
         ];
 
+    final viewToggle = IconButton(
+      tooltip: t.collection_viewToggleTooltip,
+      icon: Icon(
+        switch (_view) {
+          _CardView.grid3 => Icons.grid_view,
+          _CardView.grid2 => Icons.view_agenda_outlined,
+          _CardView.list => Icons.view_list,
+        },
+        color: Kingdom.gilt,
+      ),
+      onPressed: () => setState(() => _view = _CardView.values[(_view.index + 1) % _CardView.values.length]),
+    );
+
     return Scaffold(
       backgroundColor: Kingdom.night,
       floatingActionButton: FloatingActionButton.extended(
@@ -91,39 +103,22 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         label: Text(t.home_createCardButton, style: const TextStyle(fontWeight: FontWeight.bold)),
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CardCreationScreenV2())),
       ),
-      appBar: AppBar(
-        automaticallyImplyLeading: !widget.embedded,
-        title: Text(t.collection_title, style: Kingdom.title(size: 17)),
-        backgroundColor: Kingdom.nightDeep,
-        elevation: 0,
-        actions: [
-          IconButton(
-            tooltip: t.collection_deckTooltip,
-            icon: const Icon(Icons.dashboard_customize_outlined, color: Kingdom.gilt),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeckListScreen())),
-          ),
-          IconButton(
-            tooltip: t.collection_viewToggleTooltip,
-            icon: Icon(
-              switch (_view) {
-                _CardView.grid3 => Icons.grid_view,
-                _CardView.grid2 => Icons.view_agenda_outlined,
-                _CardView.list => Icons.view_list,
-              },
-              color: Kingdom.gilt,
+      // 下部ナビのカードタブ（CardHubScreen）に組み込む場合はAppBarを持たない。
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: Text(t.collection_title, style: Kingdom.title(size: 17)),
+              backgroundColor: Kingdom.nightDeep,
+              elevation: 0,
+              actions: [viewToggle, PopupMenuButton<String>(
+                icon: const Icon(Icons.sort, color: Kingdom.gilt),
+                tooltip: t.collection_sortTooltip,
+                color: Kingdom.nightDeep,
+                initialValue: _sort,
+                onSelected: (v) => setState(() => _sort = v),
+                itemBuilder: sortMenuItems,
+              )],
             ),
-            onPressed: () => setState(() => _view = _CardView.values[(_view.index + 1) % _CardView.values.length]),
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort, color: Kingdom.gilt),
-            tooltip: t.collection_sortTooltip,
-            color: Kingdom.nightDeep,
-            initialValue: _sort,
-            onSelected: (v) => setState(() => _sort = v),
-            itemBuilder: sortMenuItems,
-          ),
-        ],
-      ),
       body: Stack(
         children: [
           const Positioned.fill(child: EmotionMoteField(count: 12)),
@@ -173,6 +168,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                         ),
                       ),
                     ),
+                    if (widget.embedded) viewToggle,
                     if (_hasActiveFilter) const SizedBox(width: 8),
                     if (_hasActiveFilter)
                       GestureDetector(
@@ -456,7 +452,7 @@ class _CardResults extends StatelessWidget {
         // カードは「正方形のアート + ヘッダー/種別/ステータス3行」の縦積み。幅に応じて
         // 高さを決めないと、固定の縦横比ではステータス(攻撃/防御/速度)が見切れる。
         final itemWidth = (constraints.maxWidth - pad * 2 - gap * (cols - 1)) / cols;
-        final itemHeight = cardGridItemHeight(itemWidth);
+        final itemHeight = cardGridItemHeight(itemWidth, compact: true);
         return GridView.builder(
           padding: const EdgeInsets.fromLTRB(pad, pad, pad, 96),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -470,7 +466,11 @@ class _CardResults extends StatelessWidget {
             final card = cards[i];
             return GestureDetector(
               onTap: () => showCardDetailSheet(context, card),
-              child: CardWidget(card: card, size: double.infinity),
+              // 上寄せで描画（余白は下に逃がし、カード本体は中身の高さに合わせる）
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: CardWidget(card: card, size: itemWidth, compact: true),
+              ),
             );
           },
         );
