@@ -93,7 +93,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
   // PvP勝利ボーナス（1日上限🪙20をstreakBonusと共有・実際に加算する）
   void _updatePvpBonus() {
     final w = ref.read(walletProvider);
-    final isVip = ref.read(vipStatusProvider).valueOrNull ?? false;
+    final isVip = ref.read(vipStatusProvider).value ?? false;
     final (updatedWallet, granted) = w.grantDailyBonus(1, isVip: isVip);
     _pvpBonusGranted = granted;
     if (granted > 0) {
@@ -119,7 +119,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
       final rawBonus = newTierBonus > oldTierBonus ? (newTierBonus - oldTierBonus) : 0;
       // 1日あたりのボーナス上限（🪙15、VIPは+10）を実際に強制する。
       // これが無かったため、連勝をわざと途切れさせて3連勝ボーナスを無限に稼げてしまっていた。
-      final isVip = ref.read(vipStatusProvider).valueOrNull ?? false;
+      final isVip = ref.read(vipStatusProvider).value ?? false;
       final (updatedWallet, granted) =
           w.copyWith(winStreak: _newStreak).grantDailyBonus(rawBonus, isVip: isVip);
       _streakBonus = granted;
@@ -673,7 +673,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
 
   Widget _buildBonusInfo() {
     final t = AppLocalizations.of(context)!;
-    final isVip = ref.watch(vipStatusProvider).valueOrNull ?? false;
+    final isVip = ref.watch(vipStatusProvider).value ?? false;
     final remaining = ref.watch(walletProvider).remainingDailyBonusCap(isVip: isVip);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),

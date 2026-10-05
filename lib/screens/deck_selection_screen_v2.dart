@@ -299,7 +299,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
 
   // 保存済みデッキの一覧（ワンタップで適用）。デッキが無ければ何も表示しない。
   Widget _buildMyDecksStrip(AppLocalizations t) {
-    final presets = ref.watch(userDeckPresetsProvider).valueOrNull ?? const <DeckPreset>[];
+    final presets = ref.watch(userDeckPresetsProvider).value ?? const <DeckPreset>[];
     if (presets.isEmpty) return const SizedBox.shrink();
     return Container(
       color: Kingdom.nightDeep,

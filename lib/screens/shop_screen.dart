@@ -197,7 +197,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final wallet = ref.watch(walletProvider);
     final t = AppLocalizations.of(context)!;
     final vipAsync = ref.watch(vipStatusProvider);
-    final isVip = vipAsync.valueOrNull ?? false;
+    final isVip = vipAsync.value ?? false;
 
     return Scaffold(
       backgroundColor: Kingdom.night,

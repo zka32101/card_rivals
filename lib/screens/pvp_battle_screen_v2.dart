@@ -496,7 +496,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
     final t = AppLocalizations.of(context)!;
     final bottom = MediaQuery.of(context).padding.bottom;
     // 開幕直後（まだログがない）は「今日のきもちカード」の属性を初期テーマにする
-    final todayEmotion = ref.watch(todayEmotionCardProvider).valueOrNull;
+    final todayEmotion = ref.watch(todayEmotionCardProvider).value;
     final attackerAttr = _latestLog?.attackingCard?.attribute ??
         _emotionToAttribute(todayEmotion?.emotion);
     final anyDanger = _myHp <= 7 || _aiHp <= 7; // 30の25%未満で危険域

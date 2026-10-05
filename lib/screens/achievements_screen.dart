@@ -12,7 +12,7 @@ class AchievementsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
-    final rank = ref.watch(myPlayerRankProvider).valueOrNull ?? const PlayerRank();
+    final rank = ref.watch(myPlayerRankProvider).value ?? const PlayerRank();
     final wallet = ref.watch(walletProvider);
     final cardsCreated = ref.watch(myCardsProvider).length;
 

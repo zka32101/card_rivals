@@ -56,7 +56,7 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    final rank = ref.watch(myPlayerRankProvider).valueOrNull ?? const PlayerRank();
+    final rank = ref.watch(myPlayerRankProvider).value ?? const PlayerRank();
     final wallet = ref.watch(walletProvider);
 
     // walletProviderのハイドレーション完了（Firestoreからの実データ反映）を待ってから
@@ -224,7 +224,7 @@ class _HomeBannerAdState extends ConsumerState<_HomeBannerAd> {
   @override
   Widget build(BuildContext context) {
     final vipAsync = ref.watch(vipStatusProvider);
-    final isVip = vipAsync.valueOrNull ?? false;
+    final isVip = vipAsync.value ?? false;
     if (isVip) {
       _bannerAd?.dispose();
       _bannerAd = null;

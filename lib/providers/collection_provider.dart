@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 import '../models/user_card.dart';
 import '../services/functions_service.dart';
 import 'auth_provider.dart';
@@ -52,7 +53,7 @@ final myCollectionProvider = Provider<List<PlayCard>>((ref) {
 // あえてmyCollectionProviderのままにしている（レンタル品を「所有」扱いしない）。
 final battleEligibleCardsProvider = Provider<List<PlayCard>>((ref) {
   final owned = ref.watch(myCollectionProvider);
-  final rented = ref.watch(myActiveRentalsProvider).valueOrNull ?? [];
+  final rented = ref.watch(myActiveRentalsProvider).value ?? [];
   return [...owned, ...rented];
 });
 
