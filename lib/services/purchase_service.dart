@@ -184,6 +184,38 @@ class PurchaseService {
     }
   }
 
+  // ストアが返す実際の価格表示（priceString）を取得する。
+  // キー: 'starter' / 'vip_monthly' / 'vip_annual' / コイン・ジェムのpackageId。
+  // 取得できない（未接続・Offering未設定）ものは含めない。呼び出し側は固定の
+  // 代替ラベルを使う。画面の固定文字とストア価格がずれるのを防ぐ。
+  static Future<Map<String, String>> fetchStorePrices() async {
+    final prices = <String, String>{};
+    try {
+      final offerings = await Purchases.getOfferings();
+      final starter = offerings.getOffering(kStarterPackOffering)?.availablePackages;
+      if (starter != null && starter.isNotEmpty) {
+        prices['starter'] = starter.first.storeProduct.priceString;
+      }
+      for (final p in offerings.getOffering(kVipPassOffering)?.availablePackages ?? const <Package>[]) {
+        if (p.packageType == PackageType.monthly) prices['vip_monthly'] = p.storeProduct.priceString;
+        if (p.packageType == PackageType.annual) prices['vip_annual'] = p.storeProduct.priceString;
+      }
+      for (final p in offerings.getOffering(kCurrencyShopOffering)?.availablePackages ?? const <Package>[]) {
+        prices[p.identifier] = p.storeProduct.priceString;
+      }
+    } catch (e) {
+      debugPrint('Fetch store prices failed: $e');
+    }
+    return prices;
+  }
+
+  // ラベル中の固定の金額（例: 「¥480/月で加入する」の「¥480」）を、ストアの価格に置き換える。
+  // ストア価格が無い場合は、ラベルをそのまま返す。
+  static String withStorePrice(String label, String? storePrice) {
+    if (storePrice == null || storePrice.isEmpty) return label;
+    return label.replaceFirst(RegExp(r'[¥￥$]\s?[\d,]+(\.\d+)?'), storePrice);
+  }
+
   // VIPパスが現在有効かどうか（RevenueCatのEntitlementで判定）
   static Future<bool> isVipActive() async {
     try {

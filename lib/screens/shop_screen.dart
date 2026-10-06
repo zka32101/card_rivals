@@ -19,6 +19,17 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   // 購入処理中のパッケージID（多重タップ防止・ボタンにローディング表示するため）
   String? _processingPackageId;
 
+  // ストアが返す実際の価格（取得できたものだけ）。画面の固定文字より優先して表示する。
+  Map<String, String> _storePrices = {};
+
+  @override
+  void initState() {
+    super.initState();
+    PurchaseService.fetchStorePrices().then((prices) {
+      if (mounted) setState(() => _storePrices = prices);
+    });
+  }
+
   Future<void> _buy(CurrencyPackageDef pkg) async {
     if (_processingPackageId != null) return;
     setState(() => _processingPackageId = pkg.packageId);
@@ -241,6 +252,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 const SizedBox(height: Kingdom.spaceMd),
                 _VipPassTile(
                   isVip: isVip,
+                  monthlyPrice: _storePrices['vip_monthly'],
+                  yearlyPrice: _storePrices['vip_annual'],
                   isProcessing: _isBuyingVip,
                   onTapMonthly: () => _buyVipPass(),
                   onTapYearly: () => _buyVipPass(yearly: true),
@@ -251,6 +264,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 Text(t.shop_starterPackHeader, style: Kingdom.label(size: 15, color: Kingdom.gilt)),
                 const SizedBox(height: Kingdom.spaceMd),
                 _StarterPackTile(
+                  price: _storePrices['starter'],
                   isProcessing: _isBuyingStarterPack,
                   onTap: _buyStarterPack,
                 ),
@@ -261,6 +275,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 for (final pkg in kCoinPackages) ...[
                   _PackageTile(
                     pkg: pkg,
+                    price: _storePrices[pkg.packageId],
                     accent: Kingdom.gilt,
                     isProcessing: _processingPackageId == pkg.packageId,
                     onTap: () => _buy(pkg),
@@ -274,6 +289,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 for (final pkg in kGemPackages) ...[
                   _PackageTile(
                     pkg: pkg,
+                    price: _storePrices[pkg.packageId],
                     accent: Kingdom.sadnessIndigo,
                     isProcessing: _processingPackageId == pkg.packageId,
                     onTap: () => _buy(pkg),
@@ -320,12 +336,16 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
 class _VipPassTile extends StatelessWidget {
   final bool isVip;
+  final String? monthlyPrice;
+  final String? yearlyPrice;
   final bool isProcessing;
   final VoidCallback onTapMonthly;
   final VoidCallback onTapYearly;
 
   const _VipPassTile({
     required this.isVip,
+    this.monthlyPrice,
+    this.yearlyPrice,
     required this.isProcessing,
     required this.onTapMonthly,
     required this.onTapYearly,
@@ -373,7 +393,7 @@ class _VipPassTile extends StatelessWidget {
                 style: ElevatedButton.styleFrom(backgroundColor: Kingdom.gilt, foregroundColor: Kingdom.night),
                 child: isProcessing
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Kingdom.night))
-                    : Text(t.shop_vipSubscribeButton, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    : Text(PurchaseService.withStorePrice(t.shop_vipSubscribeButton, monthlyPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: Kingdom.spaceSm),
@@ -382,7 +402,7 @@ class _VipPassTile extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: isProcessing ? null : onTapYearly,
                 style: OutlinedButton.styleFrom(foregroundColor: Kingdom.gilt, side: const BorderSide(color: Kingdom.gilt)),
-                child: Text(t.shop_vipSubscribeYearlyButton, style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(PurchaseService.withStorePrice(t.shop_vipSubscribeYearlyButton, yearlyPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -393,10 +413,11 @@ class _VipPassTile extends StatelessWidget {
 }
 
 class _StarterPackTile extends StatelessWidget {
+  final String? price;
   final bool isProcessing;
   final VoidCallback onTap;
 
-  const _StarterPackTile({required this.isProcessing, required this.onTap});
+  const _StarterPackTile({this.price, required this.isProcessing, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -429,7 +450,7 @@ class _StarterPackTile extends StatelessWidget {
               ),
               child: isProcessing
                   ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Kingdom.parchment))
-                  : const Text('¥300', style: TextStyle(fontWeight: FontWeight.bold)),
+                  : Text(price ?? '¥300', style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -519,12 +540,14 @@ class _ExchangeTile extends StatelessWidget {
 
 class _PackageTile extends StatelessWidget {
   final CurrencyPackageDef pkg;
+  final String? price;
   final Color accent;
   final bool isProcessing;
   final VoidCallback onTap;
 
   const _PackageTile({
     required this.pkg,
+    this.price,
     required this.accent,
     required this.isProcessing,
     required this.onTap,
@@ -558,7 +581,7 @@ class _PackageTile extends StatelessWidget {
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Kingdom.night))
-                  : Text(pkg.fallbackPriceLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  : Text(price ?? pkg.fallbackPriceLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
