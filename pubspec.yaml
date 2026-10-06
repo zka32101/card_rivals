@@ -102,6 +102,7 @@ flutter:
   assets:
     - assets/card_art/
     - assets/badges/
+    - assets/ui_icons/
     - assets/tutorial/
     - assets/theme/
     - assets/branding/
