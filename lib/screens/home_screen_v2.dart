@@ -19,6 +19,7 @@ import 'deck_list_screen.dart';
 import 'season_screen.dart';
 import '../providers/migration_provider.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class HomeScreenV2 extends ConsumerStatefulWidget {
   const HomeScreenV2({super.key});
@@ -258,7 +259,7 @@ class _AppBarChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withValues(alpha: 0.7), width: 1),
       ),
-      child: Text(text,
+      child: IconText(text,
           style: TextStyle(fontSize: Kingdom.textCaption, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
     );
   }
@@ -272,7 +273,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceXs),
-      child: Text(title, style: Kingdom.title(size: 16)),
+      child: IconText(title, style: Kingdom.title(size: 16)),
     );
   }
 }
@@ -297,7 +298,7 @@ class _BonusBannerV2 extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(t.bonusBanner_today, style: Kingdom.label(size: 12, color: Kingdom.parchment.withValues(alpha: 0.8))),
+              IconText(t.bonusBanner_today, style: Kingdom.label(size: 12, color: Kingdom.parchment.withValues(alpha: 0.8))),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceSm, vertical: 2),
                 decoration: BoxDecoration(
@@ -305,7 +306,7 @@ class _BonusBannerV2 extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Kingdom.gilt.withValues(alpha: 0.6)),
                 ),
-                child: Text(t.home_tapForBonusLabel,
+                child: IconText(t.home_tapForBonusLabel,
                     style: Kingdom.label(size: 10, color: Kingdom.gilt)),
               ),
             ],
@@ -314,13 +315,13 @@ class _BonusBannerV2 extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(t.home_todayCoinsProgress(wallet.todayPoints),
+              IconText(t.home_todayCoinsProgress(wallet.todayPoints),
                   style: TextStyle(
                       fontFamily: Kingdom.displayFont,
                       color: Kingdom.gilt,
                       fontWeight: FontWeight.w900,
                       fontSize: 24)),
-              Text(t.home_todayWinsProgress(wallet.todayWins),
+              IconText(t.home_todayWinsProgress(wallet.todayWins),
                   style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: Kingdom.textBody)),
             ],
           ),
@@ -363,15 +364,15 @@ class _MigrationBannerV2 extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 32)),
+          IconText(emoji, style: const TextStyle(fontSize: 32)),
           const SizedBox(width: Kingdom.spaceMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(t.home_weeklyFavoredLabel(label), style: Kingdom.label(size: Kingdom.textBody, color: accent)),
+                IconText(t.home_weeklyFavoredLabel(label), style: Kingdom.label(size: Kingdom.textBody, color: accent)),
                 const SizedBox(height: 2),
-                Text(
+                IconText(
                   isMigrated
                       ? t.home_migratedStatus
                       : t.home_migrationOffer(kMigrationCost),
@@ -390,7 +391,7 @@ class _MigrationBannerV2 extends ConsumerWidget {
                       final success = migrateToFavoredAttribute(ref);
                       if (success) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(t.home_migrationSuccessSnackbar(label))),
+                          SnackBar(content: IconText(t.home_migrationSuccessSnackbar(label))),
                         );
                       }
                     }
@@ -441,14 +442,14 @@ class _MainActionsV2 extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(t.home_pvpButton,
+                    IconText(t.home_pvpButton,
                         style: TextStyle(
                             fontFamily: Kingdom.displayFont,
                             color: Kingdom.parchment,
                             fontWeight: FontWeight.w900,
                             fontSize: 18)),
                     const SizedBox(height: 2),
-                    Text(t.home_pvpRewardCaption,
+                    IconText(t.home_pvpRewardCaption,
                         style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: Kingdom.textCaption)),
                   ],
                 ),
@@ -538,10 +539,10 @@ class _KingdomActionTile extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('$emoji $title',
+              IconText('$emoji $title',
                   style: Kingdom.label(size: Kingdom.textBody, color: accent)),
               const SizedBox(height: 2),
-              Text(subtitle, style: TextStyle(color: accent.withValues(alpha: 0.7), fontSize: 9)),
+              IconText(subtitle, style: TextStyle(color: accent.withValues(alpha: 0.7), fontSize: 9)),
             ],
           ),
         ),

@@ -5,6 +5,8 @@ import '../providers/auth_provider.dart';
 import '../providers/daily_mission_provider.dart';
 import '../providers/game_state_provider.dart';
 import '../l10n/app_localizations.dart';
+import 'ui_icon.dart';
+import 'ui_icon.dart';
 
 // ミッションの説明文は生成時(Providerの初期化時など、BuildContextを持たない場面)
 // ではなく表示時に組み立てる。type/target/requiredAttributeから毎回導出することで、
@@ -52,7 +54,7 @@ class DailyMissionsWidget extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              IconText(
                 t.dailyMissions_title,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -65,7 +67,7 @@ class DailyMissionsWidget extends ConsumerWidget {
                     TextButton.icon(
                       onPressed: () => _reroll(context, ref),
                       icon: const Icon(Icons.refresh, size: 14, color: Color(0xFF44AAFF)),
-                      label: Text(
+                      label: IconText(
                         t.dailyMissions_rerollButton(kMissionRerollGemCost),
                         style: const TextStyle(fontSize: 11, color: Color(0xFF44AAFF)),
                       ),
@@ -123,7 +125,7 @@ class DailyMissionsWidget extends ConsumerWidget {
                   if (availableGems > 0)
                     Column(
                       children: [
-                        const Text(
+                        const IconText(
                           '💎',
                           style: TextStyle(fontSize: 20),
                         ),
@@ -135,7 +137,7 @@ class DailyMissionsWidget extends ConsumerWidget {
                             fontSize: 12,
                           ),
                         ),
-                        Text(
+                        IconText(
                           t.dailyMissions_gemsLabel,
                           style: const TextStyle(
                             fontSize: 10,
@@ -159,7 +161,7 @@ class DailyMissionsWidget extends ConsumerWidget {
                             fontSize: 12,
                           ),
                         ),
-                        Text(
+                        IconText(
                           t.dailyMissions_coinsLabel,
                           style: const TextStyle(
                             fontSize: 10,
@@ -181,7 +183,7 @@ class DailyMissionsWidget extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(0),
                         ),
                       ),
-                      child: Text(
+                      child: IconText(
                         t.dailyMissions_claimButton,
                         style: const TextStyle(
                           fontSize: 11,
@@ -216,7 +218,7 @@ class DailyMissionsWidget extends ConsumerWidget {
     final wallet = ref.read(walletProvider);
     if (wallet.gemBalance < kMissionRerollGemCost) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.shop_insufficientGems), backgroundColor: const Color(0xFFFF3300)),
+        SnackBar(content: IconText(t.shop_insufficientGems), backgroundColor: const Color(0xFFFF3300)),
       );
       return;
     }
@@ -228,7 +230,7 @@ class DailyMissionsWidget extends ConsumerWidget {
     if (userId != null) updateWallet(userId, updated);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(t.dailyMissions_rerollDone)),
+      SnackBar(content: IconText(t.dailyMissions_rerollDone)),
     );
   }
 
@@ -307,13 +309,13 @@ class _MissionCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(mission.emoji, style: const TextStyle(fontSize: 20)),
+              IconText(mission.emoji, style: const TextStyle(fontSize: 20)),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    IconText(
                       _missionDescription(t, mission),
                       style: TextStyle(
                         fontSize: 13,
@@ -337,7 +339,7 @@ class _MissionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   if (mission.gemReward > 0)
-                    Text(
+                    IconText(
                       '💎 +${mission.gemReward}',
                       style: const TextStyle(
                         fontSize: 11,
@@ -374,7 +376,7 @@ class _MissionCard extends StatelessWidget {
 
           if (mission.isExpired) ...[
             const SizedBox(height: 6),
-            Text(
+            IconText(
               t.dailyMissions_expiredLabel,
               style: const TextStyle(
                 fontSize: 10,

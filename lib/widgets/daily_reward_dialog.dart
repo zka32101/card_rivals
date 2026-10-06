@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import 'ui_icon.dart';
+import 'ui_icon.dart';
 
 /// デイリーログインボーナス（7日間カレンダー＋連続ストリーク）
 class DailyRewardDialog extends StatefulWidget {
@@ -70,9 +72,9 @@ class _DailyRewardDialogState extends State<DailyRewardDialog> with SingleTicker
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(t.dailyReward_title, style: Kingdom.title(size: 20)),
+            IconText(t.dailyReward_title, style: Kingdom.title(size: 20)),
             const SizedBox(height: Kingdom.spaceXs),
-            Text(t.dailyReward_streakLabel(widget.currentDay), style: Kingdom.label(size: 13, color: Kingdom.gilt)),
+            IconText(t.dailyReward_streakLabel(widget.currentDay), style: Kingdom.label(size: 13, color: Kingdom.gilt)),
             const SizedBox(height: Kingdom.spaceXl),
 
             // 7日間カレンダー
@@ -106,10 +108,10 @@ class _DailyRewardDialogState extends State<DailyRewardDialog> with SingleTicker
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(t.dailyReward_dayLabel(day),
+                      IconText(t.dailyReward_dayLabel(day),
                           style: TextStyle(fontSize: 9, color: isToday ? Kingdom.night : Kingdom.parchment.withValues(alpha: 0.7))),
                       const SizedBox(height: 2),
-                      Text(isBig ? '🎉' : '🪙', style: const TextStyle(fontSize: 16)),
+                      IconText(isBig ? '🎉' : '🪙', style: const TextStyle(fontSize: 16)),
                       const SizedBox(height: 2),
                       Text('$reward',
                           style: TextStyle(
@@ -142,7 +144,7 @@ class _DailyRewardDialogState extends State<DailyRewardDialog> with SingleTicker
                 ),
                 child: Column(
                   children: [
-                    Text(t.dailyReward_claimedAmount(todayReward),
+                    IconText(t.dailyReward_claimedAmount(todayReward),
                         style: TextStyle(
                             fontFamily: Kingdom.displayFont, fontSize: 32, fontWeight: FontWeight.bold, color: Kingdom.gilt)),
                     const SizedBox(height: Kingdom.spaceMd),
@@ -156,7 +158,7 @@ class _DailyRewardDialogState extends State<DailyRewardDialog> with SingleTicker
                           foregroundColor: Kingdom.nightDeep,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
-                        child: Text(t.dailyReward_okButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: IconText(t.dailyReward_okButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],

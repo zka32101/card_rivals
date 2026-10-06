@@ -7,6 +7,7 @@ import '../providers/vip_provider.dart';
 import '../services/purchase_service.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class ShopScreen extends ConsumerStatefulWidget {
   const ShopScreen({super.key});
@@ -44,24 +45,24 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         final synced = await _grantCurrency(pkg);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.shop_receivedPackage(pkg.label))),
+          SnackBar(content: IconText(t.shop_receivedPackage(pkg.label))),
         );
         if (!synced) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(t.shop_purchaseSyncFailed), backgroundColor: Kingdom.angerCrimson),
+            SnackBar(content: IconText(t.shop_purchaseSyncFailed), backgroundColor: Kingdom.angerCrimson),
           );
         }
       case PurchaseResult.cancelled:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.shop_purchaseCancelled)),
+          SnackBar(content: IconText(t.shop_purchaseCancelled)),
         );
       case PurchaseResult.noProduct:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.shop_productComingSoon)),
+          SnackBar(content: IconText(t.shop_productComingSoon)),
         );
       case PurchaseResult.error:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_purchaseErrorText(t)), backgroundColor: Colors.red),
+          SnackBar(content: IconText(_purchaseErrorText(t)), backgroundColor: Colors.red),
         );
     }
   }
@@ -89,20 +90,20 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         final synced = userId != null ? await updateWallet(userId, updated) : false;
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.shop_receivedPackage(t.shop_purchaseHistoryStarterPack))),
+          SnackBar(content: IconText(t.shop_receivedPackage(t.shop_purchaseHistoryStarterPack))),
         );
         if (!synced) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(t.shop_purchaseSyncFailed), backgroundColor: Kingdom.angerCrimson),
+            SnackBar(content: IconText(t.shop_purchaseSyncFailed), backgroundColor: Kingdom.angerCrimson),
           );
         }
       case PurchaseResult.cancelled:
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.shop_purchaseCancelled)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: IconText(t.shop_purchaseCancelled)));
       case PurchaseResult.noProduct:
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.shop_productComingSoon)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: IconText(t.shop_productComingSoon)));
       case PurchaseResult.error:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_purchaseErrorText(t)), backgroundColor: Colors.red),
+          SnackBar(content: IconText(_purchaseErrorText(t)), backgroundColor: Colors.red),
         );
     }
   }
@@ -119,14 +120,14 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final t = AppLocalizations.of(context)!;
     switch (result) {
       case PurchaseResult.success:
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.shop_vipWelcome)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: IconText(t.shop_vipWelcome)));
       case PurchaseResult.cancelled:
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.shop_purchaseCancelled)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: IconText(t.shop_purchaseCancelled)));
       case PurchaseResult.noProduct:
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.shop_productComingSoon)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: IconText(t.shop_productComingSoon)));
       case PurchaseResult.error:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_purchaseErrorText(t)), backgroundColor: Colors.red),
+          SnackBar(content: IconText(_purchaseErrorText(t)), backgroundColor: Colors.red),
         );
     }
   }
@@ -149,7 +150,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final wallet = ref.read(walletProvider);
     if (wallet.gemBalance < kStreakShieldGemCost) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.shop_insufficientGems), backgroundColor: Kingdom.angerCrimson),
+        SnackBar(content: IconText(t.shop_insufficientGems), backgroundColor: Kingdom.angerCrimson),
       );
       return;
     }
@@ -158,7 +159,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final userId = ref.read(currentUserIdProvider);
     if (userId != null) updateWallet(userId, updated);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(t.shop_exchangeSuccess)),
+      SnackBar(content: IconText(t.shop_exchangeSuccess)),
     );
   }
 
@@ -167,13 +168,13 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final wallet = ref.read(walletProvider);
     if (wallet.dailyBonusCapExtensionsUsedToday >= kDailyBonusCapExtensionMaxPerDay) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.shop_dailyBonusCapExtMaxReached), backgroundColor: Kingdom.angerCrimson),
+        SnackBar(content: IconText(t.shop_dailyBonusCapExtMaxReached), backgroundColor: Kingdom.angerCrimson),
       );
       return;
     }
     if (wallet.gemBalance < kDailyBonusCapExtensionGemCost) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.shop_insufficientGems), backgroundColor: Kingdom.angerCrimson),
+        SnackBar(content: IconText(t.shop_insufficientGems), backgroundColor: Kingdom.angerCrimson),
       );
       return;
     }
@@ -182,7 +183,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final userId = ref.read(currentUserIdProvider);
     if (userId != null) updateWallet(userId, updated);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(t.shop_exchangeSuccess)),
+      SnackBar(content: IconText(t.shop_exchangeSuccess)),
     );
   }
 
@@ -213,7 +214,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: Text(t.shop_title, style: Kingdom.title(size: 17)),
+        title: IconText(t.shop_title, style: Kingdom.title(size: 17)),
         backgroundColor: Kingdom.nightDeep,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Kingdom.gilt),
@@ -222,7 +223,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         actions: [
           TextButton(
             onPressed: _restore,
-            child: Text(t.shop_restorePurchases, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7))),
+            child: IconText(t.shop_restorePurchases, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7))),
           ),
         ],
       ),
@@ -248,7 +249,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 const SizedBox(height: Kingdom.spaceXxl),
 
                 // VIPパス
-                Text(t.shop_vipHeader, style: Kingdom.label(size: 15, color: Kingdom.gilt)),
+                IconText(t.shop_vipHeader, style: Kingdom.label(size: 15, color: Kingdom.gilt)),
                 const SizedBox(height: Kingdom.spaceMd),
                 _VipPassTile(
                   isVip: isVip,
@@ -261,7 +262,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 const SizedBox(height: Kingdom.spaceXl),
 
                 // スターターパック
-                Text(t.shop_starterPackHeader, style: Kingdom.label(size: 15, color: Kingdom.gilt)),
+                IconText(t.shop_starterPackHeader, style: Kingdom.label(size: 15, color: Kingdom.gilt)),
                 const SizedBox(height: Kingdom.spaceMd),
                 _StarterPackTile(
                   price: _storePrices['starter'],
@@ -270,7 +271,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ),
                 const SizedBox(height: Kingdom.spaceXl),
 
-                Text(t.shop_coinPackagesHeader, style: Kingdom.label(size: 15, color: Kingdom.gilt)),
+                IconText(t.shop_coinPackagesHeader, style: Kingdom.label(size: 15, color: Kingdom.gilt)),
                 const SizedBox(height: Kingdom.spaceMd),
                 for (final pkg in kCoinPackages) ...[
                   _PackageTile(
@@ -284,7 +285,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ],
                 const SizedBox(height: Kingdom.spaceLg),
 
-                Text(t.shop_gemPackagesHeader, style: Kingdom.label(size: 15, color: Kingdom.sadnessIndigo)),
+                IconText(t.shop_gemPackagesHeader, style: Kingdom.label(size: 15, color: Kingdom.sadnessIndigo)),
                 const SizedBox(height: Kingdom.spaceMd),
                 for (final pkg in kGemPackages) ...[
                   _PackageTile(
@@ -298,7 +299,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ],
                 const SizedBox(height: Kingdom.spaceLg),
 
-                Text(t.shop_gemExchangeHeader, style: Kingdom.label(size: 15, color: Kingdom.sadnessIndigo)),
+                IconText(t.shop_gemExchangeHeader, style: Kingdom.label(size: 15, color: Kingdom.sadnessIndigo)),
                 const SizedBox(height: Kingdom.spaceMd),
                 _ExchangeTile(
                   emoji: '🛡️',
@@ -320,7 +321,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 ),
                 const SizedBox(height: Kingdom.spaceXl),
 
-                Text(
+                IconText(
                   t.shop_storeNote,
                   style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: 11),
                 ),
@@ -369,21 +370,21 @@ class _VipPassTile extends StatelessWidget {
               const Text('👑', style: TextStyle(fontSize: 28)),
               const SizedBox(width: Kingdom.spaceMd),
               Expanded(
-                child: Text(t.shop_vipPassLabel,
+                child: IconText(t.shop_vipPassLabel,
                     style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 16)),
               ),
               if (isVip)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(color: Kingdom.gilt, borderRadius: BorderRadius.circular(6)),
-                  child: Text(t.shop_vipActiveLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Kingdom.night)),
+                  child: IconText(t.shop_vipActiveLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Kingdom.night)),
                 ),
             ],
           ),
           const SizedBox(height: Kingdom.spaceSm),
-          Text(t.shop_vipBenefit1, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontSize: 12)),
-          Text(t.shop_vipBenefit2, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontSize: 12)),
-          Text(t.shop_vipBenefit3, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontSize: 12)),
+          IconText(t.shop_vipBenefit1, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontSize: 12)),
+          IconText(t.shop_vipBenefit2, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontSize: 12)),
+          IconText(t.shop_vipBenefit3, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontSize: 12)),
           const SizedBox(height: Kingdom.spaceMd),
           if (!isVip) ...[
             SizedBox(
@@ -393,7 +394,7 @@ class _VipPassTile extends StatelessWidget {
                 style: ElevatedButton.styleFrom(backgroundColor: Kingdom.gilt, foregroundColor: Kingdom.night),
                 child: isProcessing
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Kingdom.night))
-                    : Text(PurchaseService.withStorePrice(t.shop_vipSubscribeButton, monthlyPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
+                    : IconText(PurchaseService.withStorePrice(t.shop_vipSubscribeButton, monthlyPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: Kingdom.spaceSm),
@@ -402,7 +403,7 @@ class _VipPassTile extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: isProcessing ? null : onTapYearly,
                 style: OutlinedButton.styleFrom(foregroundColor: Kingdom.gilt, side: const BorderSide(color: Kingdom.gilt)),
-                child: Text(PurchaseService.withStorePrice(t.shop_vipSubscribeYearlyButton, yearlyPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: IconText(PurchaseService.withStorePrice(t.shop_vipSubscribeYearlyButton, yearlyPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -434,8 +435,8 @@ class _StarterPackTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(t.shop_starterPackLabel, style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
-                Text(t.shop_starterPackDesc, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 11)),
+                IconText(t.shop_starterPackLabel, style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
+                IconText(t.shop_starterPackDesc, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 11)),
               ],
             ),
           ),
@@ -471,14 +472,14 @@ class _BalanceDisplay extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('$emoji $value',
+        IconText('$emoji $value',
             style: TextStyle(
                 fontFamily: Kingdom.displayFont,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
                 color: Kingdom.parchment)),
         const SizedBox(height: Kingdom.spaceXs),
-        Text(label, style: TextStyle(fontSize: 11, color: Kingdom.parchment.withValues(alpha: 0.6))),
+        IconText(label, style: TextStyle(fontSize: 11, color: Kingdom.parchment.withValues(alpha: 0.6))),
       ],
     );
   }
@@ -509,14 +510,14 @@ class _ExchangeTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceLg, vertical: Kingdom.spaceMd),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 28)),
+          IconText(emoji, style: const TextStyle(fontSize: 28)),
           const SizedBox(width: Kingdom.spaceMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
-                Text(description, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 11)),
+                IconText(label, style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
+                IconText(description, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 11)),
               ],
             ),
           ),
@@ -529,7 +530,7 @@ class _ExchangeTile extends StatelessWidget {
                 foregroundColor: Kingdom.night,
                 minimumSize: const Size(70, Kingdom.minTapTarget),
               ),
-              child: Text(costLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: IconText(costLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -561,10 +562,10 @@ class _PackageTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceLg, vertical: Kingdom.spaceMd),
       child: Row(
         children: [
-          Text(pkg.isGem ? '💎' : '🪙', style: const TextStyle(fontSize: 28)),
+          IconText(pkg.isGem ? '💎' : '🪙', style: const TextStyle(fontSize: 28)),
           const SizedBox(width: Kingdom.spaceMd),
           Expanded(
-            child: Text(pkg.label,
+            child: IconText(pkg.label,
                 style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
           ),
           SizedBox(

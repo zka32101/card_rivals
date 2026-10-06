@@ -5,6 +5,7 @@ import '../providers/game_state_provider.dart';
 import '../providers/vip_provider.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class BonusDetailScreen extends ConsumerWidget {
   const BonusDetailScreen({super.key});
@@ -24,7 +25,7 @@ class BonusDetailScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: Text(t.settings_myBonus, style: Kingdom.title(size: 17)),
+        title: IconText(t.settings_myBonus, style: Kingdom.title(size: 17)),
         backgroundColor: Kingdom.nightDeep,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Kingdom.gilt),
@@ -51,7 +52,7 @@ class BonusDetailScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          Text(t.bonusDetail_todayHeader, style: Kingdom.label(size: 13, color: Kingdom.parchment.withValues(alpha: 0.8))),
+                          IconText(t.bonusDetail_todayHeader, style: Kingdom.label(size: 13, color: Kingdom.parchment.withValues(alpha: 0.8))),
                           if (isVip) ...[
                             const SizedBox(width: Kingdom.spaceSm),
                             Container(
@@ -66,10 +67,10 @@ class BonusDetailScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('🪙$earnedToday / $totalCapToday',
+                          IconText('🪙$earnedToday / $totalCapToday',
                               style: TextStyle(
                                   fontFamily: Kingdom.displayFont, color: Kingdom.gilt, fontWeight: FontWeight.w900, fontSize: 26)),
-                          Text(t.home_todayWinsProgress(wallet.todayWins),
+                          IconText(t.home_todayWinsProgress(wallet.todayWins),
                               style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: Kingdom.textBody)),
                         ],
                       ),
@@ -84,7 +85,7 @@ class BonusDetailScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: Kingdom.spaceXs),
-                      Text(t.bonusDetail_capNote(kDailyBonusCoinCap),
+                      IconText(t.bonusDetail_capNote(kDailyBonusCoinCap),
                           style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: 11)),
                     ],
                   ),
@@ -92,7 +93,7 @@ class BonusDetailScreen extends ConsumerWidget {
                 const SizedBox(height: Kingdom.spaceXl),
 
                 // 連勝ボーナス
-                Text(t.achievements_streakBonusTitle, style: Kingdom.title(size: Kingdom.textSubheading)),
+                IconText(t.achievements_streakBonusTitle, style: Kingdom.title(size: Kingdom.textSubheading)),
                 const SizedBox(height: Kingdom.spaceMd),
                 OrnateFrame(
                   accent: Kingdom.angerCrimson,
@@ -105,9 +106,9 @@ class BonusDetailScreen extends ConsumerWidget {
                         const SizedBox(height: Kingdom.spaceSm),
                         Row(
                           children: [
-                            const Text('🛡️', style: TextStyle(fontSize: 18)),
+                            const IconText('🛡️', style: TextStyle(fontSize: 18)),
                             const SizedBox(width: 6),
-                            Text(t.shop_streakShieldLabel(wallet.streakShieldCount),
+                            IconText(t.shop_streakShieldLabel(wallet.streakShieldCount),
                                 style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.85), fontSize: 13)),
                           ],
                         ),
@@ -118,14 +119,14 @@ class BonusDetailScreen extends ConsumerWidget {
                 const SizedBox(height: Kingdom.spaceXl),
 
                 // ジェムでできること
-                Text(t.bonusDetail_boostHeader, style: Kingdom.title(size: Kingdom.textSubheading)),
+                IconText(t.bonusDetail_boostHeader, style: Kingdom.title(size: Kingdom.textSubheading)),
                 const SizedBox(height: Kingdom.spaceMd),
                 OrnateFrame(
                   accent: Kingdom.sadnessIndigo,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(t.bonusDetail_boostDesc,
+                      IconText(t.bonusDetail_boostDesc,
                           style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: 12)),
                       const SizedBox(height: Kingdom.spaceMd),
                       SizedBox(
@@ -136,7 +137,7 @@ class BonusDetailScreen extends ConsumerWidget {
                             backgroundColor: Kingdom.sadnessIndigo,
                             foregroundColor: Kingdom.parchment,
                           ),
-                          child: Text(t.shop_title),
+                          child: IconText(t.shop_title),
                         ),
                       ),
                     ],
@@ -155,8 +156,8 @@ class BonusDetailScreen extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: 13)),
-            Text(value, style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
+            IconText(label, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: 13)),
+            IconText(value, style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
           ],
         ),
       );

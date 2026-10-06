@@ -15,6 +15,7 @@ import '../providers/vip_provider.dart';
 import '../services/ad_service.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class BattleResultScreenV2 extends ConsumerStatefulWidget {
   final BattleResult result;
@@ -367,7 +368,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
                           child: OutlinedButton.icon(
                             onPressed: _shareReplay,
                             icon: Icon(Icons.share, color: Kingdom.parchment.withValues(alpha: 0.8)),
-                            label: Text(t.battleResult_shareReplay,
+                            label: IconText(t.battleResult_shareReplay,
                                 style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8))),
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(color: Kingdom.parchment.withValues(alpha: 0.35)),
@@ -382,7 +383,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
                           child: OutlinedButton.icon(
                             onPressed: () => Navigator.popUntil(context, ModalRoute.withName('/')),
                             icon: Icon(Icons.home, color: Kingdom.parchment.withValues(alpha: 0.8)),
-                            label: Text(t.battleResult_backHome,
+                            label: IconText(t.battleResult_backHome,
                                 style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8))),
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(color: Kingdom.parchment.withValues(alpha: 0.35)),
@@ -452,7 +453,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Text(t.battleResult_statsTitle, style: Kingdom.label(size: 15, color: accent)),
+            IconText(t.battleResult_statsTitle, style: Kingdom.label(size: 15, color: accent)),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -514,15 +515,15 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(t.battleResult_mvpLabel, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
+                    IconText(t.battleResult_mvpLabel, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
                     const SizedBox(height: 4),
-                    Text(mvp.nameJp,
+                    IconText(mvp.nameJp,
                         style: TextStyle(
                             color: Kingdom.parchment,
                             fontWeight: FontWeight.bold,
                             fontSize: 15)),
                     const SizedBox(height: 2),
-                    Text(t.battleResult_mvpDamage(_mvpDamage),
+                    IconText(t.battleResult_mvpDamage(_mvpDamage),
                         style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7), fontSize: 12)),
                   ],
                 ),
@@ -549,7 +550,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
               children: [
                 const Text('🔍', style: TextStyle(fontSize: 18)),
                 const SizedBox(width: 8),
-                Text(t.battleResult_factorsTitle, style: Kingdom.label(size: 14, color: Kingdom.sadnessIndigo)),
+                IconText(t.battleResult_factorsTitle, style: Kingdom.label(size: 14, color: Kingdom.sadnessIndigo)),
               ],
             ),
             const SizedBox(height: 10),
@@ -561,7 +562,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
                   children: [
                     Text('・', style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7))),
                     Expanded(
-                      child: Text(factor,
+                      child: IconText(factor,
                           style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.85), fontSize: 13, height: 1.4)),
                     ),
                   ],
@@ -580,7 +581,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(t.battle_yourDeck, style: Kingdom.label(size: 14, color: Kingdom.gilt)),
+          IconText(t.battle_yourDeck, style: Kingdom.label(size: 14, color: Kingdom.gilt)),
           const SizedBox(height: 12),
           OrnateFrame(
             accent: Kingdom.bronze,
@@ -621,15 +622,15 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
         ),
         child: Row(
           children: [
-            Text(streakEmoji, style: const TextStyle(fontSize: 28)),
+            IconText(streakEmoji, style: const TextStyle(fontSize: 28)),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(t.battleResult_streakActive(_newStreak), style: Kingdom.label(size: 15, color: Kingdom.parchment)),
+                  IconText(t.battleResult_streakActive(_newStreak), style: Kingdom.label(size: 15, color: Kingdom.parchment)),
                   if (_streakBonus > 0)
-                    Text(t.battleResult_streakBonusEarned(_streakBonus),
+                    IconText(t.battleResult_streakBonusEarned(_streakBonus),
                         style: const TextStyle(color: Kingdom.gilt, fontSize: 12, fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -642,7 +643,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
                         fontSize: 30,
                         fontWeight: FontWeight.w900,
                         color: Kingdom.parchment)),
-                Text(t.battleResult_streakLabel, style: TextStyle(fontSize: 10, color: Kingdom.parchment.withValues(alpha: 0.7))),
+                IconText(t.battleResult_streakLabel, style: TextStyle(fontSize: 10, color: Kingdom.parchment.withValues(alpha: 0.7))),
               ],
             ),
           ],
@@ -659,10 +660,10 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
         accent: Kingdom.sadnessIndigo,
         child: Row(
           children: [
-            const Text('🛡️', style: TextStyle(fontSize: 24)),
+            const IconText('🛡️', style: TextStyle(fontSize: 24)),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(t.battleResult_shieldUsed(_newStreak),
+              child: IconText(t.battleResult_shieldUsed(_newStreak),
                   style: Kingdom.label(size: 13, color: Kingdom.parchment)),
             ),
           ],
@@ -686,24 +687,24 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
         ),
         child: Column(
           children: [
-            Text(t.battleResult_pvpBonusTitle, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
+            IconText(t.battleResult_pvpBonusTitle, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
             const SizedBox(height: 8),
-            Text(t.battleResult_pvpBonusSubtitle, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7), fontSize: 12)),
+            IconText(t.battleResult_pvpBonusSubtitle, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7), fontSize: 12)),
             const SizedBox(height: 4),
             _pvpBonusGranted > 0
-                ? Text(t.battleResult_pvpBonusAmount(_pvpBonusGranted),
+                ? IconText(t.battleResult_pvpBonusAmount(_pvpBonusGranted),
                     style: TextStyle(
                         fontFamily: Kingdom.displayFont,
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
                         color: Kingdom.gilt))
-                : Text(t.battleResult_pvpBonusCapReached,
+                : IconText(t.battleResult_pvpBonusCapReached,
                     style: TextStyle(
                         color: Kingdom.parchment.withValues(alpha: 0.7),
                         fontSize: 14,
                         fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text(t.battleResult_pvpBonusCapInfo(kDailyBonusCoinCap, remaining),
+            IconText(t.battleResult_pvpBonusCapInfo(kDailyBonusCoinCap, remaining),
                 style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 11)),
           ],
         ),
@@ -726,10 +727,10 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(t.battleResult_seasonPointsEarned(points),
+                  IconText(t.battleResult_seasonPointsEarned(points),
                       style: Kingdom.label(size: 14, color: Kingdom.lightSkyBlue)),
                   if (widget.seasonRankedUp && widget.seasonNewRank != null)
-                    Text(t.battleResult_seasonRankUp(widget.seasonNewRank!),
+                    IconText(t.battleResult_seasonRankUp(widget.seasonNewRank!),
                         style: const TextStyle(color: Kingdom.gilt, fontSize: 12, fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -756,9 +757,9 @@ class _StatBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(icon, style: const TextStyle(fontSize: 20)),
+        IconText(icon, style: const TextStyle(fontSize: 20)),
         const SizedBox(height: 4),
-        Text(
+        IconText(
           value,
           style: TextStyle(
               fontFamily: Kingdom.displayFont,
@@ -767,7 +768,7 @@ class _StatBox extends StatelessWidget {
               color: Kingdom.parchment),
         ),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 10, color: Kingdom.parchment.withValues(alpha: 0.5))),
+        IconText(label, style: TextStyle(fontSize: 10, color: Kingdom.parchment.withValues(alpha: 0.5))),
       ],
     );
   }

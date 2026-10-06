@@ -5,6 +5,7 @@ import '../providers/card_rental_provider.dart';
 import '../providers/game_state_provider.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class PopularCardsScreen extends ConsumerWidget {
   const PopularCardsScreen({super.key});
@@ -18,7 +19,7 @@ class PopularCardsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: Text(t.popularCards_appBarTitle, style: Kingdom.title(size: 16)),
+        title: IconText(t.popularCards_appBarTitle, style: Kingdom.title(size: 16)),
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
       ),
@@ -37,7 +38,7 @@ class PopularCardsScreen extends ConsumerWidget {
               child: OrnateFrame(
                 accent: Kingdom.sadnessIndigo,
                 padding: const EdgeInsets.all(Kingdom.spaceMd),
-                child: Text(
+                child: IconText(
                   t.popularCards_description,
                   style: TextStyle(fontSize: 12, color: const Color(0xFF7C9CDB), height: 1.6),
                 ),
@@ -48,7 +49,7 @@ class PopularCardsScreen extends ConsumerWidget {
             switch (topCardsAsync) {
               AsyncData(:final value) when value.isEmpty => Padding(
                   padding: const EdgeInsets.all(Kingdom.spaceXl),
-                  child: Text(t.rankingV3_noData, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
+                  child: IconText(t.rankingV3_noData, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
                 ),
               AsyncData(:final value) => ListView.builder(
                   shrinkWrap: true,
@@ -65,7 +66,7 @@ class PopularCardsScreen extends ConsumerWidget {
                 ),
               AsyncError() => Padding(
                   padding: const EdgeInsets.all(Kingdom.spaceXl),
-                  child: Text(t.popularCards_loadError, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
+                  child: IconText(t.popularCards_loadError, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
                 ),
               _ => const Padding(
                   padding: EdgeInsets.all(Kingdom.spaceXl),
@@ -107,7 +108,7 @@ class PopularCardsScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.4)),
             ),
-            title: Text(card.cardName, style: Kingdom.label(size: 16, color: Kingdom.gilt)),
+            title: IconText(card.cardName, style: Kingdom.label(size: 16, color: Kingdom.gilt)),
             content: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +122,7 @@ class PopularCardsScreen extends ConsumerWidget {
                   Divider(color: Kingdom.parchment.withValues(alpha: 0.2)),
 
                   // レンタル期間選択
-                  Text(t.popularCards_rentalPeriodLabel, style: Kingdom.label(size: 12, color: Kingdom.gilt)),
+                  IconText(t.popularCards_rentalPeriodLabel, style: Kingdom.label(size: 12, color: Kingdom.gilt)),
                   const SizedBox(height: Kingdom.spaceSm),
                   Column(
                     children: _rentalPlans.entries.map((e) {
@@ -140,7 +141,7 @@ class PopularCardsScreen extends ConsumerWidget {
             actions: [
               TextButton(
                 onPressed: isSubmitting ? null : () => Navigator.pop(context),
-                child: Text(t.popularCards_cancelButton, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7))),
+                child: IconText(t.popularCards_cancelButton, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7))),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -158,7 +159,7 @@ class PopularCardsScreen extends ConsumerWidget {
 
                         if (errorMessage != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(errorMessage), backgroundColor: Kingdom.angerCrimson),
+                            SnackBar(content: IconText(errorMessage), backgroundColor: Kingdom.angerCrimson),
                           );
                           return;
                         }
@@ -186,7 +187,7 @@ class PopularCardsScreen extends ConsumerWidget {
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Kingdom.parchment),
                       )
-                    : Text(t.popularCards_rentButton),
+                    : IconText(t.popularCards_rentButton),
               ),
             ],
           );
@@ -236,7 +237,7 @@ class _PopularCardItem extends StatelessWidget {
             children: [
               // ランク
               if (card.rank <= 3)
-                Text(medalEmoji[card.rank]!, style: const TextStyle(fontSize: 24))
+                IconText(medalEmoji[card.rank]!, style: const TextStyle(fontSize: 24))
               else
                 Container(
                   width: 28,
@@ -256,7 +257,7 @@ class _PopularCardItem extends StatelessWidget {
                     Row(
                       children: [
                         Flexible(
-                          child: Text(
+                          child: IconText(
                             card.cardName,
                             style: TextStyle(
                                 fontFamily: Kingdom.displayFont,
@@ -275,7 +276,7 @@ class _PopularCardItem extends StatelessWidget {
                               border: Border.all(color: Kingdom.gilt, width: 0.5),
                               borderRadius: BorderRadius.circular(3),
                             ),
-                            child: Text(card.evolutionBadge,
+                            child: IconText(card.evolutionBadge,
                                 style: const TextStyle(fontSize: 9, color: Kingdom.gilt, fontWeight: FontWeight.bold)),
                           ),
                         ],
@@ -286,7 +287,7 @@ class _PopularCardItem extends StatelessWidget {
                       style: TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.parchment.withValues(alpha: 0.5)),
                     ),
                     if (card.rentalsUntilNextEvolution > 0)
-                      Text(t.popularCards_rentalsUntilEvolution(card.rentalsUntilNextEvolution),
+                      IconText(t.popularCards_rentalsUntilEvolution(card.rentalsUntilNextEvolution),
                           style: const TextStyle(fontSize: 9, color: Kingdom.joyGold)),
                   ],
                 ),
@@ -333,10 +334,10 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(icon, style: const TextStyle(fontSize: 16)),
+        IconText(icon, style: const TextStyle(fontSize: 16)),
         const SizedBox(height: 2),
-        Text(value, style: TextStyle(fontSize: Kingdom.textCaption, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
-        Text(label, style: TextStyle(fontSize: 9, color: Kingdom.parchment.withValues(alpha: 0.5))),
+        IconText(value, style: TextStyle(fontSize: Kingdom.textCaption, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
+        IconText(label, style: TextStyle(fontSize: 9, color: Kingdom.parchment.withValues(alpha: 0.5))),
       ],
     );
   }
@@ -355,8 +356,8 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7), fontSize: Kingdom.textCaption)),
-          Text(value, style: TextStyle(color: Kingdom.gilt, fontWeight: FontWeight.bold, fontSize: Kingdom.textCaption)),
+          IconText(label, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7), fontSize: Kingdom.textCaption)),
+          IconText(value, style: TextStyle(color: Kingdom.gilt, fontWeight: FontWeight.bold, fontSize: Kingdom.textCaption)),
         ],
       ),
     );
@@ -403,7 +404,7 @@ class _RentalOption extends StatelessWidget {
                   Icon(Icons.check_circle, size: 13, color: color),
                   const SizedBox(width: 4),
                 ],
-                Text(t.popularCards_daysUnit(days), style: TextStyle(fontSize: Kingdom.textCaption, color: color, fontWeight: FontWeight.bold)),
+                IconText(t.popularCards_daysUnit(days), style: TextStyle(fontSize: Kingdom.textCaption, color: color, fontWeight: FontWeight.bold)),
               ],
             ),
             Text('$totalCost💰', style: TextStyle(fontSize: Kingdom.textCaption, color: color)),

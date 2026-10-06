@@ -5,6 +5,7 @@ import '../providers/game_state_provider.dart';
 import '../providers/collection_provider.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class AchievementsScreen extends ConsumerWidget {
   const AchievementsScreen({super.key});
@@ -35,7 +36,7 @@ class AchievementsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: Text(t.achievements_title, style: Kingdom.title(size: 17)),
+        title: IconText(t.achievements_title, style: Kingdom.title(size: 17)),
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
       ),
@@ -58,7 +59,7 @@ class AchievementsScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
-                  child: Text(t.achievements_noBadgesMessage, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
+                  child: IconText(t.achievements_noBadgesMessage, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
                 ),
               )
             else
@@ -84,17 +85,17 @@ class AchievementsScreen extends ConsumerWidget {
                               badge.imageAsset,
                               width: 44,
                               height: 44,
-                              errorBuilder: (_, _, _) => Text(badge.emoji, style: const TextStyle(fontSize: 36)),
+                              errorBuilder: (_, _, _) => IconText(badge.emoji, style: const TextStyle(fontSize: 36)),
                             ),
                           ),
                           const SizedBox(height: Kingdom.spaceSm),
-                          Text(
+                          IconText(
                             badge.name,
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Kingdom.parchment),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: Kingdom.spaceXs),
-                          Text(
+                          IconText(
                             badge.description,
                             style: TextStyle(fontSize: 10, color: Kingdom.parchment.withValues(alpha: 0.5)),
                             textAlign: TextAlign.center,
@@ -150,9 +151,9 @@ class _AchievementCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(achievement.title,
+                    IconText(achievement.title,
                         style: Kingdom.label(size: 14, color: Kingdom.parchment)),
-                    Text(achievement.description,
+                    IconText(achievement.description,
                         style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.5))),
                   ],
                 ),
@@ -161,7 +162,7 @@ class _AchievementCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: Kingdom.joyGold, borderRadius: BorderRadius.circular(20)),
-                  child: Text(t.achievements_unlockedLabel,
+                  child: IconText(t.achievements_unlockedLabel,
                       style: TextStyle(color: Kingdom.night, fontSize: Kingdom.textCaption, fontWeight: FontWeight.bold)),
                 ),
             ],
@@ -210,7 +211,7 @@ class _StreakCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(t.achievements_streakBonusTitle, style: Kingdom.label(size: 16, color: Kingdom.parchment)),
+          IconText(t.achievements_streakBonusTitle, style: Kingdom.label(size: 16, color: Kingdom.parchment)),
           const SizedBox(height: Kingdom.spaceMd),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -220,7 +221,7 @@ class _StreakCard extends StatelessWidget {
                   Text('$streak',
                       style: TextStyle(
                           fontFamily: Kingdom.displayFont, color: Kingdom.parchment, fontSize: 32, fontWeight: FontWeight.bold)),
-                  Text(t.achievements_streakLabel, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7), fontSize: 12)),
+                  IconText(t.achievements_streakLabel, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7), fontSize: 12)),
                 ],
               ),
               Column(
@@ -228,7 +229,7 @@ class _StreakCard extends StatelessWidget {
                   Text('×${(1.0 + (streak * 0.05)).clamp(1.0, 1.5).toStringAsFixed(2)}',
                       style: TextStyle(
                           fontFamily: Kingdom.displayFont, color: Kingdom.gilt, fontSize: 32, fontWeight: FontWeight.bold)),
-                  Text(t.achievements_bonusMultiplierLabel, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7), fontSize: 12)),
+                  IconText(t.achievements_bonusMultiplierLabel, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7), fontSize: 12)),
                 ],
               ),
             ],
@@ -237,7 +238,7 @@ class _StreakCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(color: Kingdom.night.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(6)),
-            child: Text(t.achievements_streakBonusDescription,
+            child: IconText(t.achievements_streakBonusDescription,
                 style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.85), fontSize: 12)),
           ),
         ],
@@ -253,6 +254,6 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(title, style: Kingdom.title(size: 16));
+    return IconText(title, style: Kingdom.title(size: 16));
   }
 }

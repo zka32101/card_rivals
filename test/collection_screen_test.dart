@@ -67,7 +67,8 @@ void main() {
 
   testWidgets('属性フィルタで絞り込める', (tester) async {
     await _pump(tester, cards);
-    await tester.tap(find.text('🔥 怒'));
+    // 絵文字は画像に置き換わったので、文字（怒）で探す。
+    await tester.tap(find.textContaining('怒', findRichText: true).first);
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('1枚を表示（全3枚）'), findsOneWidget);
   });

@@ -17,6 +17,7 @@ import '../services/functions_service.dart';
 import '../widgets/daily_quests_widget.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class CardCreationScreenV2 extends ConsumerStatefulWidget {
   const CardCreationScreenV2({super.key});
@@ -73,7 +74,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: Text(t.cardCreation_appBarTitle(_step + 1), style: Kingdom.title(size: 16)),
+        title: IconText(t.cardCreation_appBarTitle(_step + 1), style: Kingdom.title(size: 16)),
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
         bottom: PreferredSize(
@@ -175,7 +176,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                           side: BorderSide(color: Kingdom.parchment.withValues(alpha: 0.4)),
                           foregroundColor: Kingdom.parchment,
                         ),
-                        child: Text(t.cardCreation_back),
+                        child: IconText(t.cardCreation_back),
                       ),
                     ),
                   if (_step > 0) const SizedBox(width: Kingdom.spaceMd),
@@ -195,9 +196,9 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: Kingdom.title(size: 17)),
+        IconText(title, style: Kingdom.title(size: 17)),
         const SizedBox(height: Kingdom.spaceXs),
-        Text(sub, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 12)),
+        IconText(sub, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 12)),
         const SizedBox(height: Kingdom.spaceXl),
       ],
     );
@@ -215,7 +216,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(t.cardCreation_designSelectedCount(_selectedDesignWords.length),
+                IconText(t.cardCreation_designSelectedCount(_selectedDesignWords.length),
                     style: Kingdom.label(size: 12, color: Kingdom.gilt)),
                 const SizedBox(height: Kingdom.spaceSm),
                 Wrap(
@@ -223,7 +224,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                   runSpacing: 6,
                   children: _selectedDesignWords.map((word) {
                     return Chip(
-                      label: Text(word),
+                      label: IconText(word),
                       onDeleted: () => setState(() => _selectedDesignWords.remove(word)),
                       backgroundColor: Kingdom.gilt,
                       labelStyle: TextStyle(color: Kingdom.night, fontWeight: FontWeight.bold),
@@ -279,7 +280,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: Kingdom.spaceXl),
               child: Center(
-                child: Text(
+                child: IconText(
                   t.cardCreation_designNoResults,
                   style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
                 ),
@@ -319,7 +320,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                   ),
                 ),
                 child: Center(
-                  child: Text(
+                  child: IconText(
                     word,
                     style: TextStyle(
                       fontSize: Kingdom.textCaption,
@@ -351,7 +352,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: isActive ? Kingdom.gilt : Kingdom.parchment.withValues(alpha: 0.2)),
         ),
-        child: Text(
+        child: IconText(
           label,
           style: TextStyle(
             fontSize: 12,
@@ -467,9 +468,9 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(t.card_selectParameters, style: Kingdom.title(size: 17)),
+        IconText(t.card_selectParameters, style: Kingdom.title(size: 17)),
         const SizedBox(height: Kingdom.spaceXs),
-        Text(t.cardCreation_gachaSub, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 12)),
+        IconText(t.cardCreation_gachaSub, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 12)),
         const SizedBox(height: Kingdom.spaceXl),
 
         if (!_hasRolled && !_isRolling)
@@ -492,7 +493,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: Kingdom.spaceMd),
-                child: Text(t.cardCreation_bigHitLabel,
+                child: IconText(t.cardCreation_bigHitLabel,
                     style: TextStyle(
                         color: Kingdom.gilt, fontWeight: FontWeight.w900, fontSize: 20, fontFamily: Kingdom.displayFont)),
               ),
@@ -509,19 +510,19 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                 children: [
                   OutlinedButton(
                     onPressed: canReroll ? () => _rollParameters(isReroll: true) : null,
-                    child: Text(t.cardCreation_rerollButton(kParamRerollCoinCost, _remainingRerolls)),
+                    child: IconText(t.cardCreation_rerollButton(kParamRerollCoinCost, _remainingRerolls)),
                   ),
                   if (!canReroll)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: Text(t.cardCreation_insufficientCoins,
+                      child: IconText(t.cardCreation_insufficientCoins,
                           style: TextStyle(color: Kingdom.angerCrimson.withValues(alpha: 0.8), fontSize: 11)),
                     ),
                 ],
               ),
             ),
           const SizedBox(height: Kingdom.spaceXxl),
-          Text(t.cardCreation_preview, style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.gilt)),
+          IconText(t.cardCreation_preview, style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.gilt)),
           const SizedBox(height: Kingdom.spaceMd),
           Center(
             child: SizedBox(
@@ -548,7 +549,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
   Widget _buildParamResultRow(String label, int value, Color color) {
     return Row(
       children: [
-        SizedBox(width: 70, child: Text(label, style: Kingdom.label(size: Kingdom.textBody, color: color))),
+        SizedBox(width: 70, child: IconText(label, style: Kingdom.label(size: Kingdom.textBody, color: color))),
         Expanded(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
@@ -624,7 +625,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
         if (_isGeneratingName) ...[
           const Center(child: CircularProgressIndicator(color: Kingdom.gilt)),
           const SizedBox(height: Kingdom.spaceLg),
-          Center(child: Text(t.cardCreation_generatingName, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6)))),
+          Center(child: IconText(t.cardCreation_generatingName, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6)))),
         ] else ...[
           ..._nameCandidates.map((name) {
             final isSelected = _selectedName == name;
@@ -642,7 +643,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(name,
+                        child: IconText(name,
                             style: TextStyle(
                                 fontFamily: Kingdom.displayFont,
                                 fontSize: 16,
@@ -662,13 +663,13 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
               _generateNames();
             },
             icon: Icon(Icons.refresh, color: Kingdom.gilt),
-            label: Text(t.cardCreation_regenerateNames, style: TextStyle(color: Kingdom.gilt)),
+            label: IconText(t.cardCreation_regenerateNames, style: TextStyle(color: Kingdom.gilt)),
           ),
         ],
         const SizedBox(height: Kingdom.spaceLg),
         Text('🤝 ${t.cardCreation_coCreatorTitle}', style: Kingdom.label(size: Kingdom.textBody, color: const Color(0xFF7C9CDB))),
         const SizedBox(height: Kingdom.spaceXs),
-        Text(t.cardCreation_coCreatorDesc,
+        IconText(t.cardCreation_coCreatorDesc,
             style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: Kingdom.textCaption)),
         const SizedBox(height: Kingdom.spaceSm),
         TextField(
@@ -702,7 +703,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
               const Icon(Icons.info_outline, color: Color(0xFF7C9CDB), size: 18),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(t.cardCreation_confirmCoinNotice(_creationCostWatched),
+                child: IconText(t.cardCreation_confirmCoinNotice(_creationCostWatched),
                     style: const TextStyle(fontSize: 12, color: Color(0xFF7C9CDB))),
               ),
             ],
@@ -798,7 +799,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     if (wallet.coinBalance < cost) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(t.cardCreation_insufficientCoins),
+          content: IconText(t.cardCreation_insufficientCoins),
           backgroundColor: Kingdom.angerCrimson,
           action: SnackBarAction(
             label: t.cardCreation_goToShop,
@@ -817,22 +818,22 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.4)),
         ),
-        title: Text(t.cardCreation_confirmTitle, style: Kingdom.title(size: 16)),
+        title: IconText(t.cardCreation_confirmTitle, style: Kingdom.title(size: 16)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(t.cardCreation_quotedName(_selectedName ?? ''),
+            IconText(t.cardCreation_quotedName(_selectedName ?? ''),
                 style: TextStyle(fontFamily: Kingdom.displayFont, fontSize: 18, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
             const SizedBox(height: Kingdom.spaceSm),
-            Text(t.cardCreation_confirmBody(cost), style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8))),
+            IconText(t.cardCreation_confirmBody(cost), style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8))),
             const SizedBox(height: Kingdom.spaceXs),
-            Text(t.cardCreation_confirmNote, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: 12)),
+            IconText(t.cardCreation_confirmNote, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: 12)),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(t.cardCreation_cancel, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7))),
+            child: IconText(t.cardCreation_cancel, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.7))),
           ),
           ElevatedButton(
             onPressed: () {
@@ -840,7 +841,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
               _processPurchase();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Kingdom.angerCrimson, foregroundColor: Kingdom.parchment),
-            child: Text(t.cardCreation_createForCoins(cost)),
+            child: IconText(t.cardCreation_createForCoins(cost)),
           ),
         ],
       ),
@@ -931,7 +932,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       if (mounted) Navigator.of(context, rootNavigator: true).pop();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.cardCreation_insufficientCoins), backgroundColor: Kingdom.angerCrimson),
+          SnackBar(content: IconText(t.cardCreation_insufficientCoins), backgroundColor: Kingdom.angerCrimson),
         );
       }
       return;
@@ -995,7 +996,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(t.cardCreation_cardAddedSnackbar(_selectedName ?? '', cost)),
+        content: IconText(t.cardCreation_cardAddedSnackbar(_selectedName ?? '', cost)),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 3),
       ),
@@ -1031,16 +1032,16 @@ class _ImageGenLoadingDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 52)),
+            IconText(emoji, style: const TextStyle(fontSize: 52)),
             const SizedBox(height: Kingdom.spaceLg),
-            Text(t.cardCreation_generatingImage, style: Kingdom.label(size: Kingdom.textSubheading, color: color)),
+            IconText(t.cardCreation_generatingImage, style: Kingdom.label(size: Kingdom.textSubheading, color: color)),
             const SizedBox(height: Kingdom.spaceXl),
             LinearProgressIndicator(
               backgroundColor: Kingdom.night,
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
             const SizedBox(height: Kingdom.spaceMd),
-            Text(
+            IconText(
               t.cardCreation_generatingImageSub,
               textAlign: TextAlign.center,
               style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.35), fontSize: Kingdom.textCaption),

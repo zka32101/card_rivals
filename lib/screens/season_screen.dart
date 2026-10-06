@@ -4,6 +4,7 @@ import '../models/season.dart';
 import '../providers/season_provider.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class SeasonScreen extends ConsumerWidget {
   const SeasonScreen({super.key});
@@ -18,7 +19,7 @@ class SeasonScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: Text('⚔️ ${t.season_title}', style: Kingdom.title(size: 17)),
+        title: IconText('⚔️ ${t.season_title}', style: Kingdom.title(size: 17)),
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
       ),
@@ -34,12 +35,12 @@ class SeasonScreen extends ConsumerWidget {
                     children: [
                       Icon(Icons.calendar_month, size: 64, color: Colors.grey[400]),
                       const SizedBox(height: 16),
-                      Text(
+                      IconText(
                         t.season_noActiveSeason,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      Text(
+                      IconText(
                         t.season_checkBackSoon,
                         style: Theme.of(context).textTheme.bodyMedium,
                         textAlign: TextAlign.center,
@@ -58,7 +59,7 @@ class SeasonScreen extends ConsumerWidget {
                         children: [
                           Icon(Icons.person_off, size: 64, color: Colors.grey[400]),
                           const SizedBox(height: 16),
-                          Text(
+                          IconText(
                             t.season_noActiveSeason,
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
@@ -109,7 +110,7 @@ class SeasonScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Text(seasonTypeEmoji, style: const TextStyle(fontSize: 44)),
+              IconText(seasonTypeEmoji, style: const TextStyle(fontSize: 44)),
               const SizedBox(width: Kingdom.spaceMd),
               Expanded(
                 child: Column(
@@ -120,7 +121,7 @@ class SeasonScreen extends ConsumerWidget {
                       style: Kingdom.label(size: 16, color: Kingdom.gilt),
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    IconText(
                       season.title,
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -137,7 +138,7 @@ class SeasonScreen extends ConsumerWidget {
                 color: Kingdom.joyGold.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
+              child: IconText(
                 t.season_daysRemaining(daysRemaining),
                 style: TextStyle(fontSize: 12, color: Kingdom.joyGold),
               ),
@@ -149,7 +150,7 @@ class SeasonScreen extends ConsumerWidget {
                 color: Kingdom.parchment.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
+              child: IconText(
                 t.season_upcoming,
                 style: TextStyle(fontSize: 12, color: Kingdom.parchment),
               ),
@@ -161,13 +162,13 @@ class SeasonScreen extends ConsumerWidget {
                 color: Kingdom.angerCrimson.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
+              child: IconText(
                 t.season_ended,
                 style: TextStyle(fontSize: 12, color: Kingdom.angerCrimson),
               ),
             ),
           const SizedBox(height: Kingdom.spaceSm),
-          Text(
+          IconText(
             season.description,
             style: TextStyle(fontSize: 13, color: Kingdom.parchment.withValues(alpha: 0.7)),
           ),
@@ -190,7 +191,7 @@ class SeasonScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          IconText(
             t.season_yourProgress,
             style: Kingdom.label(size: 14, color: Kingdom.joyGold),
           ),
@@ -245,7 +246,7 @@ class SeasonScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: Kingdom.spaceSm),
-          Text(
+          IconText(
             t.season_rankPointsToNextRank(100 - progress.currentRankPoints),
             style: TextStyle(fontSize: 11, color: Kingdom.parchment.withValues(alpha: 0.6)),
           ),
@@ -263,7 +264,7 @@ class SeasonScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          IconText(
             t.season_bonusTitle,
             style: Kingdom.label(size: 14, color: Kingdom.lightSkyBlue),
           ),
@@ -317,7 +318,7 @@ class SeasonScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          IconText(
             t.season_rankProgressTitle,
             style: Kingdom.label(size: 14, color: Kingdom.angerCrimson),
           ),
@@ -369,7 +370,7 @@ class SeasonScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          IconText(
             t.season_battleStats,
             style: Kingdom.label(size: 14, color: Kingdom.lightSkyBlue),
           ),
@@ -408,7 +409,7 @@ class SeasonScreen extends ConsumerWidget {
         Expanded(
           child: ElevatedButton.icon(
             icon: const Icon(Icons.leaderboard),
-            label: Text(t.season_viewLeaderboard),
+            label: IconText(t.season_viewLeaderboard),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -427,7 +428,7 @@ class SeasonScreen extends ConsumerWidget {
         Expanded(
           child: ElevatedButton.icon(
             icon: const Icon(Icons.card_giftcard),
-            label: Text(t.season_viewRewards),
+            label: IconText(t.season_viewRewards),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -449,7 +450,7 @@ class SeasonScreen extends ConsumerWidget {
   Widget _buildStatColumn(BuildContext context, String value, String label, Color color) {
     return Column(
       children: [
-        Text(
+        IconText(
           value,
           style: TextStyle(
             fontSize: 18,
@@ -458,7 +459,7 @@ class SeasonScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
+        IconText(
           label,
           style: TextStyle(
             fontSize: 11,
@@ -474,8 +475,8 @@ class SeasonScreen extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12)),
-        Text(
+        IconText(label, style: const TextStyle(fontSize: 12)),
+        IconText(
           value,
           style: TextStyle(
             fontSize: 14,
@@ -523,7 +524,7 @@ class SeasonLeaderboardScreen extends ConsumerWidget {
           currentSeasonAsync.when(
             data: (season) {
               if (season == null) {
-                return Center(child: Text(t.season_noActiveSeason));
+                return Center(child: IconText(t.season_noActiveSeason));
               }
 
               final leaderboardAsync = ref.watch(seasonLeaderboardProvider(season.id));
@@ -531,7 +532,7 @@ class SeasonLeaderboardScreen extends ConsumerWidget {
               return leaderboardAsync.when(
                 data: (leaderboard) {
                   if (leaderboard.isEmpty) {
-                    return Center(child: Text(t.season_noLeaderboardData));
+                    return Center(child: IconText(t.season_noLeaderboardData));
                   }
 
                   return ListView.builder(
@@ -578,7 +579,7 @@ class SeasonLeaderboardScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
-                child: Text(positionMedal, style: const TextStyle(fontSize: 24)),
+                child: IconText(positionMedal, style: const TextStyle(fontSize: 24)),
               ),
             ),
             const SizedBox(width: Kingdom.spaceMd),
@@ -593,12 +594,12 @@ class SeasonLeaderboardScreen extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text(
+                      IconText(
                         t.season_rank(progress.currentRank),
                         style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.7)),
                       ),
                       const SizedBox(width: Kingdom.spaceSm),
-                      Text(
+                      IconText(
                         t.season_points(progress.totalSeasonPoints),
                         style: TextStyle(fontSize: 12, color: Kingdom.joyGold),
                       ),
@@ -663,7 +664,7 @@ class SeasonRewardsScreen extends ConsumerWidget {
           currentSeasonAsync.when(
             data: (season) {
               if (season == null) {
-                return Center(child: Text(t.season_noActiveSeason));
+                return Center(child: IconText(t.season_noActiveSeason));
               }
 
               final rewardsAsync = ref.watch(seasonRewardsProvider(season.id));
@@ -674,7 +675,7 @@ class SeasonRewardsScreen extends ConsumerWidget {
                   return userProgressAsync.when(
                     data: (userProgress) {
                       if (rewards.isEmpty) {
-                        return Center(child: Text(t.season_noRewards));
+                        return Center(child: IconText(t.season_noRewards));
                       }
 
                       return ListView.builder(
@@ -760,12 +761,12 @@ class SeasonRewardsScreen extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                IconText(
                                   reward.title,
                                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
+                                IconText(
                                   t.season_reachRank(reward.rankTier),
                                   style: TextStyle(
                                     fontSize: 11,
@@ -778,7 +779,7 @@ class SeasonRewardsScreen extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: Kingdom.spaceMd),
-                      Text(
+                      IconText(
                         reward.description,
                         style: TextStyle(
                           fontSize: 11,
@@ -797,14 +798,14 @@ class SeasonRewardsScreen extends ConsumerWidget {
                 Row(
                   children: [
                     if (reward.gemsReward > 0) ...[
-                      Text(
+                      IconText(
                         '💎 ${reward.gemsReward}',
                         style: TextStyle(fontSize: 12, color: Kingdom.lightSkyBlue),
                       ),
                       const SizedBox(width: Kingdom.spaceMd),
                     ],
                     if (reward.coinsReward > 0)
-                      Text(
+                      IconText(
                         '🪙 ${reward.coinsReward}',
                         style: TextStyle(fontSize: 12, color: Kingdom.joyGold),
                       ),
@@ -819,7 +820,7 @@ class SeasonRewardsScreen extends ConsumerWidget {
                       color: Kingdom.parchment.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text(
+                    child: IconText(
                       t.season_claimed,
                       style: TextStyle(fontSize: 11, color: Kingdom.parchment.withValues(alpha: 0.6)),
                     ),
@@ -865,11 +866,11 @@ class _ClaimRewardButtonState extends ConsumerState<_ClaimRewardButton> {
       // 請求済みリワード一覧が変わったので再取得する
       ref.invalidate(userCurrentSeasonProgressProvider);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.season_rewardClaimed)),
+        SnackBar(content: IconText(t.season_rewardClaimed)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.season_claimFailed)),
+        SnackBar(content: IconText(t.season_claimFailed)),
       );
     }
   }
@@ -890,7 +891,7 @@ class _ClaimRewardButtonState extends ConsumerState<_ClaimRewardButton> {
               height: 14,
               child: CircularProgressIndicator(strokeWidth: 2, color: Kingdom.night),
             )
-          : Text(t.season_claim, style: const TextStyle(fontSize: 11)),
+          : IconText(t.season_claim, style: const TextStyle(fontSize: 11)),
     );
   }
 }

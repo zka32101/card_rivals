@@ -7,6 +7,8 @@ import '../providers/game_state_provider.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
 import 'card_widget.dart';
+import 'ui_icon.dart';
+import 'ui_icon.dart';
 
 // ローカライズされたカード名を取得（現在のロケールに基づいてJP/EN を切り替え）
 String _getCardDisplayName(BuildContext context, PlayCard card) {
@@ -85,18 +87,18 @@ class CardDetailSheet extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceSm, vertical: 3),
                           decoration: BoxDecoration(color: rc, borderRadius: BorderRadius.circular(6)),
-                          child: Text(displayCard.rarityLabel, style: TextStyle(color: Kingdom.night, fontWeight: FontWeight.bold, fontSize: 12)),
+                          child: IconText(displayCard.rarityLabel, style: TextStyle(color: Kingdom.night, fontWeight: FontWeight.bold, fontSize: 12)),
                         ),
                         const SizedBox(width: Kingdom.spaceSm),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceSm, vertical: 3),
                           decoration: BoxDecoration(color: attrColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6), border: Border.all(color: attrColor)),
-                          child: Text(_attrLabel(t, displayCard.attribute), style: TextStyle(color: attrColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                          child: IconText(_attrLabel(t, displayCard.attribute), style: TextStyle(color: attrColor, fontWeight: FontWeight.bold, fontSize: 12)),
                         ),
                       ],
                     ),
                     const SizedBox(height: Kingdom.spaceSm),
-                    Text(_getCardDisplayName(context, displayCard),
+                    IconText(_getCardDisplayName(context, displayCard),
                         style: TextStyle(
                             fontFamily: Kingdom.displayFont, fontSize: 18, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
                     const SizedBox(height: Kingdom.spaceXs),
@@ -145,7 +147,7 @@ class CardDetailSheet extends ConsumerWidget {
   Widget _statDetail(String label, int value, Color color) {
     return Row(
       children: [
-        SizedBox(width: 40, child: Text(label, style: TextStyle(fontSize: Kingdom.textCaption, color: color, fontWeight: FontWeight.bold))),
+        SizedBox(width: 40, child: IconText(label, style: TextStyle(fontSize: Kingdom.textCaption, color: color, fontWeight: FontWeight.bold))),
         Expanded(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
@@ -166,9 +168,9 @@ class CardDetailSheet extends ConsumerWidget {
   Widget _advantageChip(String label, String target, Color color) {
     return Column(
       children: [
-        Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold)),
+        IconText(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text(target, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
+        IconText(target, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
       ],
     );
   }
@@ -223,7 +225,7 @@ class _SkillSection extends StatelessWidget {
       padding: const EdgeInsets.all(Kingdom.spaceMd),
       child: Row(
         children: [
-          Text(isPassive ? '🛡️' : '⚡', style: const TextStyle(fontSize: 22)),
+          IconText(isPassive ? '🛡️' : '⚡', style: const TextStyle(fontSize: 22)),
           const SizedBox(width: Kingdom.spaceMd),
           Expanded(
             child: Column(
@@ -231,7 +233,7 @@ class _SkillSection extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(_skillName(t, skillId),
+                    IconText(_skillName(t, skillId),
                         style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
                     const SizedBox(width: 6),
                     Container(
@@ -249,7 +251,7 @@ class _SkillSection extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 3),
-                Text(_skillDesc(t, skillId),
+                IconText(_skillDesc(t, skillId),
                     style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.65), fontSize: 12)),
               ],
             ),
@@ -283,7 +285,7 @@ class _TrainingSection extends ConsumerWidget {
             children: [
               Text('💪 ${t.collection_trainingLabel}', style: Kingdom.label(size: 13, color: Kingdom.gilt)),
               const Spacer(),
-              Text(t.collection_trainingLevelFormat(card.level, kMaxCardLevel),
+              IconText(t.collection_trainingLevelFormat(card.level, kMaxCardLevel),
                   style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontWeight: FontWeight.bold, fontSize: 13)),
             ],
           ),
@@ -304,7 +306,7 @@ class _TrainingSection extends ConsumerWidget {
             }),
           ),
           const SizedBox(height: 6),
-          Text(t.collection_trainingBenefit,
+          IconText(t.collection_trainingBenefit,
               style: TextStyle(fontSize: 11, height: 1.5, color: Kingdom.parchment.withValues(alpha: 0.65))),
           const SizedBox(height: Kingdom.spaceMd),
           SizedBox(
@@ -315,7 +317,7 @@ class _TrainingSection extends ConsumerWidget {
                   : () async {
                       if (!canAfford) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(t.collection_trainInsufficientCoins), backgroundColor: Kingdom.angerCrimson),
+                          SnackBar(content: IconText(t.collection_trainInsufficientCoins), backgroundColor: Kingdom.angerCrimson),
                         );
                         return;
                       }
@@ -324,11 +326,11 @@ class _TrainingSection extends ConsumerWidget {
                       if (!context.mounted) return;
                       if (error == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(t.collection_trainSuccess(newLevel)), backgroundColor: Colors.green),
+                          SnackBar(content: IconText(t.collection_trainSuccess(newLevel)), backgroundColor: Colors.green),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(t.collection_trainInsufficientCoins), backgroundColor: Kingdom.angerCrimson),
+                          SnackBar(content: IconText(t.collection_trainInsufficientCoins), backgroundColor: Kingdom.angerCrimson),
                         );
                       }
                     },
@@ -337,7 +339,7 @@ class _TrainingSection extends ConsumerWidget {
                 foregroundColor: Kingdom.night,
                 disabledBackgroundColor: Kingdom.parchment.withValues(alpha: 0.12),
               ),
-              child: Text(isMaxed ? t.collection_trainMaxReached : t.collection_trainButton(cost)),
+              child: IconText(isMaxed ? t.collection_trainMaxReached : t.collection_trainButton(cost)),
             ),
           ),
         ],

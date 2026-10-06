@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/event_challenge.dart';
 import '../providers/events_challenges_provider.dart';
 import '../theme/kingdom_theme.dart';
+import '../widgets/ui_icon.dart';
 
 class EventDetailScreen extends ConsumerWidget {
   final String eventId;
@@ -136,13 +137,13 @@ class _EventHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // タイトル
-          Text(
+          IconText(
             event.title,
             style: Kingdom.title(size: 18, color: Kingdom.gilt),
           ),
           const SizedBox(height: 8),
           // 説明
-          Text(
+          IconText(
             event.description,
             style: TextStyle(
               color: Kingdom.parchment.withValues(alpha: 0.8),
@@ -156,7 +157,7 @@ class _EventHeader extends StatelessWidget {
               _StatusBadge(event: event),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(
+                child: IconText(
                   _getTimeInfo(event),
                   style: TextStyle(
                     color: Kingdom.parchment.withValues(alpha: 0.7),
@@ -212,7 +213,7 @@ class _StatusBadge extends StatelessWidget {
         border: Border.all(color: color, width: 1),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(
+      child: IconText(
         status,
         style: TextStyle(
           color: color,
@@ -255,7 +256,7 @@ class _ChallengeCard extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
+                  child: IconText(
                     challenge.title,
                     style: Kingdom.title(size: 14, color: Kingdom.gilt),
                     maxLines: 1,
@@ -283,7 +284,7 @@ class _ChallengeCard extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             // 説明
-            Text(
+            IconText(
               challenge.description,
               style: TextStyle(
                 color: Kingdom.parchment.withValues(alpha: 0.7),
@@ -333,7 +334,7 @@ class _ChallengeCard extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    const Text(
+                    const IconText(
                       '💎 ',
                       style: TextStyle(fontSize: 12),
                     ),
@@ -345,7 +346,7 @@ class _ChallengeCard extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
+                    const IconText(
                       '🪙 ',
                       style: TextStyle(fontSize: 12),
                     ),

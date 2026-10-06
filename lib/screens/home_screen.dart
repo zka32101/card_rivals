@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../widgets/ui_icon.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -82,7 +83,7 @@ class HomeScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 60,
                     child: ElevatedButton.icon(
-                      icon: const Text('⚔️', style: TextStyle(fontSize: 24)),
+                      icon: const IconText('⚔️', style: TextStyle(fontSize: 24)),
                       label: const Text('PvP対戦'),
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
