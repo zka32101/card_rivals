@@ -70,3 +70,85 @@ class UiIconText extends StatelessWidget {
     );
   }
 }
+
+// 文字列中の絵文字（11種。異体字セレクタ U+FE0F つきも）を探す正規表現。
+final RegExp _kIconEmojiPattern = RegExp('(🪙|💎|☀|🔥|🌙|⚔|🛡|⚡|🥇|🥈|🥉)️?');
+
+UiIconKind? _kindOfEmoji(String emoji) {
+  final base = emoji.replaceAll('️', '');
+  for (final k in UiIconKind.values) {
+    if (k.emoji.replaceAll('️', '') == base) return k;
+  }
+  return null;
+}
+
+/// 文字列に、置き換え対象の絵文字が含まれるか。
+bool containsIconEmoji(String text) => _kIconEmojiPattern.hasMatch(text);
+
+/// [Text] の代わりに使う。文字列中の絵文字（🪙💎☀🔥🌙⚔🛡⚡🥇🥈🥉）を、画像のアイコンに
+/// 置き換えて表示する。絵文字が含まれない文字列は、そのまま [Text] と同じ表示。
+class IconText extends StatelessWidget {
+  const IconText(
+    this.data, {
+    super.key,
+    this.style,
+    this.textAlign,
+    this.maxLines,
+    this.overflow,
+    this.softWrap,
+    this.semanticsLabel,
+  });
+
+  final String data;
+  final TextStyle? style;
+  final TextAlign? textAlign;
+  final int? maxLines;
+  final TextOverflow? overflow;
+  final bool? softWrap;
+  final String? semanticsLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!containsIconEmoji(data)) {
+      return Text(
+        data,
+        style: style,
+        textAlign: textAlign,
+        maxLines: maxLines,
+        overflow: overflow,
+        softWrap: softWrap,
+        semanticsLabel: semanticsLabel,
+      );
+    }
+    final effective = DefaultTextStyle.of(context).style.merge(style);
+    final fontSize = effective.fontSize ?? 14;
+    final spans = <InlineSpan>[];
+    var last = 0;
+    for (final m in _kIconEmojiPattern.allMatches(data)) {
+      if (m.start > last) spans.add(TextSpan(text: data.substring(last, m.start)));
+      final kind = _kindOfEmoji(m.group(0)!);
+      if (kind == null) {
+        spans.add(TextSpan(text: m.group(0)));
+      } else {
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 1),
+            child: UiIcon(kind, size: fontSize * 1.25),
+          ),
+        ));
+      }
+      last = m.end;
+    }
+    if (last < data.length) spans.add(TextSpan(text: data.substring(last)));
+    return Text.rich(
+      TextSpan(children: spans),
+      style: style,
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
+      softWrap: softWrap,
+      semanticsLabel: semanticsLabel ?? data,
+    );
+  }
+}

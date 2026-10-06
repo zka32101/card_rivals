@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class ExplanationScreen extends StatefulWidget {
   const ExplanationScreen({super.key});
@@ -187,7 +188,7 @@ class _ExplanationScreenState extends State<ExplanationScreen> {
                               foregroundColor: Kingdom.parchment,
                             ),
                             icon: const Icon(Icons.arrow_back),
-                            label: Text(t.explanation_back),
+                            label: IconText(t.explanation_back),
                           ),
                         ),
                       if (_currentPage > 0) const SizedBox(width: Kingdom.spaceMd),
@@ -259,20 +260,20 @@ class _ExplanationPageWidget extends StatelessWidget {
               width: 180,
               height: 180,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Text(page.icon, style: const TextStyle(fontSize: 80)),
+              errorBuilder: (_, _, _) => IconText(page.icon, style: const TextStyle(fontSize: 80)),
             ),
           ),
           const SizedBox(height: Kingdom.spaceXxl),
 
           // タイトル
-          Text(page.title, style: Kingdom.title(size: 22, color: page.color), textAlign: TextAlign.center),
+          IconText(page.title, style: Kingdom.title(size: 22, color: page.color), textAlign: TextAlign.center),
           const SizedBox(height: Kingdom.spaceLg),
 
           // 説明
           OrnateFrame(
             accent: page.color,
             padding: const EdgeInsets.all(Kingdom.spaceLg),
-            child: Text(
+            child: IconText(
               page.description,
               style: TextStyle(fontSize: Kingdom.textSubheading, height: 1.6, color: Kingdom.parchment.withValues(alpha: 0.9)),
               textAlign: TextAlign.center,
@@ -299,7 +300,7 @@ class _ExplanationPageWidget extends StatelessWidget {
                       ),
                       const SizedBox(width: Kingdom.spaceMd),
                       Expanded(
-                        child: Text(detail,
+                        child: IconText(detail,
                             style: TextStyle(fontSize: Kingdom.textBody, height: 1.5, color: Kingdom.parchment.withValues(alpha: 0.8))),
                       ),
                     ],

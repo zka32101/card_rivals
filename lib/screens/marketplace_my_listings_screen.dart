@@ -4,6 +4,7 @@ import '../providers/marketplace_provider.dart';
 import '../models/marketplace_models.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class MarketplaceMyListingsScreen extends ConsumerWidget {
   const MarketplaceMyListingsScreen({Key? key}) : super(key: key);
@@ -29,12 +30,12 @@ class MarketplaceMyListingsScreen extends ConsumerWidget {
                   color: Colors.grey[400],
                 ),
                 const SizedBox(height: 16),
-                Text(
+                IconText(
                   t.marketplace_noMyListings,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
-                Text(
+                IconText(
                   t.marketplace_startSelling,
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
@@ -45,7 +46,7 @@ class MarketplaceMyListingsScreen extends ConsumerWidget {
                     // TODO: Navigate to create listing screen
                   },
                   icon: const Icon(Icons.add),
-                  label: Text(t.marketplace_createNewListing),
+                  label: IconText(t.marketplace_createNewListing),
                 ),
               ],
             ),
@@ -76,7 +77,7 @@ class MarketplaceMyListingsScreen extends ConsumerWidget {
                   // TODO: Navigate to create listing screen
                 },
                 icon: const Icon(Icons.add),
-                label: Text(t.marketplace_createNewListing),
+                label: IconText(t.marketplace_createNewListing),
               ),
             ),
           ],
@@ -112,7 +113,7 @@ class MyListingTile extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      IconText(
                         cardNameDisplay,
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         maxLines: 1,
@@ -146,11 +147,11 @@ class MyListingTile extends ConsumerWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
+                    IconText(
                       '${listing.price}🪙',
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Kingdom.gilt),
                     ),
-                    Text(
+                    IconText(
                       '${listing.sellerReceives}🪙 ${AppLocalizations.of(context)!.marketplace_afterFee}',
                       style: TextStyle(fontSize: 10, color: Kingdom.parchment.withValues(alpha: 0.5)),
                     ),
@@ -191,12 +192,12 @@ class MyListingTile extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(t.marketplace_removeListingTitle),
+        title: IconText(t.marketplace_removeListingTitle),
         content: Text('${t.marketplace_removeListingDesc} (${listing.cardName['en'] ?? 'this card'})?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(t.marketplace_cancel),
+            child: IconText(t.marketplace_cancel),
           ),
           FilledButton(
             onPressed: () async {
@@ -211,7 +212,7 @@ class MyListingTile extends ConsumerWidget {
                 );
               }
             },
-            child: Text(t.marketplace_remove),
+            child: IconText(t.marketplace_remove),
           ),
         ],
       ),
@@ -240,7 +241,7 @@ class SoldListingTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  IconText(
                     cardNameDisplay,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -258,7 +259,7 @@ class SoldListingTile extends StatelessWidget {
                 ],
               ),
             ),
-            Text(
+            IconText(
               '+${listing.sellerReceives}🪙',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -282,7 +283,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: Kingdom.spaceMd),
-      child: Text(
+      child: IconText(
         title,
         style: const TextStyle(
           fontWeight: FontWeight.bold,

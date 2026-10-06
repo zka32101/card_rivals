@@ -7,6 +7,7 @@ import '../widgets/card_detail_sheet.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
 import 'card_creation_screen_v2.dart';
+import '../widgets/ui_icon.dart';
 
 enum _CardScope { all, mine, seed }
 
@@ -76,7 +77,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               child: Row(children: [
                 Icon(Icons.check, size: 16, color: _sort == e.key ? Kingdom.gilt : Colors.transparent),
                 const SizedBox(width: 8),
-                Text(e.value, style: const TextStyle(color: Kingdom.parchment)),
+                IconText(e.value, style: const TextStyle(color: Kingdom.parchment)),
               ]),
             ),
         ];
@@ -100,14 +101,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         backgroundColor: Kingdom.gilt,
         foregroundColor: Kingdom.night,
         icon: const Icon(Icons.add),
-        label: Text(t.home_createCardButton, style: const TextStyle(fontWeight: FontWeight.bold)),
+        label: IconText(t.home_createCardButton, style: const TextStyle(fontWeight: FontWeight.bold)),
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CardCreationScreenV2())),
       ),
       // 下部ナビのカードタブ（CardHubScreen）に組み込む場合はAppBarを持たない。
       appBar: widget.embedded
           ? null
           : AppBar(
-              title: Text(t.collection_title, style: Kingdom.title(size: 17)),
+              title: IconText(t.collection_title, style: Kingdom.title(size: 17)),
               backgroundColor: Kingdom.nightDeep,
               elevation: 0,
               actions: [viewToggle, PopupMenuButton<String>(
@@ -143,7 +144,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceMd, vertical: 6),
                 child: Row(
                   children: [
-                    Text(
+                    IconText(
                       t.collection_resultCount(shown.length, scoped.length),
                       style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.6)),
                     ),
@@ -173,7 +174,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     if (_hasActiveFilter)
                       GestureDetector(
                         onTap: _resetFilters,
-                        child: Text(t.collection_resetFilters,
+                        child: IconText(t.collection_resetFilters,
                             style: const TextStyle(fontSize: 12, color: Kingdom.gilt, fontWeight: FontWeight.bold)),
                       ),
                   ],
@@ -391,7 +392,7 @@ class _FilterBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: selected ? color : Kingdom.parchment.withValues(alpha: 0.2)),
             ),
-            child: Text(
+            child: IconText(
               label,
               style: TextStyle(
                 fontSize: 12,
@@ -424,7 +425,7 @@ class _CardResults extends StatelessWidget {
             children: [
               const Text('🎴', style: TextStyle(fontSize: 48)),
               const SizedBox(height: Kingdom.spaceMd),
-              Text(
+              IconText(
                 emptyMessage,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5), fontSize: 14, height: 1.6),
@@ -524,12 +525,12 @@ class _CardRow extends StatelessWidget {
                   border: Border.all(color: rColor, width: 1.5),
                 ),
                 child: card.imageUrl.isEmpty
-                    ? Center(child: Text(attrEmoji, style: const TextStyle(fontSize: 24)))
+                    ? Center(child: IconText(attrEmoji, style: const TextStyle(fontSize: 24)))
                     : (card.imageUrl.startsWith('assets/')
                         ? Image.asset(card.imageUrl, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Center(child: Text(attrEmoji, style: const TextStyle(fontSize: 24))))
+                            errorBuilder: (_, __, ___) => Center(child: IconText(attrEmoji, style: const TextStyle(fontSize: 24))))
                         : Image.network(card.imageUrl, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Center(child: Text(attrEmoji, style: const TextStyle(fontSize: 24))))),
+                            errorBuilder: (_, __, ___) => Center(child: IconText(attrEmoji, style: const TextStyle(fontSize: 24))))),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -540,14 +541,14 @@ class _CardRow extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(color: rColor, borderRadius: BorderRadius.circular(6)),
-                        child: Text(card.rarityLabel,
+                        child: IconText(card.rarityLabel,
                             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Kingdom.night)),
                       ),
                       const SizedBox(width: 6),
-                      Text(attrEmoji),
+                      IconText(attrEmoji),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text(name,
+                        child: IconText(name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),

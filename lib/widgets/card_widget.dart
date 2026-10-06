@@ -3,6 +3,8 @@ import '../models/card_skill.dart';
 import '../models/user_card.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import 'ui_icon.dart';
+import 'ui_icon.dart';
 
 // ローカライズされたカード名を取得（現在のロケールに基づいてJP/EN を切り替え）
 String _getCardDisplayName(BuildContext context, PlayCard card) {
@@ -325,9 +327,9 @@ class _Header extends StatelessWidget {
           if (!compact) ...[
             Row(
               children: [
-                Text(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 12)),
+                IconText(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 12)),
                 const SizedBox(width: 6),
-                Text(Kingdom.attributeRealm(card.attribute),
+                IconText(Kingdom.attributeRealm(card.attribute),
                     style: Kingdom.label(size: 8, color: accent.withValues(alpha: 0.85))),
               ],
             ),
@@ -336,11 +338,11 @@ class _Header extends StatelessWidget {
           Row(
             children: [
               if (compact) ...[
-                Text(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 12)),
+                IconText(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 12)),
                 const SizedBox(width: 4),
               ],
               Expanded(
-                child: Text(
+                child: IconText(
                   _getCardDisplayName(context, card),
                   style: TextStyle(
                     fontFamily: Kingdom.displayFont,
@@ -355,7 +357,7 @@ class _Header extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               if (card.skillId != null) ...[
-                Text(cardSkillIsPassive(card.skillId!) ? '🛡️' : '⚡', style: const TextStyle(fontSize: 11)),
+                IconText(cardSkillIsPassive(card.skillId!) ? '🛡️' : '⚡', style: const TextStyle(fontSize: 11)),
                 const SizedBox(width: 2),
               ],
               WaxSealBadge(text: '${card.cost}', color: accent, size: 20),
@@ -454,14 +456,14 @@ class _ArtPlaceholder extends StatelessWidget {
               _attrOrbAsset(card.attribute),
               width: 56,
               height: 56,
-              errorBuilder: (_, __, ___) => Text(_attrEmoji(card.attribute),
+              errorBuilder: (_, __, ___) => IconText(_attrEmoji(card.attribute),
                   style: TextStyle(
                     fontSize: 48,
                     shadows: [Shadow(color: attrColor.withValues(alpha: 0.7), blurRadius: 14)],
                   )),
             ),
             const SizedBox(height: 8),
-            Text(Kingdom.attributeRealm(card.attribute),
+            IconText(Kingdom.attributeRealm(card.attribute),
                 textAlign: TextAlign.center,
                 style: Kingdom.label(size: 9, color: attrColor)),
           ],
@@ -493,7 +495,7 @@ class _TypeBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(_attrLabel(t, card.attribute), style: Kingdom.label(size: 10, color: accent)),
+          IconText(_attrLabel(t, card.attribute), style: Kingdom.label(size: 10, color: accent)),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
@@ -501,7 +503,7 @@ class _TypeBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(3),
               color: rColor.withValues(alpha: 0.12),
             ),
-            child: Text(card.rarityLabel,
+            child: IconText(card.rarityLabel,
                 style: TextStyle(
                   fontFamily: Kingdom.displayFont,
                   fontSize: 9,
@@ -553,7 +555,7 @@ class _CompactStats extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(icon, style: const TextStyle(fontSize: 11)),
+              IconText(icon, style: const TextStyle(fontSize: 11)),
               const SizedBox(width: 2),
               Text('$v',
                   style: TextStyle(
@@ -605,7 +607,7 @@ class _StatRow extends StatelessWidget {
       label: '$label $value',
       child: Row(
       children: [
-        SizedBox(width: 14, child: Text(icon, style: const TextStyle(fontSize: 9))),
+        SizedBox(width: 14, child: IconText(icon, style: const TextStyle(fontSize: 9))),
         Expanded(
           child: Stack(
             children: [
@@ -721,7 +723,7 @@ class CardThumbnail extends StatelessWidget {
                       color: Kingdom.nightDeep,
                       border: Border(top: BorderSide(color: accent.withValues(alpha: 0.6), width: 0.8)),
                     ),
-                    child: Text(
+                    child: IconText(
                       _getCardDisplayName(context, card),
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -770,7 +772,7 @@ class CardThumbnail extends StatelessWidget {
                   color: rColor.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(3),
                 ),
-                child: Text(
+                child: IconText(
                   card.rarityLabel,
                   style: const TextStyle(fontSize: 6, color: Kingdom.night, fontWeight: FontWeight.w900),
                 ),
@@ -795,9 +797,9 @@ class CardThumbnail extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 20)),
+            IconText(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 4),
-            Text(_attrLabel(t, card.attribute),
+            IconText(_attrLabel(t, card.attribute),
                 style: Kingdom.label(size: 8, color: accent)),
           ],
         ),

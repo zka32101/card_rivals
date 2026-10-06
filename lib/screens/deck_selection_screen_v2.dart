@@ -10,6 +10,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/deck_presets_provider.dart';
 import 'deck_preset_manager_screen.dart';
 import 'deck_list_screen.dart';
+import '../widgets/ui_icon.dart';
 
 class DeckSelectionScreenV2 extends ConsumerStatefulWidget {
   final String? title;
@@ -57,7 +58,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: Text(title, style: Kingdom.title(size: 16)),
+        title: IconText(title, style: Kingdom.title(size: 16)),
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
         actions: [
@@ -77,7 +78,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(t.deckSelection_progressLabel, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 12)),
+                    IconText(t.deckSelection_progressLabel, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 12)),
                     Text('${_selected.length}/${widget.maxCards}',
                         style: TextStyle(color: Kingdom.gilt, fontWeight: FontWeight.bold, fontSize: 14)),
                   ],
@@ -111,7 +112,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(t.deckSelection_filterByAttribute, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
+                IconText(t.deckSelection_filterByAttribute, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
                 Expanded(
                   child: Row(
                     children: [
@@ -139,7 +140,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                 children: [
                   Row(
                     children: [
-                      Text(t.deckSelection_selectedCardsLabel, style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.gilt)),
+                      IconText(t.deckSelection_selectedCardsLabel, style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.gilt)),
                       const SizedBox(width: Kingdom.spaceSm),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -224,7 +225,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(t.deckSelection_maxCardsReached(widget.maxCards)),
+                                        content: IconText(t.deckSelection_maxCardsReached(widget.maxCards)),
                                         backgroundColor: Kingdom.angerCrimson,
                                       ),
                                     );
@@ -244,7 +245,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(color: Kingdom.parchment.withValues(alpha: 0.6), width: 0.5),
                                     ),
-                                    child: Text(t.deckSelection_rentedBadge,
+                                    child: IconText(t.deckSelection_rentedBadge,
                                         style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
                                   ),
                                 ),
@@ -272,7 +273,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                       child: OrnateFrame(
                         accent: Kingdom.sadnessIndigo,
                         padding: const EdgeInsets.all(Kingdom.spaceMd),
-                        child: Text(
+                        child: IconText(
                           t.deckSelection_selectMoreCards(widget.maxCards - _selected.length),
                           style: const TextStyle(fontSize: Kingdom.textBody, color: Color(0xFF7C9CDB)),
                           textAlign: TextAlign.center,
@@ -306,7 +307,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
       padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
       child: Row(
         children: [
-          Text(t.deckSelection_myDecksLabel, style: Kingdom.label(size: 12, color: Kingdom.gilt)),
+          IconText(t.deckSelection_myDecksLabel, style: Kingdom.label(size: 12, color: Kingdom.gilt)),
           const SizedBox(width: 10),
           Expanded(
             child: SingleChildScrollView(
@@ -335,7 +336,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
           ),
           TextButton(
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeckListScreen())),
-            child: Text(t.deckSelection_manageDecks, style: const TextStyle(color: Kingdom.gilt, fontSize: 12)),
+            child: IconText(t.deckSelection_manageDecks, style: const TextStyle(color: Kingdom.gilt, fontSize: 12)),
           ),
         ],
       ),
@@ -382,14 +383,14 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
     if (missingCount > 0 || preset.cardIds.length > widget.maxCards) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(t.deckSelection_presetAppliedPartial(preset.name)),
+          content: IconText(t.deckSelection_presetAppliedPartial(preset.name)),
           backgroundColor: Kingdom.sadnessIndigo,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(t.deckSelection_presetApplied(preset.name)),
+          content: IconText(t.deckSelection_presetApplied(preset.name)),
           backgroundColor: Kingdom.joyGold,
         ),
       );

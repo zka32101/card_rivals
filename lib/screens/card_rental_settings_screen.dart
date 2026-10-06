@@ -5,6 +5,7 @@ import '../providers/collection_provider.dart';
 import '../models/user_card.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 // ローカライズされたカード名を取得（現在のロケールに基づいてJP/EN を切り替え）
 String _getCardDisplayName(BuildContext context, UserCard card) {
@@ -27,7 +28,7 @@ class CardRentalSettingsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: Text(t.cardRental_appBarTitle, style: Kingdom.title(size: 16)),
+        title: IconText(t.cardRental_appBarTitle, style: Kingdom.title(size: 16)),
         elevation: 0,
         backgroundColor: Kingdom.nightDeep,
       ),
@@ -36,7 +37,7 @@ class CardRentalSettingsScreen extends ConsumerWidget {
           const Positioned.fill(child: EmotionMoteField(count: 10)),
           myCards.isEmpty
           ? Center(
-              child: Text(t.cardRental_noCards, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
+              child: IconText(t.cardRental_noCards, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
             )
           : SingleChildScrollView(
               child: Column(
@@ -50,9 +51,9 @@ class CardRentalSettingsScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(t.cardRental_monthlyEarningsLabel, style: Kingdom.label(size: 12, color: Kingdom.joyGold)),
+                          IconText(t.cardRental_monthlyEarningsLabel, style: Kingdom.label(size: 12, color: Kingdom.joyGold)),
                           const SizedBox(height: Kingdom.spaceSm),
-                          Text(t.cardRental_coinsAmount(earnings),
+                          IconText(t.cardRental_coinsAmount(earnings),
                               style: TextStyle(
                                   fontFamily: Kingdom.displayFont,
                                   fontSize: Kingdom.textDisplay,
@@ -72,7 +73,7 @@ class CardRentalSettingsScreen extends ConsumerWidget {
                     child: OrnateFrame(
                       accent: Kingdom.sadnessIndigo,
                       padding: const EdgeInsets.all(Kingdom.spaceMd),
-                      child: Text(
+                      child: IconText(
                         t.cardRental_explanation,
                         style: TextStyle(fontSize: Kingdom.textCaption, color: const Color(0xFF7C9CDB), height: 1.6),
                       ),
@@ -142,7 +143,7 @@ class _CardRentalToggleItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_getCardDisplayName(context, card),
+                IconText(_getCardDisplayName(context, card),
                     style: TextStyle(
                         fontFamily: Kingdom.displayFont, fontSize: Kingdom.textBody, fontWeight: FontWeight.bold, color: Kingdom.parchment),
                     maxLines: 1,
@@ -150,9 +151,9 @@ class _CardRentalToggleItem extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(t.cardRental_costLabel(card.cost), style: TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.parchment.withValues(alpha: 0.5))),
+                    IconText(t.cardRental_costLabel(card.cost), style: TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.parchment.withValues(alpha: 0.5))),
                     const SizedBox(width: Kingdom.spaceSm),
-                    Text(typeLabel, style: const TextStyle(fontSize: 11)),
+                    IconText(typeLabel, style: const TextStyle(fontSize: 11)),
                   ],
                 ),
               ],

@@ -5,6 +5,8 @@ import '../providers/auth_provider.dart';
 import '../providers/game_state_provider.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import 'ui_icon.dart';
+import 'ui_icon.dart';
 
 enum QuestType { battle, create, win }
 
@@ -67,7 +69,7 @@ class DailyQuestsWidget extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Text(t.dailyQuests_title, style: Kingdom.label(size: 14, color: const Color(0xFF7C9CDB))),
+              IconText(t.dailyQuests_title, style: Kingdom.label(size: 14, color: const Color(0xFF7C9CDB))),
               const Spacer(),
               if (allDone)
                 Container(
@@ -76,7 +78,7 @@ class DailyQuestsWidget extends ConsumerWidget {
                       color: Kingdom.joyGold.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Kingdom.joyGold)),
-                  child: Text(t.dailyQuests_allDone, style: const TextStyle(color: Kingdom.joyGold, fontSize: 10, fontWeight: FontWeight.bold)),
+                  child: IconText(t.dailyQuests_allDone, style: const TextStyle(color: Kingdom.joyGold, fontSize: 10, fontWeight: FontWeight.bold)),
                 )
               else
                 Text(t.dailyQuests_progressCount(quests.where((q) => q.completed).length, quests.length),
@@ -136,7 +138,7 @@ class _QuestRow extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(questTitle,
+                IconText(questTitle,
                     style: TextStyle(
                         color: isClaimed ? Kingdom.parchment.withValues(alpha: 0.35) : Kingdom.parchment,
                         fontSize: Kingdom.textBody,
@@ -158,7 +160,7 @@ class _QuestRow extends ConsumerWidget {
           const SizedBox(width: 10),
           // 報酬 / クレームボタン
           if (isClaimed)
-            Text(t.dailyQuests_claimed, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.25), fontSize: 10))
+            IconText(t.dailyQuests_claimed, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.25), fontSize: 10))
           else if (isDone)
             GestureDetector(
               onTap: () {
@@ -173,7 +175,7 @@ class _QuestRow extends ConsumerWidget {
                 final userId = ref.read(currentUserIdProvider);
                 if (userId != null) updateWallet(userId, updatedWallet);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(t.dailyQuests_rewardEarned(quest.reward)), duration: const Duration(seconds: 2)),
+                  SnackBar(content: IconText(t.dailyQuests_rewardEarned(quest.reward)), duration: const Duration(seconds: 2)),
                 );
               },
               child: SizedBox(
@@ -186,7 +188,7 @@ class _QuestRow extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [BoxShadow(color: Kingdom.gilt.withValues(alpha: 0.4), blurRadius: 8)],
                     ),
-                    child: Text('🪙${quest.reward}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Kingdom.night)),
+                    child: IconText('🪙${quest.reward}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Kingdom.night)),
                   ),
                 ),
               ),

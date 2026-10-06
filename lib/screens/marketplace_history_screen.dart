@@ -4,6 +4,7 @@ import '../providers/marketplace_provider.dart';
 import '../models/marketplace_models.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class MarketplaceHistoryScreen extends ConsumerWidget {
   const MarketplaceHistoryScreen({Key? key}) : super(key: key);
@@ -26,12 +27,12 @@ class MarketplaceHistoryScreen extends ConsumerWidget {
                   color: Colors.grey[400],
                 ),
                 const SizedBox(height: 16),
-                Text(
+                IconText(
                   t.marketplace_noHistory,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
-                Text(
+                IconText(
                   t.marketplace_historyDesc,
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
@@ -103,13 +104,13 @@ class TransactionHistoryTile extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            IconText(
                               typeLabel,
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                             if (transaction.counterpartyName != null) ...[
                               const SizedBox(height: 4),
-                              Text(
+                              IconText(
                                 t.marketplace_with(transaction.counterpartyName!),
                                 style: TextStyle(
                                   fontSize: 12,
@@ -126,7 +127,7 @@ class TransactionHistoryTile extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
+                    IconText(
                       deltaDisplay,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -136,7 +137,7 @@ class TransactionHistoryTile extends StatelessWidget {
                     ),
                     if (transaction.transactionFeeCoins > 0) ...[
                       const SizedBox(height: 4),
-                      Text(
+                      IconText(
                         t.marketplace_fee(transaction.transactionFeeCoins),
                         style: TextStyle(
                           fontSize: 10,
@@ -152,7 +153,7 @@ class TransactionHistoryTile extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                IconText(
                   _formatDate(transaction.createdAt),
                   style: TextStyle(
                     fontSize: 11,
@@ -167,7 +168,7 @@ class TransactionHistoryTile extends StatelessWidget {
                       border: Border.all(color: Kingdom.angerCrimson.withValues(alpha: 0.5)),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text(
+                    child: IconText(
                       t.marketplace_failed,
                       style: TextStyle(fontSize: 10, color: Kingdom.angerCrimson),
                     ),

@@ -4,6 +4,7 @@ import '../providers/marketplace_provider.dart';
 import '../models/marketplace_models.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class MarketplaceBrowseScreen extends ConsumerWidget {
   const MarketplaceBrowseScreen({Key? key}) : super(key: key);
@@ -26,12 +27,12 @@ class MarketplaceBrowseScreen extends ConsumerWidget {
                   color: Colors.grey[400],
                 ),
                 const SizedBox(height: 16),
-                Text(
+                IconText(
                   t.marketplace_noListings,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
-                Text(
+                IconText(
                   t.marketplace_checkBackLater,
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
@@ -63,21 +64,21 @@ class MarketplaceBrowseScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(t.marketplace_confirmPurchase),
+        title: IconText(t.marketplace_confirmPurchase),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('${t.marketplace_cardLabel}: ${listing.cardName['en'] ?? 'Unknown'}'),
             const SizedBox(height: 8),
-            Text('${t.marketplace_priceLabel}: ${listing.price} 🪙'),
+            IconText('${t.marketplace_priceLabel}: ${listing.price} 🪙'),
             const SizedBox(height: 8),
-            Text(
+            IconText(
               '${t.marketplace_platformFeeLabel}: ${listing.platformFee} 🪙 (10%)',
               style: const TextStyle(fontSize: 12, color: Colors.amber),
             ),
             const SizedBox(height: 8),
-            Text(
+            IconText(
               '${t.marketplace_totalLabel}: ${listing.price} 🪙',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -86,14 +87,14 @@ class MarketplaceBrowseScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(t.marketplace_cancel),
+            child: IconText(t.marketplace_cancel),
           ),
           FilledButton(
             onPressed: () async {
               Navigator.pop(context);
               _performBuy(context, ref, listing);
             },
-            child: Text(t.marketplace_buy),
+            child: IconText(t.marketplace_buy),
           ),
         ],
       ),
@@ -108,14 +109,14 @@ class MarketplaceBrowseScreen extends ConsumerWidget {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(t.marketplace_purchaseSuccessTitle),
+            content: IconText(t.marketplace_purchaseSuccessTitle),
             backgroundColor: Colors.green,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(t.marketplace_purchaseFailedTitle),
+            content: IconText(t.marketplace_purchaseFailedTitle),
             backgroundColor: Colors.red,
           ),
         );
@@ -154,7 +155,7 @@ class CardListingTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      IconText(
                         cardNameDisplay,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
@@ -185,7 +186,7 @@ class CardListingTile extends StatelessWidget {
                         color: Kingdom.gilt,
                       ),
                     ),
-                    const Text('🪙', style: TextStyle(fontSize: 16)),
+                    const IconText('🪙', style: TextStyle(fontSize: 16)),
                   ],
                 ),
               ],
@@ -243,7 +244,7 @@ class _StatChip extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.5)),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
+      child: IconText(
         label,
         style: TextStyle(
           fontSize: 11,

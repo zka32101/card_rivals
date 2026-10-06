@@ -6,6 +6,7 @@ import '../providers/leaderboard_provider.dart';
 import '../models/leaderboard.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class RankingScreenV3 extends ConsumerStatefulWidget {
   const RankingScreenV3({super.key});
@@ -108,14 +109,14 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            Text(rank.tierEmoji, style: const TextStyle(fontSize: 44)),
+            IconText(rank.tierEmoji, style: const TextStyle(fontSize: 44)),
             const SizedBox(width: Kingdom.spaceMd),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(rank.tierLabel, style: Kingdom.label(size: 16, color: Kingdom.gilt)),
-                  Text(
+                  IconText(rank.tierLabel, style: Kingdom.label(size: 16, color: Kingdom.gilt)),
+                  IconText(
                     t.rankingV3_statsLine(rank.rating, rank.wins, rank.losses),
                     style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.7)),
                   ),
@@ -202,7 +203,7 @@ class _AttributeLeaderboardState extends ConsumerState<_AttributeLeaderboard> {
         ),
         Padding(
           padding: const EdgeInsets.all(Kingdom.spaceMd),
-          child: Text(t.rankingV3_attributeNote,
+          child: IconText(t.rankingV3_attributeNote,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.6))),
         ),
@@ -229,7 +230,7 @@ class _DailyLeaderboard extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(Kingdom.spaceMd),
-              child: Text(t.rankingV3_dayLabel(day.year, day.month, day.day),
+              child: IconText(t.rankingV3_dayLabel(day.year, day.month, day.day),
                   style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.joyGold)),
             ),
             Expanded(child: _LeaderboardListView(entries: leaderboard.entries)),
@@ -256,7 +257,7 @@ class _WeeklyLeaderboard extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(Kingdom.spaceMd),
-              child: Text(t.rankingV3_weekLabel(leaderboard.weekNumber, leaderboard.year),
+              child: IconText(t.rankingV3_weekLabel(leaderboard.weekNumber, leaderboard.year),
                   style: Kingdom.label(size: Kingdom.textBody, color: const Color(0xFF7C9CDB))),
             ),
             Expanded(child: _LeaderboardListView(entries: leaderboard.entries)),
@@ -283,7 +284,7 @@ class _MonthlyLeaderboard extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(Kingdom.spaceMd),
-              child: Text(t.rankingV3_monthLabel(leaderboard.year, leaderboard.month),
+              child: IconText(t.rankingV3_monthLabel(leaderboard.year, leaderboard.month),
                   style: Kingdom.label(size: Kingdom.textBody, color: Kingdom.angerCrimson)),
             ),
             Expanded(child: _LeaderboardListView(entries: leaderboard.entries)),
@@ -314,7 +315,7 @@ class _ErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return Center(
-      child: Text(t.rankingV3_noData, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
+      child: IconText(t.rankingV3_noData, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
     );
   }
 }
@@ -329,7 +330,7 @@ class _LeaderboardListView extends StatelessWidget {
     final t = AppLocalizations.of(context)!;
     if (entries.isEmpty) {
       return Center(
-        child: Text(t.rankingV3_noData, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
+        child: IconText(t.rankingV3_noData, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5))),
       );
     }
 
@@ -375,13 +376,13 @@ class _LeaderboardListView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    IconText(
                       entry.userName,
                       style: TextStyle(fontSize: Kingdom.textBody, fontWeight: FontWeight.bold, color: Kingdom.parchment),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
+                    IconText(
                       t.rankingV3_statsLine(entry.rating, entry.wins, entry.losses),
                       style: TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.parchment.withValues(alpha: 0.5)),
                     ),

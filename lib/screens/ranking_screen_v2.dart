@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/game_state_provider.dart';
+import '../widgets/ui_icon.dart';
 
 final _dummyRankings = [
   {'name': 'KamiCard_99', 'tier': 'diamond', 'rating': 2450, 'wins': 342},
@@ -88,13 +89,13 @@ class RankingScreenV2 extends ConsumerWidget {
           // ヘッダー
           Row(
             children: [
-              Text(rank.tierEmoji, style: const TextStyle(fontSize: 56)),
+              IconText(rank.tierEmoji, style: const TextStyle(fontSize: 56)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    IconText(
                       rank.tierLabel,
                       style: const TextStyle(
                         fontSize: 24,
@@ -283,7 +284,7 @@ class RankingScreenV2 extends ConsumerWidget {
               const SizedBox(width: 12),
 
               // Tier絵文字
-              Text(_tierEmoji(tier), style: const TextStyle(fontSize: 24)),
+              IconText(_tierEmoji(tier), style: const TextStyle(fontSize: 24)),
               const SizedBox(width: 10),
 
               // プレイヤー名・勝数
@@ -404,7 +405,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Text(
+      child: IconText(
         title,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,

@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/daily_emotion_card.dart';
 import '../providers/daily_emotion_provider.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class DailyEmotionScreen extends ConsumerStatefulWidget {
   const DailyEmotionScreen({super.key});
@@ -26,7 +27,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
     final t = AppLocalizations.of(context)!;
     if (selectedEmotion == null || messageController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.dailyEmotion_selectFeelingAndMessage)),
+        SnackBar(content: IconText(t.dailyEmotion_selectFeelingAndMessage)),
       );
       return;
     }
@@ -40,7 +41,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.dailyEmotion_cardCreatedSuccess)),
+          SnackBar(content: IconText(t.dailyEmotion_cardCreatedSuccess)),
         );
         messageController.clear();
         setState(() => selectedEmotion = null);
@@ -48,7 +49,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.dailyEmotion_errorWithMessage('$e'))),
+          SnackBar(content: IconText(t.dailyEmotion_errorWithMessage('$e'))),
         );
       }
     } finally {
@@ -64,7 +65,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(t.dailyEmotion_title),
+        title: IconText(t.dailyEmotion_title),
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
@@ -78,7 +79,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
-          child: Text(t.dailyEmotion_errorWithMessage('$error')),
+          child: IconText(t.dailyEmotion_errorWithMessage('$error')),
         ),
       ),
     );
@@ -99,7 +100,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
             ),
             child: Column(
               children: [
-                Text(
+                IconText(
                   emotion.emotionEmoji,
                   style: const TextStyle(fontSize: 64),
                 ),
@@ -113,7 +114,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                Text(
+                IconText(
                   emotion.userMessage,
                   style: const TextStyle(fontSize: 16, color: Colors.grey),
                   textAlign: TextAlign.center,
@@ -138,7 +139,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
               backgroundColor: Colors.grey[300],
               foregroundColor: Colors.black,
             ),
-            child: Text(t.dailyEmotion_viewAnotherCard),
+            child: IconText(t.dailyEmotion_viewAnotherCard),
           ),
         ],
       ),
@@ -161,7 +162,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
               ),
               child: Row(
                 children: [
-                  Text(t.dailyEmotion_streakDays(stats.currentStreak), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  IconText(t.dailyEmotion_streakDays(stats.currentStreak), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -169,7 +170,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
             error: (_, _) => const SizedBox.shrink(),
           ),
           const SizedBox(height: 24),
-          Text(
+          IconText(
             t.dailyEmotion_howAreYouFeeling,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
@@ -183,7 +184,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          Text(
+          IconText(
             t.dailyEmotion_memoLabel,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
@@ -215,7 +216,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(t.dailyEmotion_createCardButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  : IconText(t.dailyEmotion_createCardButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -239,9 +240,9 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
         ),
         child: Column(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 48)),
+            IconText(emoji, style: const TextStyle(fontSize: 48)),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+            IconText(label, style: const TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -259,7 +260,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          IconText(
             t.dailyEmotion_monthlyMoodTitle,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
@@ -268,7 +269,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
           _buildStatRow('😠 ${t.dailyEmotion_angerShort}', EmotionType.anger, stats.angerDays, stats.angerPercent),
           _buildStatRow('😢 ${t.dailyEmotion_sadnessShort}', EmotionType.sadness, stats.sadnessDays, stats.sadnessPercent),
           const SizedBox(height: 12),
-          Text(
+          IconText(
             t.dailyEmotion_totalDays(stats.totalDays),
             style: TextStyle(color: Colors.grey[600]),
           ),
@@ -282,7 +283,7 @@ class _DailyEmotionScreenState extends ConsumerState<DailyEmotionScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label),
+        IconText(label),
         Expanded(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 8),

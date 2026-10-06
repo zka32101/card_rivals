@@ -17,6 +17,7 @@ import '../providers/daily_emotion_provider.dart';
 import '../providers/migration_provider.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 // 今日のきもちカードの感情属性 → バトル属性文字列
 String? _emotionToAttribute(EmotionType? emotion) => switch (emotion) {
@@ -459,13 +460,13 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                     final dots =
                         '.' * ((_dotController.value * 3).floor() + 1);
                     return Column(children: [
-                      Text(t.pvpBattle_searchingOpponent(dots),
+                      IconText(t.pvpBattle_searchingOpponent(dots),
                           style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.white)),
                       const SizedBox(height: 8),
-                      Text(t.pvpBattle_rankMatching,
+                      IconText(t.pvpBattle_rankMatching,
                           style: const TextStyle(color: Colors.white54, fontSize: 13)),
                     ]);
                   },
@@ -621,7 +622,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                               scale: scale.clamp(0.0, 1.3),
                               child: Opacity(
                                 opacity: alpha.clamp(0.0, 1.0),
-                                child: Text(
+                                child: IconText(
                                   t.pvpBattle_comebackBadge,
                                   style: TextStyle(
                                     fontSize: 40,
@@ -694,7 +695,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                               color: Colors.black.withValues(alpha: 0.45),
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: Text(t.pvpBattle_tapPrompt,
+                            child: IconText(t.pvpBattle_tapPrompt,
                                 style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
@@ -717,7 +718,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: Kingdom.gilt.withValues(alpha: 0.6)),
                         ),
-                        child: Text(t.pvpBattle_spiritCount(_spiritCount),
+                        child: IconText(t.pvpBattle_spiritCount(_spiritCount),
                             style: const TextStyle(
                                 color: Kingdom.gilt,
                                 fontSize: 11,
@@ -813,9 +814,9 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
           ),
           if (log == null)
             Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Text('⚔️', style: TextStyle(fontSize: 56)),
+              const IconText('⚔️', style: TextStyle(fontSize: 56)),
               const SizedBox(height: 12),
-              Text(t.pvpBattle_battleStart,
+              IconText(t.pvpBattle_battleStart,
                   style: const TextStyle(color: Colors.white38, fontSize: 14)),
               if (attackerAttr != null) ...[
                 const SizedBox(height: 10),
@@ -869,7 +870,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                               blurRadius: _isFinalTurn ? 18 : 10)
                         ],
                       ),
-                      child: Text(
+                      child: IconText(
                           _isFinalTurn
                               ? t.pvpBattle_finalBlowBadge
                               : t.pvpBattle_turnLabel(log.turn),
@@ -893,7 +894,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                             BoxShadow(color: Color(0x66FFD700), blurRadius: 10)
                           ],
                         ),
-                        child: Text(t.pvpBattle_attributeAdvantage,
+                        child: IconText(t.pvpBattle_attributeAdvantage,
                             style: TextStyle(
                                 fontSize: 10,
                                 color: Color(0xFFFFD700),
@@ -914,7 +915,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                                 blurRadius: 8)
                           ],
                         ),
-                        child: Text(t.pvpBattle_attributeDisadvantage,
+                        child: IconText(t.pvpBattle_attributeDisadvantage,
                             style: TextStyle(
                                 fontSize: 10,
                                 color: Colors.blueAccent,
@@ -934,7 +935,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                             BoxShadow(color: Color(0x66FF3300), blurRadius: 12)
                           ],
                         ),
-                        child: Text(t.pvpBattle_criticalBadge,
+                        child: IconText(t.pvpBattle_criticalBadge,
                             style: TextStyle(
                                 fontSize: 10,
                                 color: Color(0xFFFF3300),
@@ -954,7 +955,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                             BoxShadow(color: Color(0x667C9CDB), blurRadius: 10)
                           ],
                         ),
-                        child: Text(t.pvpBattle_shieldBadge,
+                        child: IconText(t.pvpBattle_shieldBadge,
                             style: TextStyle(
                                 fontSize: 10,
                                 color: Color(0xFF7C9CDB),
@@ -971,7 +972,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Kingdom.parchment.withValues(alpha: 0.6)),
                         ),
-                        child: Text(t.pvpBattle_dodgeBadge,
+                        child: IconText(t.pvpBattle_dodgeBadge,
                             style: TextStyle(
                                 fontSize: 10,
                                 color: Kingdom.parchment,
@@ -1079,7 +1080,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                       BoxShadow(color: Color(0x99FFD700), blurRadius: 10)
                     ],
                   ),
-                  child: Text(
+                  child: IconText(
                     t.pvpBattle_comboCount(_comboCount),
                     style: TextStyle(
                         color: const Color(0xFFFFD700),
@@ -1101,7 +1102,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                 decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(8)),
-                child: Text(
+                child: IconText(
                   t.pvpBattle_turnProgress(
                       _displayedLogs.length, _result?.logs.length ?? '?'),
                   style:
@@ -1294,7 +1295,7 @@ class _AttackEffectWidget extends StatelessWidget {
                           ],
                         ),
                         child: Center(
-                            child: Text(fx,
+                            child: IconText(fx,
                                 style: const TextStyle(fontSize: 28))),
                       ),
                     ),
@@ -1363,7 +1364,7 @@ class _BattleCardDisplay extends StatelessWidget {
                   blurRadius: 8)
             ],
           ),
-          child: Text(
+          child: IconText(
             isAttacker ? t.pvpBattle_attackLabel : t.pvpBattle_defenseLabel,
             style: const TextStyle(
                 color: Colors.white,
@@ -1445,7 +1446,7 @@ class _BattleCardDisplay extends StatelessWidget {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(emoji,
+                        IconText(emoji,
                             style: const TextStyle(fontSize: 38)),
                         const SizedBox(height: 4),
                         Text(
@@ -1665,13 +1666,13 @@ class _ArenaZone extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name,
+                    IconText(name,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                             color: Colors.white)),
                     if (tier.isNotEmpty)
-                      Text(tier,
+                      IconText(tier,
                           style: const TextStyle(
                               fontSize: 11, color: Colors.white54)),
                   ],
@@ -1803,7 +1804,7 @@ class _MatchStep extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 4),
-      Text(label, style: TextStyle(color: color, fontSize: 9)),
+      IconText(label, style: TextStyle(color: color, fontSize: 9)),
     ]);
   }
 }

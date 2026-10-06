@@ -4,6 +4,7 @@ import '../providers/marketplace_provider.dart';
 import '../models/marketplace_models.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 class MarketplaceCurrencyScreen extends ConsumerWidget {
   const MarketplaceCurrencyScreen({Key? key}) : super(key: key);
@@ -55,12 +56,12 @@ class _BuyGemsTab extends ConsumerWidget {
               color: Colors.grey[400],
             ),
             const SizedBox(height: 16),
-            Text(
+            IconText(
               t.marketplace_noSellers,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            Text(
+            IconText(
               t.marketplace_noSellersDesc,
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
@@ -95,14 +96,14 @@ class _BuyGemsTab extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(t.marketplace_buyGems),
+        title: IconText(t.marketplace_buyGems),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(t.marketplace_available(maxAmount, 'gems')),
+            IconText(t.marketplace_available(maxAmount, 'gems')),
             const SizedBox(height: 8),
-            Text(t.marketplace_price(listing.price, 'gem')),
+            IconText(t.marketplace_price(listing.price, 'gem')),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
@@ -117,14 +118,14 @@ class _BuyGemsTab extends ConsumerWidget {
             Builder(builder: (ctx) {
               int amount = int.tryParse(amountController.text) ?? 0;
               int total = amount * listing.price;
-              return Text(t.marketplace_total(total));
+              return IconText(t.marketplace_total(total));
             }),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(t.marketplace_cancel),
+            child: IconText(t.marketplace_cancel),
           ),
           FilledButton(
             onPressed: () async {
@@ -132,7 +133,7 @@ class _BuyGemsTab extends ConsumerWidget {
               if (amount == null || amount <= 0 || amount > maxAmount) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(t.marketplace_invalidAmount)),
+                    SnackBar(content: IconText(t.marketplace_invalidAmount)),
                   );
                 }
                 return;
@@ -149,7 +150,7 @@ class _BuyGemsTab extends ConsumerWidget {
                 );
               }
             },
-            child: Text(t.marketplace_buy),
+            child: IconText(t.marketplace_buy),
           ),
         ],
       ),
@@ -174,12 +175,12 @@ class _SellGemsTab extends ConsumerWidget {
               color: Colors.grey[400],
             ),
             const SizedBox(height: 16),
-            Text(
+            IconText(
               t.marketplace_noBuyers,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            Text(
+            IconText(
               t.marketplace_noBuyersDesc,
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
@@ -190,7 +191,7 @@ class _SellGemsTab extends ConsumerWidget {
                 // TODO: Navigate to create sell gems listing
               },
               icon: const Icon(Icons.add),
-              label: Text(t.marketplace_createSellListing),
+              label: IconText(t.marketplace_createSellListing),
             ),
           ],
         ),
@@ -215,7 +216,7 @@ class _SellGemsTab extends ConsumerWidget {
               // TODO: Navigate to create sell gems listing
             },
             icon: const Icon(Icons.add),
-            label: Text(t.marketplace_createSellListing),
+            label: IconText(t.marketplace_createSellListing),
           ),
         ),
       ],
@@ -233,14 +234,14 @@ class _SellGemsTab extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isSell ? t.marketplace_sellGems : t.marketplace_buyGems),
+        title: IconText(isSell ? t.marketplace_sellGems : t.marketplace_buyGems),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(t.marketplace_available(maxAmount, currencyType)),
+            IconText(t.marketplace_available(maxAmount, currencyType)),
             const SizedBox(height: 8),
-            Text(t.marketplace_price(listing.price, isSell ? 'gem' : 'coin')),
+            IconText(t.marketplace_price(listing.price, isSell ? 'gem' : 'coin')),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
@@ -255,14 +256,14 @@ class _SellGemsTab extends ConsumerWidget {
             Builder(builder: (ctx) {
               int amount = int.tryParse(amountController.text) ?? 0;
               int total = amount * listing.price;
-              return Text(t.marketplace_youReceive(total, currencyEmoji));
+              return IconText(t.marketplace_youReceive(total, currencyEmoji));
             }),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(t.marketplace_cancel),
+            child: IconText(t.marketplace_cancel),
           ),
           FilledButton(
             onPressed: () async {
@@ -270,7 +271,7 @@ class _SellGemsTab extends ConsumerWidget {
               if (amount == null || amount <= 0 || amount > maxAmount) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(t.marketplace_invalidAmount)),
+                    SnackBar(content: IconText(t.marketplace_invalidAmount)),
                   );
                 }
                 return;

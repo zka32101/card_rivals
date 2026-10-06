@@ -9,6 +9,7 @@ import '../theme/kingdom_theme.dart';
 import '../widgets/card_widget.dart';
 import '../widgets/defense_deck_card.dart';
 import 'deck_selection_screen_v2.dart';
+import '../widgets/ui_icon.dart';
 
 /// 「マイデッキ」: 対戦用デッキ(最大[maxPresetsPerUser]個)の作成・編集・コピー・削除。
 /// カードタブの「デッキ」に組み込まれる（[embedded]）ほか、単独画面としても開ける。
@@ -57,12 +58,12 @@ class DeckListScreen extends ConsumerWidget {
         existingPresetId: preset?.id,
       );
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.deckList_saved(name))));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: IconText(t.deckList_saved(name))));
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.deckList_saveFailed), backgroundColor: Colors.red),
+          SnackBar(content: IconText(t.deckList_saveFailed), backgroundColor: Colors.red),
         );
       }
     }
@@ -75,7 +76,7 @@ class DeckListScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Kingdom.nightDeep,
-        title: Text(t.deckList_namePrompt, style: Kingdom.title(size: 16, color: Kingdom.gilt)),
+        title: IconText(t.deckList_namePrompt, style: Kingdom.title(size: 16, color: Kingdom.gilt)),
         content: TextField(
           controller: controller,
           maxLength: 20,
@@ -89,7 +90,7 @@ class DeckListScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(t.deckList_cancel, style: const TextStyle(color: Kingdom.parchment)),
+            child: IconText(t.deckList_cancel, style: const TextStyle(color: Kingdom.parchment)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Kingdom.gilt, foregroundColor: Kingdom.night),
@@ -97,7 +98,7 @@ class DeckListScreen extends ConsumerWidget {
               final v = controller.text.trim();
               if (v.isNotEmpty) Navigator.pop(ctx, v);
             },
-            child: Text(t.deckList_save),
+            child: IconText(t.deckList_save),
           ),
         ],
       ),
@@ -113,7 +114,7 @@ class DeckListScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.deckList_saveFailed), backgroundColor: Colors.red),
+          SnackBar(content: IconText(t.deckList_saveFailed), backgroundColor: Colors.red),
         );
       }
     }
@@ -126,7 +127,7 @@ class DeckListScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.deckList_saveFailed), backgroundColor: Colors.red),
+          SnackBar(content: IconText(t.deckList_saveFailed), backgroundColor: Colors.red),
         );
       }
     }
@@ -135,7 +136,7 @@ class DeckListScreen extends ConsumerWidget {
   Future<void> _copy(BuildContext context, WidgetRef ref, DeckPreset preset) async {
     final t = AppLocalizations.of(context)!;
     if (ref.read(deckPresetsCountProvider) >= maxPresetsPerUser) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.deckList_limitReached(maxPresetsPerUser))));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: IconText(t.deckList_limitReached(maxPresetsPerUser))));
       return;
     }
     final name = await _askName(context, t.deckList_copyName(preset.name));
@@ -146,7 +147,7 @@ class DeckListScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.deckList_saveFailed), backgroundColor: Colors.red),
+          SnackBar(content: IconText(t.deckList_saveFailed), backgroundColor: Colors.red),
         );
       }
     }
@@ -158,17 +159,17 @@ class DeckListScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Kingdom.nightDeep,
-        title: Text(t.deckList_deleteTitle, style: Kingdom.title(size: 16, color: Kingdom.angerCrimson)),
-        content: Text(t.deckList_deleteConfirm(preset.name), style: const TextStyle(color: Kingdom.parchment)),
+        title: IconText(t.deckList_deleteTitle, style: Kingdom.title(size: 16, color: Kingdom.angerCrimson)),
+        content: IconText(t.deckList_deleteConfirm(preset.name), style: const TextStyle(color: Kingdom.parchment)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.deckList_cancel, style: const TextStyle(color: Kingdom.parchment)),
+            child: IconText(t.deckList_cancel, style: const TextStyle(color: Kingdom.parchment)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Kingdom.angerCrimson),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t.deckList_delete),
+            child: IconText(t.deckList_delete),
           ),
         ],
       ),
@@ -179,7 +180,7 @@ class DeckListScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.deckList_saveFailed), backgroundColor: Colors.red),
+          SnackBar(content: IconText(t.deckList_saveFailed), backgroundColor: Colors.red),
         );
       }
     }
@@ -197,7 +198,7 @@ class DeckListScreen extends ConsumerWidget {
       appBar: embedded
           ? null
           : AppBar(
-              title: Text(t.deckList_title, style: Kingdom.title(size: 17)),
+              title: IconText(t.deckList_title, style: Kingdom.title(size: 17)),
               backgroundColor: Kingdom.nightDeep,
               elevation: 0,
             ),
@@ -205,10 +206,10 @@ class DeckListScreen extends ConsumerWidget {
         backgroundColor: Kingdom.gilt,
         foregroundColor: Kingdom.night,
         icon: const Icon(Icons.add),
-        label: Text(t.deckList_new, style: const TextStyle(fontWeight: FontWeight.bold)),
+        label: IconText(t.deckList_new, style: const TextStyle(fontWeight: FontWeight.bold)),
         onPressed: () {
           if (count >= maxPresetsPerUser) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t.deckList_limitReached(maxPresetsPerUser))));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: IconText(t.deckList_limitReached(maxPresetsPerUser))));
             return;
           }
           _edit(context, ref, null, allCards);
@@ -216,7 +217,7 @@ class DeckListScreen extends ConsumerWidget {
       ),
       body: presetsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(t.deckList_loadFailed, style: const TextStyle(color: Kingdom.parchment))),
+        error: (e, _) => Center(child: IconText(t.deckList_loadFailed, style: const TextStyle(color: Kingdom.parchment))),
         data: (presets) {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(Kingdom.spaceMd, Kingdom.spaceMd, Kingdom.spaceMd, 96),
@@ -231,13 +232,13 @@ class DeckListScreen extends ConsumerWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(left: 4, bottom: Kingdom.spaceSm),
-                        child: Text(t.home_defenseDeckHeader, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
+                        child: IconText(t.home_defenseDeckHeader, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
                       ),
                       const DefenseDeckCard(),
                       const SizedBox(height: Kingdom.spaceMd),
                       Padding(
                         padding: const EdgeInsets.only(left: 4),
-                        child: Text(t.deckList_battleDecksHeader, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
+                        child: IconText(t.deckList_battleDecksHeader, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
                       ),
                     ],
                   );
@@ -295,7 +296,7 @@ class DeckListScreen extends ConsumerWidget {
                               onPressed: () => _toggleFavorite(context, ref, preset),
                             ),
                             Expanded(
-                              child: Text(preset.name,
+                              child: IconText(preset.name,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: Kingdom.title(size: 15, color: Kingdom.gilt)),
@@ -312,10 +313,10 @@ class DeckListScreen extends ConsumerWidget {
                                 if (v == 'delete') _delete(context, ref, preset);
                               },
                               itemBuilder: (_) => [
-                                PopupMenuItem(value: 'edit', child: Text(t.deckList_edit, style: const TextStyle(color: Kingdom.parchment))),
-                                PopupMenuItem(value: 'rename', child: Text(t.deckList_rename, style: const TextStyle(color: Kingdom.parchment))),
-                                PopupMenuItem(value: 'copy', child: Text(t.deckList_copy, style: const TextStyle(color: Kingdom.parchment))),
-                                PopupMenuItem(value: 'delete', child: Text(t.deckList_delete, style: const TextStyle(color: Kingdom.angerCrimson))),
+                                PopupMenuItem(value: 'edit', child: IconText(t.deckList_edit, style: const TextStyle(color: Kingdom.parchment))),
+                                PopupMenuItem(value: 'rename', child: IconText(t.deckList_rename, style: const TextStyle(color: Kingdom.parchment))),
+                                PopupMenuItem(value: 'copy', child: IconText(t.deckList_copy, style: const TextStyle(color: Kingdom.parchment))),
+                                PopupMenuItem(value: 'delete', child: IconText(t.deckList_delete, style: const TextStyle(color: Kingdom.angerCrimson))),
                               ],
                             ),
                           ],
@@ -336,7 +337,7 @@ class DeckListScreen extends ConsumerWidget {
                         if (missing > 0)
                           Padding(
                             padding: const EdgeInsets.only(top: 6),
-                            child: Text(t.deckList_missingCards(missing),
+                            child: IconText(t.deckList_missingCards(missing),
                                 style: const TextStyle(fontSize: 11, color: Kingdom.angerCrimson)),
                           ),
                       ],

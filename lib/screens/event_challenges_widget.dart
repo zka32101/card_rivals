@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/battle_special_effects.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/ui_icon.dart';
 
 // サンプルイベントチャレンジ（多言語対応）。実データ連携までの仮チャレンジ一覧。
 List<EventChallenge> buildSampleEventChallenges(AppLocalizations t) => [
@@ -51,7 +52,7 @@ class EventChallengesWidget extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
+          child: IconText(
             '⚡ ${t.eventChallenges_activeChallenges}',
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
@@ -108,7 +109,7 @@ class _ChallengeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          IconText(
             challenge.title,
             style: const TextStyle(
               color: Colors.white,
@@ -119,7 +120,7 @@ class _ChallengeCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
-          Text(
+          IconText(
             t.eventChallenges_goalTarget(challenge.goalValue),
             style: const TextStyle(
               color: Colors.white70,
@@ -148,7 +149,7 @@ class _ChallengeCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
+              IconText(
                 t.eventChallenges_daysRemaining(daysRemaining),
                 style: const TextStyle(
                   color: Colors.white70,
