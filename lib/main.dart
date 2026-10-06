@@ -25,9 +25,12 @@ import 'screens/terms_of_service_screen.dart';
 import 'services/ad_service.dart';
 import 'services/purchase_service.dart';
 import 'theme/kingdom_theme.dart';
+import 'widgets/startup_splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 初期化中は組織ロゴ付きの起動画面を表示する（本来のrunAppが後で置き換える）。
+  runApp(const MaterialApp(debugShowCheckedModeBanner: false, home: StartupSplash()));
   // リリースビルドではdebugPrint()の出力を抑制する。debugPrintはpackage:flutter/
   // foundation.dartが公開する差し替え可能な関数ポインタなので、ここで1箇所無効化
   // するだけでアプリ全体（lib/配下の全debugPrint呼び出し）に効く。
