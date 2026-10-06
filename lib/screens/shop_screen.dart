@@ -403,7 +403,7 @@ class _VipPassTile extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: isProcessing ? null : onTapYearly,
                 style: OutlinedButton.styleFrom(foregroundColor: Kingdom.gilt, side: const BorderSide(color: Kingdom.gilt)),
-                child: IconText(PurchaseService.withStorePrice(t.shop_vipSubscribeYearlyButton, yearlyPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: FittedBox(fit: BoxFit.scaleDown, child: IconText(PurchaseService.withStorePrice(t.shop_vipSubscribeYearlyButton, yearlyPrice), maxLines: 1, softWrap: false, style: const TextStyle(fontWeight: FontWeight.bold))),
               ),
             ),
           ],
@@ -436,7 +436,7 @@ class _StarterPackTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 IconText(t.shop_starterPackLabel, style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
-                IconText(t.shop_starterPackDesc, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 11)),
+                IconText(t.shop_starterPackDesc.replaceFirst('（', '\n（').replaceFirst(' (', '\n('), style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.6), fontSize: 11)),
               ],
             ),
           ),

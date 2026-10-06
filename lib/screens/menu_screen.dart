@@ -40,7 +40,8 @@ class MenuScreen extends StatelessWidget {
             _MenuItem(
               icon: Icons.card_giftcard_outlined,
               color: Kingdom.joyGold,
-              label: t.achievements_title,
+              // 文言の先頭の絵文字（🏆）は、左のアイコンと二重になるので外す。
+              label: t.achievements_title.replaceFirst(RegExp(r'^[^\p{L}\p{N}]+', unicode: true), ''),
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AchievementsScreen())),
             ),
           ]),
