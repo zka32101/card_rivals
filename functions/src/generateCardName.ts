@@ -1,5 +1,6 @@
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import fetch from "node-fetch";
+import {parseNameCandidates} from "./parseNames";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
@@ -72,12 +73,9 @@ export const generateCardName = onCall(
 
       const result = (await response.json()) as {content: {text: string}[]};
       const content = result.content[0].text;
-      const names = content
-        .split("\n")
-        .map((line) => line.replace(/^\s*\d+[.．]\s*/, "").replace(/[[\]]/g, "").trim())
-        .filter((name) => name.length > 0);
+      const names = parseNameCandidates(content);
 
-      return {names: names.slice(0, 3)};
+      return {names};
     } catch (error) {
       console.error("Error generating card name:", error);
       throw new HttpsError("internal", "カード名の生成に失敗しました");

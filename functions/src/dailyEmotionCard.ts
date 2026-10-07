@@ -4,6 +4,7 @@ import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import fetch from "node-fetch";
 import {generateImageWithFallback} from "./imageProviders";
+import {parseNameCandidates} from "./parseNames";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
@@ -62,10 +63,7 @@ export const generateDailyEmotionCardName = onCall(
 
       const result = await response.json() as any;
       const content = result.content[0].text;
-      const names = content
-        .split("\n")
-        .filter((line: string) => line.trim())
-        .map((line: string) => line.replace(/^\d+\.\s*/, "").trim());
+      const names = parseNameCandidates(content);
 
       return {
         names: names.slice(0, 3),
