@@ -47,6 +47,32 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
 
+      // フレンド一覧。親の users/{userId} の規則はサブコレクションに及ばないため、明示的に許可する
+      // （これが無く、フレンド機能は本番で常に permission-denied だった）。
+      // 本人は読み書き可。フレンド成立時は、承認した側が相手の一覧に「自分のid」で相互登録を
+      // 書き込むので、ドキュメントidが自分のuid・中身のfriendIdも自分のuid の場合に限って
+      // 他人の一覧への作成・更新を許可する。他人の一覧の読み取り・削除は不可。
+      match /friends/{friendId} {
+        allow read, delete: if request.auth != null && request.auth.uid == userId;
+        allow create, update: if request.auth != null &&
+          (request.auth.uid == userId ||
+           (request.auth.uid == friendId && request.resource.data.friendId == request.auth.uid));
+      }
+
+      // フレンド申請。受け取った人（このuserId）が読み取り・更新・削除できる。
+      // 申請の作成は、送った本人（senderId が自分のuid、recipientId がこのuserId）に限る。
+      match /friendRequests/{requestId} {
+        allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null &&
+          request.resource.data.senderId == request.auth.uid &&
+          request.resource.data.recipientId == userId;
+      }
+
+      // イベント・チャレンジの自分の進捗。
+      match /eventProgress/{progressId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
       // ユーザーが作成したカード（コインを消費して作成。特訓レベルもここに保存）。
       // isPublic=trueのカードは、レンタル一覧（collectionGroupクエリ）で他ユーザーからも
       // 読み取れる必要がある。
@@ -114,6 +140,18 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if false;
       match /rewards/{rewardId} {
+        allow read: if request.auth != null;
+        allow write: if false;
+      }
+    }
+
+    // =============== イベント・チャレンジ（運営が定義） ===============
+    // 作成・更新は運営（Admin SDK）のみ。クライアントはログイン済みなら読み取りのみ。
+    // これまで規則が無く、イベント画面は常にpermission-deniedで空だった。
+    match /events/{eventId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+      match /challenges/{challengeId} {
         allow read: if request.auth != null;
         allow write: if false;
       }
