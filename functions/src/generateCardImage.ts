@@ -267,38 +267,83 @@ const WORD_MAP: Record<string, WordDef> = {
   "輪廻": {en: "with reincarnation spiral energy", cat: "abstract"},
   "因果": {en: "with karma and fate energy threads", cat: "abstract"},
   "宿命": {en: "bound by inevitable cosmic fate", cat: "abstract"},
+  // ── UIに出るが辞書に無かった言葉（選んでも画像に反映されなかった） ──
+  // 自然・季節
+  "氷河": {en: "a vast glowing blue glacier with towering ice walls", cat: "place"},
+  "朝霧": {en: "drifting morning mist with soft golden light", cat: "nature"},
+  "大地": {en: "a vast rugged earth landscape with cracked ground", cat: "place"},
+  "嵐": {en: "a raging storm with whipping wind and dark swirling clouds", cat: "nature"},
+  "流星": {en: "streaking shooting stars across the sky", cat: "nature"},
+  "極光": {en: "shimmering polar aurora ribbons in the sky", cat: "nature"},
+  "潮騒": {en: "rolling sea waves with sparkling sea spray", cat: "nature"},
+  "新緑": {en: "fresh bright green spring leaves all around", cat: "nature"},
+  "紅葉": {en: "falling red and orange autumn maple leaves", cat: "nature"},
+  "氷晶": {en: "glittering ice crystals floating in the air", cat: "nature"},
+  // 感情・心
+  "哀愁": {en: "a bittersweet wistful melancholy mood", cat: "abstract"},
+  "慈愛": {en: "tender compassionate love with a warm embracing gesture", cat: "abstract"},
+  "執念": {en: "an obsessive relentless burning gaze", cat: "abstract"},
+  "情熱": {en: "passionate burning intensity with glowing red energy", cat: "power"},
+  "安らぎ": {en: "peaceful calm comfort with a soft soothing glow", cat: "abstract"},
+  "孤高": {en: "a lone proud figure standing alone on a high place", cat: "abstract"},
+  "覚悟": {en: "an unwavering resolute determined stance", cat: "abstract"},
+  "憧憬": {en: "a longing yearning gaze toward a distant light", cat: "abstract"},
+  "慟哭": {en: "grief-stricken sorrow with glowing tears", cat: "abstract"},
+  "祈り": {en: "a solemn prayer pose with hands clasped and rising light", cat: "abstract"},
+  // 力・戦い
+  "軍旗": {en: "holding a great waving war banner", cat: "weapon"},
+  "要塞": {en: "a massive stone fortress bastion background", cat: "place"},
+  "刃": {en: "wielding a razor-sharp gleaming blade", cat: "weapon"},
+  "鎧": {en: "clad in heavy ornate plate armor", cat: "weapon"},
+  "戦場": {en: "a smoky battlefield with clashing armies in the distance", cat: "place"},
+  "守護": {en: "a guardian protector with a glowing barrier of light", cat: "abstract"},
+  "反逆": {en: "a rebellious defiant pose breaking free of chains", cat: "abstract"},
+  "進撃": {en: "charging forward in a relentless advance", cat: "abstract"},
+  "雄叫び": {en: "roaring a mighty battle cry with an open mouth", cat: "abstract"},
+  "不屈": {en: "an indomitable unbroken spirit standing despite battle damage", cat: "abstract"},
+  // 動物・生物
+  "悪魔": {en: "with a sinister demon presence, curved horns and dark wings", cat: "companion"},
+  "麒麟": {en: "with a divine kirin qilin beast with flowing mane and scales", cat: "companion"},
+  "梟": {en: "with a wise great owl with piercing eyes", cat: "companion"},
+  "蝶": {en: "surrounded by glowing fluttering butterflies", cat: "companion"},
+  "蜘蛛": {en: "with a giant spider weaving glowing silk threads", cat: "companion"},
+  "亀": {en: "with an ancient giant turtle with a mossy shell", cat: "companion"},
+  "狐": {en: "with a mystical fox spirit with multiple tails", cat: "companion"},
+  "兎": {en: "with a moon rabbit companion", cat: "companion"},
+  "海竜": {en: "with a mighty sea serpent dragon rising from the waves", cat: "companion"},
+  "精霊": {en: "with small glowing elemental spirits floating around", cat: "companion"},
+  // 色・光
+  "漆黒": {en: "enveloped in glossy jet-black darkness", cat: "power"},
+  "乳白": {en: "wrapped in soft milky-white light", cat: "power"},
+  "瑠璃": {en: "with deep lapis lazuli blue gemstone tones", cat: "abstract"},
+  "琥珀": {en: "with warm translucent amber glow", cat: "abstract"},
+  "緋色": {en: "with vivid scarlet vermilion accents", cat: "abstract"},
+  "群青": {en: "with rich ultramarine blue tones", cat: "abstract"},
+  "銀河": {en: "with a swirling galaxy of stars", cat: "nature"},
+  "夜光": {en: "glowing with luminous night-light", cat: "power"},
+  "薄明": {en: "in dim twilight glow of dawn", cat: "nature"},
+  "残光": {en: "trailing fading afterglow light streaks", cat: "power"},
+  // 時間・運命
+  "黎明": {en: "at the breaking dawn with the first golden sunrise", cat: "nature"},
+  "黄昏": {en: "in the dusk of a fiery orange-purple sunset", cat: "nature"},
+  "終焉": {en: "at the dramatic end of the world with crumbling skies", cat: "abstract"},
+  "始まり": {en: "at a hopeful new beginning with a rising light", cat: "abstract"},
+  "記憶": {en: "with floating translucent memory fragments", cat: "abstract"},
+  "約束": {en: "bound by a glowing pledge with a shining thread of light", cat: "abstract"},
+  "奇跡": {en: "a miracle moment with a pillar of radiant light", cat: "power"},
+  "転生": {en: "reborn in a swirling cycle of light and petals", cat: "abstract"},
+  "予兆": {en: "an ominous omen with glowing signs in the sky", cat: "abstract"},
+  "継承": {en: "passing a glowing heirloom to the next generation", cat: "abstract"},
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// スロットベース プロンプト合成
-// カテゴリごとに最大使用数を制限し構造を保つ
+// 選んだ言葉 → 「必ず描くもの」
+// 以前は種類（武器・仲間・背景…）ごとに1〜2個までしか使わず、同じ種類を3つ選ぶと
+// 2つが無視されていた（桜・月・星→「桜」だけ）。さらに辞書に無い言葉は黙って捨てていた。
+// いまは選んだ全部を使い、辞書に無い言葉も言葉そのものをテーマとして渡す。
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function buildDesignSlots(words: string[]): {
-  weaponSlot: string;
-  companionSlot: string;
-  auraSlot: string;
-  envSlot: string;
-  traitSlot: string;
-} {
-  const buckets: Record<string, string[]> = {
-    weapon: [], companion: [], power: [], nature: [], place: [], abstract: [],
-  };
-
-  for (const word of words) {
-    const def = WORD_MAP[word];
-    if (def) buckets[def.cat].push(def.en);
-  }
-
-  // 各スロットに最大1〜2個ずつ割り当て（優先順は buckets の先頭）
-  const weaponSlot = buckets["weapon"].slice(0, 1).join(", ");
-  const companionSlot = buckets["companion"].slice(0, 1).join(", ");
-  const auraSlot = buckets["power"].slice(0, 1).join(", ");
-  // 背景はplace優先、なければnature
-  const envSlot = [...buckets["place"], ...buckets["nature"]].slice(0, 1).join(", ");
-  // 性格/特質は最大2つ
-  const traitSlot = buckets["abstract"].slice(0, 2).join(", ");
-
-  return {weaponSlot, companionSlot, auraSlot, envSlot, traitSlot};
+function buildKeyElements(words: string[]): string[] {
+  return words.map((w) => WORD_MAP[w]?.en ?? `the theme of "${w}"`);
 }
 
 interface GenerateImageRequest {
@@ -337,42 +382,40 @@ export const generateCardImage = onCall(
 
     // ── ベース要素（属性・レアリティで固定） ──
     // カード名+属性をシードに人型/非人型を含む10案から決定的に選ぶ（同名同属性なら再生成しても同じ見た目）
-    const character = pickCharacterVariant(attr, `${cardName}:${attr}`);
+    const character = pickCharacterVariant(attr, `${cardName}:${attr}:${designWords.join(",")}`);
     const palette = ATTR_PALETTE[attr] ?? ATTR_PALETTE["joy"];
     const bg = RARITY_BG[attr]?.[rarity] ?? RARITY_BG["joy"]["n"];
     const pose = TYPE_POSE[cardType] ?? TYPE_POSE["balance"];
     const toneStyle = TONE_STYLE[tone] ?? TONE_STYLE["normal"];
     const rarityQuality = RARITY_QUALITY[rarity] ?? "";
 
-    // ── デザインワード → スロット割り当て ──
-    const slots = buildDesignSlots(designWords);
+    // ── 選んだ言葉（最大3つ）は全部を「必ず描くもの」として先頭で強く指定し、末尾でも繰り返す ──
+    const keyElements = buildKeyElements(designWords);
+    const keyLead = keyElements.length > 0 ?
+      `The image MUST clearly and prominently show ALL ${keyElements.length} of these key elements, each one plainly visible and recognizable: ${keyElements.map((e, i) => `(${i + 1}) ${e}`).join("; ")}` :
+      "";
+    const keyTail = keyElements.length > 0 ? `featuring ${keyElements.join(", ")}` : "";
 
-    // ── キャラクター部分（weapon + companion + trait を自然に組み込む） ──
+    // ── キャラクター部分（選んだ言葉は先頭の keyLead に入れるのでここには入れない） ──
     const charParts = [
       character,
-      slots.weaponSlot ? slots.weaponSlot : "",
-      slots.companionSlot ? slots.companionSlot : "",
-      slots.traitSlot ? slots.traitSlot : "",
       cardName ? `embodying "${cardName}"` : "",
       pose,
       toneStyle,
     ].filter(Boolean).join(", ");
 
-    // ── 背景部分（base bg + env word + aura） ──
-    // デザインワードの環境は bg に追加する（bg を上書きしない）
-    const bgParts = [
-      bg,
-      slots.envSlot ? `with ${slots.envSlot} in the scene` : "",
-      slots.auraSlot ? `${slots.auraSlot} energy aura` : "",
-    ].filter(Boolean).join(", ");
+    // ── 背景部分（レアリティ別の基本背景。選んだ言葉の場所・自然は keyLead 側で指定済み） ──
+    const bgParts = bg;
 
-    // ── 最終プロンプト（構造固定・スタイル統一） ──
+    // ── 最終プロンプト（選んだ言葉を最優先・スタイルは統一） ──
     const prompt = [
+      keyLead,
       charParts,
       bgParts,
       palette,
       rarityQuality,
       "digital fantasy TCG card illustration, centered character portrait, vibrant vivid colors, professional clean artwork, dramatic lighting",
+      keyTail,
       "no text no watermark no border",
     ].filter(Boolean).join(", ");
 
