@@ -1,7 +1,7 @@
 import '../models/seed_card.dart';
 
 final seedCardsData = <SeedCard>[
-  // 喜（Joy）C1（20pt）: 2枚
+  // 喜（Joy）C1（20pt）: 1枚
   SeedCard(
     cardId: 'joy_c1_001',
     attribute: 'joy',
@@ -15,21 +15,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Bright as the sun',
     imageUrl: 'assets/card_art/joy_c1_001.png',
   ),
-  SeedCard(
-    cardId: 'joy_c1_002',
-    attribute: 'joy',
-    cost: 1,
-    attackPower: 5,
-    defensePower: 10,
-    speed: 5,
-    nameJp: '光の盾',
-    nameEn: 'Shield of Light',
-    descriptionJp: '皆を守る光',
-    descriptionEn: 'Light that protects all',
-    imageUrl: 'assets/card_art/joy_c1_002.png',
-  ),
 
-  // 喜（Joy）C2（25pt）: 2枚
+  // 喜（Joy）C2（25pt）: 1枚
   SeedCard(
     cardId: 'joy_c2_001',
     attribute: 'joy',
@@ -43,21 +30,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Warrior of light',
     imageUrl: 'assets/card_art/joy_c2_001.png',
   ),
-  SeedCard(
-    cardId: 'joy_c2_002',
-    attribute: 'joy',
-    cost: 2,
-    attackPower: 6,
-    defensePower: 14,
-    speed: 5,
-    nameJp: '愛する大地',
-    nameEn: 'Beloved Earth',
-    descriptionJp: '全てを受け入れる大地',
-    descriptionEn: 'Earth that embraces all',
-    imageUrl: 'assets/card_art/joy_c2_002.png',
-  ),
 
-  // 喜（Joy）C3（30pt）: 2枚
+  // 喜（Joy）C3（30pt）: 1枚
   SeedCard(
     cardId: 'joy_c3_001',
     attribute: 'joy',
@@ -71,21 +45,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'King of hope',
     imageUrl: 'assets/card_art/joy_c3_001.png',
   ),
-  SeedCard(
-    cardId: 'joy_c3_002',
-    attribute: 'joy',
-    cost: 3,
-    attackPower: 7,
-    defensePower: 18,
-    speed: 5,
-    nameJp: '黄金の盾',
-    nameEn: 'Golden Shield',
-    descriptionJp: '絶対の防御',
-    descriptionEn: 'Impenetrable defense',
-    imageUrl: 'assets/card_art/joy_c3_002.png',
-  ),
 
-  // 喜（Joy）C4→R（25pt）: 2枚（シードカードはN/Rのみのため降格・ステータス縮小）
+  // 喜（Joy）C4→R（25pt）: 1枚（シードカードはN/Rのみのため降格・ステータス縮小）
   SeedCard(
     cardId: 'joy_c4_001',
     attribute: 'joy',
@@ -99,21 +60,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Power and radiance',
     imageUrl: 'assets/card_art/joy_c4_001.png',
   ),
-  SeedCard(
-    cardId: 'joy_c4_002',
-    attribute: 'joy',
-    cost: 2,
-    attackPower: 6,
-    defensePower: 14,
-    speed: 5,
-    nameJp: '永遠の光',
-    nameEn: 'Eternal Light',
-    descriptionJp: 'いつまでも消えない光',
-    descriptionEn: 'Never-ending light',
-    imageUrl: 'assets/card_art/joy_c4_002.png',
-  ),
 
-  // 喜（Joy）C5→N（20pt）: 2枚（シードカードはN/Rのみのため降格・ステータス縮小）
+  // 喜（Joy）C5→N（20pt）: 1枚（シードカードはN/Rのみのため降格・ステータス縮小）
   SeedCard(
     cardId: 'joy_c5_001',
     attribute: 'joy',
@@ -127,21 +75,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Source of all light',
     imageUrl: 'assets/card_art/joy_c5_001.png',
   ),
-  SeedCard(
-    cardId: 'joy_c5_002',
-    attribute: 'joy',
-    cost: 1,
-    attackPower: 5,
-    defensePower: 11,
-    speed: 4,
-    nameJp: '不滅の盾',
-    nameEn: 'Immortal Shield',
-    descriptionJp: 'いかなる傷もつかない',
-    descriptionEn: 'Never yields',
-    imageUrl: 'assets/card_art/joy_c5_002.png',
-  ),
 
-  // 怒（Anger）C1（20pt）: 2枚
+  // 怒（Anger）C1（20pt）: 1枚
   SeedCard(
     cardId: 'anger_c1_001',
     attribute: 'anger',
@@ -155,21 +90,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Symbol of burning rage',
     imageUrl: 'assets/card_art/anger_c1_001.png',
   ),
-  SeedCard(
-    cardId: 'anger_c1_002',
-    attribute: 'anger',
-    cost: 1,
-    attackPower: 5,
-    defensePower: 10,
-    speed: 5,
-    nameJp: '鉄壁',
-    nameEn: 'Iron Wall',
-    descriptionJp: '砕けぬ防御',
-    descriptionEn: 'Unbreakable defense',
-    imageUrl: 'assets/card_art/anger_c1_002.png',
-  ),
 
-  // 怒（Anger）C2（25pt）: 2枚
+  // 怒（Anger）C2（25pt）: 1枚
   SeedCard(
     cardId: 'anger_c2_001',
     attribute: 'anger',
@@ -183,21 +105,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Fierce and mighty',
     imageUrl: 'assets/card_art/anger_c2_001.png',
   ),
-  SeedCard(
-    cardId: 'anger_c2_002',
-    attribute: 'anger',
-    cost: 2,
-    attackPower: 6,
-    defensePower: 14,
-    speed: 5,
-    nameJp: '火山',
-    nameEn: 'Volcano',
-    descriptionJp: '溶岩の流れを堤防で止める',
-    descriptionEn: 'Holds back magma',
-    imageUrl: 'assets/card_art/anger_c2_002.png',
-  ),
 
-  // 怒（Anger）C3（30pt）: 2枚
+  // 怒（Anger）C3（30pt）: 1枚
   SeedCard(
     cardId: 'anger_c3_001',
     attribute: 'anger',
@@ -211,21 +120,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Gathers all rage',
     imageUrl: 'assets/card_art/anger_c3_001.png',
   ),
-  SeedCard(
-    cardId: 'anger_c3_002',
-    attribute: 'anger',
-    cost: 3,
-    attackPower: 6,
-    defensePower: 20,
-    speed: 4,
-    nameJp: '岩盤',
-    nameEn: 'Bedrock',
-    descriptionJp: '揺るがぬ大地',
-    descriptionEn: 'Immovable earth',
-    imageUrl: 'assets/card_art/anger_c3_002.png',
-  ),
 
-  // 怒（Anger）C4→R（25pt）: 2枚（シードカードはN/Rのみのため降格・ステータス縮小）
+  // 怒（Anger）C4→R（25pt）: 1枚（シードカードはN/Rのみのため降格・ステータス縮小）
   SeedCard(
     cardId: 'anger_c4_001',
     attribute: 'anger',
@@ -239,21 +135,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Master of all flames',
     imageUrl: 'assets/card_art/anger_c4_001.png',
   ),
-  SeedCard(
-    cardId: 'anger_c4_002',
-    attribute: 'anger',
-    cost: 2,
-    attackPower: 5,
-    defensePower: 16,
-    speed: 4,
-    nameJp: '不動岩',
-    nameEn: 'Immobile Rock',
-    descriptionJp: '何物も動かせない',
-    descriptionEn: 'Cannot be moved',
-    imageUrl: 'assets/card_art/anger_c4_002.png',
-  ),
 
-  // 怒（Anger）C5→N（20pt）: 2枚（シードカードはN/Rのみのため降格・ステータス縮小）
+  // 怒（Anger）C5→N（20pt）: 1枚（シードカードはN/Rのみのため降格・ステータス縮小）
   SeedCard(
     cardId: 'anger_c5_001',
     attribute: 'anger',
@@ -267,21 +150,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Source of all fire',
     imageUrl: 'assets/card_art/anger_c5_001.png',
   ),
-  SeedCard(
-    cardId: 'anger_c5_002',
-    attribute: 'anger',
-    cost: 1,
-    attackPower: 5,
-    defensePower: 12,
-    speed: 3,
-    nameJp: '永遠の岩',
-    nameEn: 'Eternal Stone',
-    descriptionJp: 'いつまでも屹立する',
-    descriptionEn: 'Stands forever',
-    imageUrl: 'assets/card_art/anger_c5_002.png',
-  ),
 
-  // 哀（Sadness）C1（20pt）: 2枚
+  // 哀（Sadness）C1（20pt）: 1枚
   SeedCard(
     cardId: 'sadness_c1_001',
     attribute: 'sadness',
@@ -295,21 +165,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Embodiment of sorrow',
     imageUrl: 'assets/card_art/sadness_c1_001.png',
   ),
-  SeedCard(
-    cardId: 'sadness_c1_002',
-    attribute: 'sadness',
-    cost: 1,
-    attackPower: 6,
-    defensePower: 9,
-    speed: 5,
-    nameJp: '闇の盾',
-    nameEn: 'Shield of Shadow',
-    descriptionJp: '優しく包み込む',
-    descriptionEn: 'Gently embraces',
-    imageUrl: 'assets/card_art/sadness_c1_002.png',
-  ),
 
-  // 哀（Sadness）C2（25pt）: 2枚
+  // 哀（Sadness）C2（25pt）: 1枚
   SeedCard(
     cardId: 'sadness_c2_001',
     attribute: 'sadness',
@@ -323,21 +180,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Master of sorrow',
     imageUrl: 'assets/card_art/sadness_c2_001.png',
   ),
-  SeedCard(
-    cardId: 'sadness_c2_002',
-    attribute: 'sadness',
-    cost: 2,
-    attackPower: 6,
-    defensePower: 14,
-    speed: 5,
-    nameJp: '深淵の盾',
-    nameEn: 'Shield of Abyss',
-    descriptionJp: '深き闇に守られて',
-    descriptionEn: 'Protected by abyss',
-    imageUrl: 'assets/card_art/sadness_c2_002.png',
-  ),
 
-  // 哀（Sadness）C3（30pt）: 2枚
+  // 哀（Sadness）C3（30pt）: 1枚
   SeedCard(
     cardId: 'sadness_c3_001',
     attribute: 'sadness',
@@ -351,21 +195,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Accepts all sorrow',
     imageUrl: 'assets/card_art/sadness_c3_001.png',
   ),
-  SeedCard(
-    cardId: 'sadness_c3_002',
-    attribute: 'sadness',
-    cost: 3,
-    attackPower: 6,
-    defensePower: 7,
-    speed: 17,
-    nameJp: '暗夜の精',
-    nameEn: 'Spirit of Dark Abyss',
-    descriptionJp: '深き夜を統べる',
-    descriptionEn: 'Rules the deep night',
-    imageUrl: 'assets/card_art/sadness_c3_002.png',
-  ),
 
-  // 哀（Sadness）C4→R（25pt）: 2枚（シードカードはN/Rのみのため降格・ステータス縮小）
+  // 哀（Sadness）C4→R（25pt）: 1枚（シードカードはN/Rのみのため降格・ステータス縮小）
   SeedCard(
     cardId: 'sadness_c4_001',
     attribute: 'sadness',
@@ -379,21 +210,8 @@ final seedCardsData = <SeedCard>[
     descriptionEn: 'Master of the abyss',
     imageUrl: 'assets/card_art/sadness_c4_001.png',
   ),
-  SeedCard(
-    cardId: 'sadness_c4_002',
-    attribute: 'sadness',
-    cost: 2,
-    attackPower: 6,
-    defensePower: 15,
-    speed: 4,
-    nameJp: '不変の夜',
-    nameEn: 'Unchanging Night',
-    descriptionJp: '夜は永遠に続く',
-    descriptionEn: 'Night eternal',
-    imageUrl: 'assets/card_art/sadness_c4_002.png',
-  ),
 
-  // 哀（Sadness）C5→N（20pt）: 2枚（シードカードはN/Rのみのため降格・ステータス縮小）
+  // 哀（Sadness）C5→N（20pt）: 1枚（シードカードはN/Rのみのため降格・ステータス縮小）
   SeedCard(
     cardId: 'sadness_c5_001',
     attribute: 'sadness',
@@ -406,18 +224,5 @@ final seedCardsData = <SeedCard>[
     descriptionJp: '全ての暗黒の源',
     descriptionEn: 'Source of all darkness',
     imageUrl: 'assets/card_art/sadness_c5_001.png',
-  ),
-  SeedCard(
-    cardId: 'sadness_c5_002',
-    attribute: 'sadness',
-    cost: 1,
-    attackPower: 5,
-    defensePower: 12,
-    speed: 3,
-    nameJp: '不滅の夜',
-    nameEn: 'Immortal Night',
-    descriptionJp: 'いつまでも変わらない',
-    descriptionEn: 'Forever unchanging',
-    imageUrl: 'assets/card_art/sadness_c5_002.png',
   ),
 ];
