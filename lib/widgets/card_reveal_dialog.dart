@@ -128,9 +128,11 @@ class _CardRevealDialogState extends State<CardRevealDialog>
             // フリップ + 衝撃波演出
             GestureDetector(
               onTap: _flip,
+              // カード表面（幅170のCardWidget）の高さは約314ある。ここが280だと、フリップ後に
+              // カード下段（攻撃力・防御力・速度）が34px はみ出して切れていた（実機で確認）。
               child: SizedBox(
                 width: 220,
-                height: 280,
+                height: 330,
                 child: AnimatedBuilder(
                   animation: Listenable.merge(
                       [_flipController, _shineController, _pulseController, _burstController]),
@@ -143,7 +145,7 @@ class _CardRevealDialogState extends State<CardRevealDialog>
                         // レアリティ衝撃波（フリップ完了の瞬間に一度だけ発火）
                         if (_burstController.value > 0)
                           CustomPaint(
-                            size: const Size(220, 280),
+                            size: const Size(220, 330),
                             painter: _RevealBurstPainter(
                               t: _burstController.value,
                               color: rColor,
