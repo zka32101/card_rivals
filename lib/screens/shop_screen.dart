@@ -7,6 +7,7 @@ import '../providers/vip_provider.dart';
 import '../services/purchase_service.dart';
 import '../theme/kingdom_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/frame_shop_section.dart';
 import '../widgets/ui_icon.dart';
 
 class ShopScreen extends ConsumerStatefulWidget {
@@ -319,6 +320,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   accent: Kingdom.sadnessIndigo,
                   onTap: _extendDailyBonusCap,
                 ),
+                const SizedBox(height: Kingdom.spaceXl),
+
+                const FrameShopSection(),
                 const SizedBox(height: Kingdom.spaceXl),
 
                 IconText(
