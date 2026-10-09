@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/user_card.dart';
 import '../models/battle_models.dart';
+import '../models/card_move.dart';
+import '../widgets/card_detail_sheet.dart' show cardMoveName;
 import '../services/battle_engine.dart';
 import '../services/functions_service.dart';
 import '../providers/game_state_provider.dart';
@@ -275,6 +277,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                   isCritical: l['isCritical'] as bool? ?? false,
                   isDodged: l['isDodged'] as bool? ?? false,
                   isShielded: l['isShielded'] as bool? ?? false,
+                  moveId: cardMoveIdFromString(l['moveId'] as String?),
                 ))
             .toList(),
       );
@@ -939,6 +942,24 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                             style: TextStyle(
                                 fontSize: 10,
                                 color: Color(0xFFFF3300),
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                    if (log.moveId != null) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Kingdom.joyGold.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Kingdom.joyGold),
+                        ),
+                        child: IconText(
+                            t.pvpBattle_moveBadge(cardMoveName(t, log.moveId!)),
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: Kingdom.joyGold,
                                 fontWeight: FontWeight.bold)),
                       ),
                     ],

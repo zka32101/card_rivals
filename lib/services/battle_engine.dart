@@ -1,5 +1,6 @@
 import 'dart:math';
 import '../models/battle_models.dart';
+import '../models/card_move.dart';
 import '../models/card_skill.dart';
 import '../models/user_card.dart';
 
@@ -39,96 +40,80 @@ class BattleEngine {
     int defenderHp = initialHp;
     final List<BattleLog> logs = [];
     int turn = 1;
+    final attSide = _SideState();
+    final defSide = _SideState();
 
-    // カードをスピード降順にソートして先攻後攻を決める
+    // 1回の攻撃（わざ判定を含む）。actorIsAttacker=true なら attackerDeck 側の打ち手。
+    // attackerDeck側のカードが打つ攻撃だけが移住ボーナス対象。
+    void doAttack(int round, PlayCard actor, PlayCard target, bool actorIsAttacker, String verb) {
+      final own = actorIsAttacker ? attSide : defSide;
+      final foe = actorIsAttacker ? defSide : attSide;
+      final boosted = actorIsAttacker && actor.attribute == migratedAttribute;
+      final m = _effectiveMultiplier(actor.attribute, target.attribute, boosted: boosted);
+
+      // わざ：カードが持ち、かつ自陣営の使用間隔を満たしている時のみ発動
+      final spec = actor.moveId != null ? kCardMoves[actor.moveId] : null;
+      final useMove = spec != null && own.attacks - own.lastMoveAttack >= spec.interval;
+      final attackMod = 1 + own.attackUp.at(round) - own.attackDown.at(round);
+      final defenseMod = 1 + foe.defenseUp.at(round);
+      final r = _resolveAttack(actor, target, m,
+          attackMod: attackMod, defenseMod: defenseMod, move: useMove ? spec : null);
+
+      if (actorIsAttacker) {
+        defenderHp -= r.damage;
+      } else {
+        attackerHp -= r.damage;
+      }
+      if (useMove && spec != null) {
+        own.lastMoveAttack = own.attacks;
+        own.attackUp.set(spec.selfAttackUp, round);
+        own.defenseUp.set(spec.selfDefenseUp, round);
+        own.speedUp.set(spec.selfSpeedUp, round);
+        foe.attackDown.set(spec.foeAttackDown, round);
+        foe.speedDown.set(spec.foeSpeedDown, round);
+        if (spec.healHp > 0) {
+          if (actorIsAttacker) {
+            attackerHp = min(initialHp, attackerHp + spec.healHp);
+          } else {
+            defenderHp = min(initialHp, defenderHp + spec.healHp);
+          }
+        }
+      }
+      own.attacks++;
+
+      logs.add(BattleLog(
+        turn: turn++,
+        action: '${actor.nameJp} が ${target.nameJp} に$verb',
+        damage: r.damage,
+        attackerHp: attackerHp,
+        defenderHp: defenderHp,
+        attackingCard: actor,
+        defendingCard: target,
+        multiplier: m,
+        isCritical: r.isCritical,
+        isDodged: r.isDodged,
+        isShielded: r.isShielded,
+        moveId: useMove ? actor.moveId : null,
+      ));
+    }
+
     for (int i = 0; i < attackerDeck.length && i < defenderDeck.length; i++) {
       final attCard = attackerDeck[i];
       final defCard = defenderDeck[i];
 
-      // 先攻判定：スピードが高い方が先攻
-      final bool attackerGoesFirst = attCard.speed >= defCard.speed;
+      // 先攻判定：スピードが高い方が先攻（補助わざによるスピード増減を反映）
+      final bool attackerGoesFirst =
+          attCard.speed * attSide.speedFactor(i) >= defCard.speed * defSide.speedFactor(i);
 
       if (attackerGoesFirst) {
-        // attCard（attackerDeck側）が攻撃 → 移住ボーナス対象
-        final m1 = _effectiveMultiplier(attCard.attribute, defCard.attribute,
-            boosted: attCard.attribute == migratedAttribute);
-        final r1 = _resolveAttack(attCard, defCard, m1);
-        defenderHp -= r1.damage;
-        logs.add(BattleLog(
-          turn: turn++,
-          action: '${attCard.nameJp} が ${defCard.nameJp} に攻撃',
-          damage: r1.damage,
-          attackerHp: attackerHp,
-          defenderHp: defenderHp,
-          attackingCard: attCard,
-          defendingCard: defCard,
-          multiplier: m1,
-          isCritical: r1.isCritical,
-          isDodged: r1.isDodged,
-          isShielded: r1.isShielded,
-        ));
-
+        doAttack(i, attCard, defCard, true, '攻撃');
         if (defenderHp <= 0) break;
-
-        // defCard（defenderDeck側）が反撃 → 移住ボーナス対象外
-        final m2 = _effectiveMultiplier(defCard.attribute, attCard.attribute, boosted: false);
-        final r2 = _resolveAttack(defCard, attCard, m2);
-        attackerHp -= r2.damage;
-        logs.add(BattleLog(
-          turn: turn++,
-          action: '${defCard.nameJp} が ${attCard.nameJp} に反撃',
-          damage: r2.damage,
-          attackerHp: attackerHp,
-          defenderHp: defenderHp,
-          attackingCard: defCard,
-          defendingCard: attCard,
-          multiplier: m2,
-          isCritical: r2.isCritical,
-          isDodged: r2.isDodged,
-          isShielded: r2.isShielded,
-        ));
-
+        doAttack(i, defCard, attCard, false, '反撃');
         if (attackerHp <= 0) break;
       } else {
-        // defCard（defenderDeck側）が先制 → 移住ボーナス対象外
-        final m1 = _effectiveMultiplier(defCard.attribute, attCard.attribute, boosted: false);
-        final r1 = _resolveAttack(defCard, attCard, m1);
-        attackerHp -= r1.damage;
-        logs.add(BattleLog(
-          turn: turn++,
-          action: '${defCard.nameJp} が ${attCard.nameJp} に先制攻撃',
-          damage: r1.damage,
-          attackerHp: attackerHp,
-          defenderHp: defenderHp,
-          attackingCard: defCard,
-          defendingCard: attCard,
-          multiplier: m1,
-          isCritical: r1.isCritical,
-          isDodged: r1.isDodged,
-          isShielded: r1.isShielded,
-        ));
-
+        doAttack(i, defCard, attCard, false, '先制攻撃');
         if (attackerHp <= 0) break;
-
-        // attCard（attackerDeck側）が反撃 → 移住ボーナス対象
-        final m2 = _effectiveMultiplier(attCard.attribute, defCard.attribute,
-            boosted: attCard.attribute == migratedAttribute);
-        final r2 = _resolveAttack(attCard, defCard, m2);
-        defenderHp -= r2.damage;
-        logs.add(BattleLog(
-          turn: turn++,
-          action: '${attCard.nameJp} が ${defCard.nameJp} に反撃',
-          damage: r2.damage,
-          attackerHp: attackerHp,
-          defenderHp: defenderHp,
-          attackingCard: attCard,
-          defendingCard: defCard,
-          multiplier: m2,
-          isCritical: r2.isCritical,
-          isDodged: r2.isDodged,
-          isShielded: r2.isShielded,
-        ));
-
+        doAttack(i, attCard, defCard, true, '反撃');
         if (defenderHp <= 0) break;
       }
     }
@@ -153,7 +138,8 @@ class BattleEngine {
   // 最終ダメージ算出、の順で処理する。回避が成立したら以降の判定はすべて無意味なので
   // 打ち切る（ダメージは無条件で0。最低1ダメージ保証も適用しない）。
   static ({int damage, bool isCritical, bool isDodged, bool isShielded}) _resolveAttack(
-      PlayCard attacker, PlayCard defender, double multiplier) {
+      PlayCard attacker, PlayCard defender, double multiplier,
+      {double attackMod = 1, double defenseMod = 1, CardMoveSpec? move}) {
     if (defender.getCardType() == 'speed' && _random.nextDouble() < dodgeChance) {
       return (damage: 0, isCritical: false, isDodged: true, isShielded: false);
     }
@@ -163,23 +149,23 @@ class BattleEngine {
         attacker.getCardType() == 'attack' ? criticalChance + typeCriticalBonus : criticalChance;
     final isCritical = _random.nextDouble() < critChance;
 
-    // パッシブスキル: power_strike(攻撃側)は攻撃力、guard_up(防御側)は防御力を+15%する
+    // パッシブスキル: power_strike(攻撃側)は攻撃力、guard_up(防御側)は防御力を+8%する
     // （functions/src/pvpBattle.ts の resolveAttack と同じ係数・同じロジック）。
     final effectiveAttack = attacker.skillId == CardSkillId.powerStrike
-        ? attacker.attackPower * kSkillStatBonusMultiplier
-        : attacker.attackPower.toDouble();
+        ? attacker.attackPower * kSkillStatBonusMultiplier * attackMod
+        : attacker.attackPower * attackMod;
     final effectiveDefense = defender.skillId == CardSkillId.guardUp
-        ? defender.defensePower * kSkillStatBonusMultiplier
-        : defender.defensePower.toDouble();
+        ? defender.defensePower * kSkillStatBonusMultiplier * defenseMod * (1 - (move?.defenseIgnore ?? 0))
+        : defender.defensePower * defenseMod * (1 - (move?.defenseIgnore ?? 0));
 
     final raw = effectiveAttack - effectiveDefense;
-    var effectiveMultiplier = multiplier;
+    var effectiveMultiplier = multiplier * (move?.damageMultiplier ?? 1);
     if (isCritical) effectiveMultiplier *= criticalMultiplier;
     if (isShielded) effectiveMultiplier *= shieldDamageReduction;
     var dmg = (raw * effectiveMultiplier).floor();
     dmg = dmg < 1 ? 1 : dmg; // 最低1ダメージ保証（回避時を除く）
 
-    // アクティブスキル: double_strike(攻撃側)は命中時20%の確率で追加50%ダメージ
+    // アクティブスキル: double_strike(攻撃側)は命中時10%の確率で追加30%ダメージ
     if (attacker.skillId == CardSkillId.doubleStrike && _random.nextDouble() < kDoubleStrikeChance) {
       dmg += (dmg * kDoubleStrikeBonus).floor();
     }
@@ -205,4 +191,31 @@ class BattleResult {
     required this.finalDefenderHp,
     required this.logs,
   });
+}
+
+// 補助わざの効果（使用ラウンドを含む kMoveBuffRounds ラウンドの間有効）
+class _Mod {
+  double value = 0;
+  int through = -1;
+  double at(int round) => round <= through ? value : 0;
+  void set(double v, int round) {
+    if (v > 0) {
+      value = v;
+      through = round + kMoveBuffRounds - 1;
+    }
+  }
+}
+
+// 陣営（デッキ側）ごとの状態。各カードは1回しか攻撃しないため、
+// わざの使用間隔はカードではなく陣営単位で管理する。
+class _SideState {
+  int attacks = 0; // これまでの自陣営の攻撃回数
+  int lastMoveAttack = -1000; // 最後にわざを使った時の攻撃回数
+  final attackUp = _Mod();
+  final attackDown = _Mod();
+  final defenseUp = _Mod();
+  final speedUp = _Mod();
+  final speedDown = _Mod();
+
+  double speedFactor(int round) => 1 + speedUp.at(round) - speedDown.at(round);
 }

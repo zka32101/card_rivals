@@ -1,5 +1,6 @@
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
+import {moveIdForCostTier} from "./cardMoves";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // カード作成・特訓（サーバー権威）
@@ -97,6 +98,7 @@ export const createCard = onCall(
     // レア度（cost）はクライアントには選ばせず必ずここで抽選する。
     const cost = rollCardCostTier();
     const skillId = skillIdForCostTier(cost);
+    const moveId = moveIdForCostTier(cost);
     const budget = CARD_CREATION_BUDGET;
     if (!VALID_ATTRIBUTES.includes(data.attribute)) {
       throw new HttpsError("invalid-argument", "不正な属性です");
@@ -146,6 +148,7 @@ export const createCard = onCall(
         attribute: data.attribute,
         cost,
         skillId,
+        moveId,
         attackPower,
         defensePower,
         speed,
@@ -171,7 +174,7 @@ export const createCard = onCall(
       return updatedBalance;
     });
 
-    return {success: true, cardId, newCoinBalance, cost, skillId};
+    return {success: true, cardId, newCoinBalance, cost, skillId, moveId};
   });
 
 // lib/models/user_card.dart の kMaxCardLevel / cardLevelUpCost と同じ値

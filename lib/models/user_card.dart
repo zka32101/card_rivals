@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'card_move.dart';
 import 'card_skill.dart';
 
 // カード育成（特訓）システム
@@ -50,6 +51,8 @@ class UserCard {
   // 作成時にレア度に応じて付与されたスキル（null = スキル無し／N）。
   // manageCards.ts のガチャ抽選と同時にサーバー側で決まり、後から変更されない。
   final CardSkillId? skillId;
+  // 作成時に確率で付与されたわざ（null = わざ無し）。skillIdと同様サーバー側で決まり後から変わらない。
+  final CardMoveId? moveId;
 
   UserCard({
     required this.cardId,
@@ -77,6 +80,7 @@ class UserCard {
     this.totalRentalCount = 0,
     this.totalRentalEarnings = 0,
     this.skillId,
+    this.moveId,
   });
 
   String get nameJp => cardName['jp'] ?? '';
@@ -124,6 +128,7 @@ class UserCard {
     'totalRentalCount': totalRentalCount,
     'totalRentalEarnings': totalRentalEarnings,
     'skillId': skillId != null ? cardSkillIdToString(skillId!) : null,
+    'moveId': moveId != null ? cardMoveIdToString(moveId!) : null,
   };
 
   factory UserCard.fromMap(Map<String, dynamic> map) => UserCard(
@@ -152,6 +157,7 @@ class UserCard {
     totalRentalCount: map['totalRentalCount'] ?? 0,
     totalRentalEarnings: map['totalRentalEarnings'] ?? 0,
     skillId: cardSkillIdFromString(map['skillId'] as String?),
+    moveId: cardMoveIdFromString(map['moveId'] as String?),
   );
 
   UserCard copyWith({
@@ -194,6 +200,7 @@ class UserCard {
       totalRentalCount: totalRentalCount ?? this.totalRentalCount,
       totalRentalEarnings: totalRentalEarnings ?? this.totalRentalEarnings,
       skillId: skillId,
+      moveId: moveId,
     );
   }
 
@@ -213,6 +220,7 @@ class UserCard {
         coCreatorName: coCreatorName,
         level: level,
         skillId: skillId,
+        moveId: moveId,
       );
 }
 
@@ -243,6 +251,8 @@ class PlayCard {
   final bool isRented;
   // 作成時にレア度に応じて付与されたスキル（null = スキル無し／N、シードカードも常にnull）。
   final CardSkillId? skillId;
+  // 作成時に確率で付与されたわざ（null = わざ無し、シードカードも常にnull）。
+  final CardMoveId? moveId;
 
   PlayCard({
     required this.cardId,
@@ -259,6 +269,7 @@ class PlayCard {
     this.level = 0,
     this.isRented = false,
     this.skillId,
+    this.moveId,
   });
 
   bool get isCoCreated => coCreatorName != null && coCreatorName!.isNotEmpty;

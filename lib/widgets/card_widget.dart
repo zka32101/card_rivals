@@ -360,6 +360,10 @@ class _Header extends StatelessWidget {
                 IconText(cardSkillIsPassive(card.skillId!) ? '🛡️' : '⚡', style: const TextStyle(fontSize: 11)),
                 const SizedBox(width: 2),
               ],
+              if (card.moveId != null) ...[
+                const IconText('✨', style: TextStyle(fontSize: 11)),
+                const SizedBox(width: 2),
+              ],
               WaxSealBadge(text: '${card.cost}', color: accent, size: 20),
             ],
           ),
