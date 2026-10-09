@@ -11,6 +11,7 @@ import 'models/user_card.dart';
 import 'providers/auth_provider.dart';
 import 'providers/collection_provider.dart';
 import 'providers/game_state_provider.dart';
+import 'providers/hydration.dart';
 import 'providers/locale_provider.dart';
 import 'providers/migration_provider.dart';
 import 'screens/bonus_detail_screen.dart';
@@ -99,10 +100,9 @@ class CardRivalsApp extends ConsumerWidget {
     // ローカルのwalletProviderへ反映する（未反映のままだと再起動のたびに
     // コイン/ジェムが初期値へリセットされたように見えるバグがあった）。
     ref.listen<AsyncValue<WalletState>>(userWalletProvider, (previous, next) {
-      final wallet = next.value;
       final uid = ref.read(currentUserIdProvider);
+      final wallet = valueToHydrate(next, uid: uid, hydratedUid: ref.read(walletHydratedForUidProvider));
       if (wallet == null || uid == null) return;
-      if (ref.read(walletHydratedForUidProvider) == uid) return;
       ref.read(walletProvider.notifier).state = wallet;
       ref.read(walletHydratedForUidProvider.notifier).state = uid;
       markWalletHydrated(uid);
@@ -116,20 +116,18 @@ class CardRivalsApp extends ConsumerWidget {
 
     // 属性移住状態も同様に、ユーザーごとに1回だけFirestoreから復元する。
     ref.listen<AsyncValue<MigrationState>>(userMigrationProvider, (previous, next) {
-      final migration = next.value;
       final uid = ref.read(currentUserIdProvider);
+      final migration = valueToHydrate(next, uid: uid, hydratedUid: ref.read(migrationHydratedForUidProvider));
       if (migration == null || uid == null) return;
-      if (ref.read(migrationHydratedForUidProvider) == uid) return;
       ref.read(migrationStateProvider.notifier).state = migration;
       ref.read(migrationHydratedForUidProvider.notifier).state = uid;
     });
 
     // 作成済みカードも同様に、ユーザーごとに1回だけFirestoreから復元する。
     ref.listen<AsyncValue<List<UserCard>>>(userCardsFirestoreProvider, (previous, next) {
-      final cards = next.value;
       final uid = ref.read(currentUserIdProvider);
+      final cards = valueToHydrate(next, uid: uid, hydratedUid: ref.read(myCardsHydratedForUidProvider));
       if (cards == null || uid == null) return;
-      if (ref.read(myCardsHydratedForUidProvider) == uid) return;
       ref.read(myCardsProvider.notifier).state = cards;
       ref.read(myCardsHydratedForUidProvider.notifier).state = uid;
     });
