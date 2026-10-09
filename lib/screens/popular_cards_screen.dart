@@ -108,7 +108,7 @@ class PopularCardsScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.4)),
             ),
-            title: IconText(card.cardName, style: Kingdom.label(size: 16, color: Kingdom.gilt)),
+            title: IconText(card.nameFor(t.localeName), style: Kingdom.label(size: 16, color: Kingdom.gilt)),
             content: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,8 +174,8 @@ class PopularCardsScreen extends ConsumerWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(leveledUp
-                                ? t.popularCards_cardEvolvedMessage(card.cardName, updated.evolutionBadge)
-                                : t.popularCards_rentalSuccessMessage(card.cardName, selectedDays)),
+                                ? t.popularCards_cardEvolvedMessage(card.nameFor(t.localeName), updated.evolutionBadge)
+                                : t.popularCards_rentalSuccessMessage(card.nameFor(t.localeName), selectedDays)),
                             backgroundColor: leveledUp ? Kingdom.gilt : Kingdom.sadnessIndigo,
                           ),
                         );
@@ -258,7 +258,7 @@ class _PopularCardItem extends StatelessWidget {
                       children: [
                         Flexible(
                           child: IconText(
-                            card.cardName,
+                            card.nameFor(t.localeName),
                             style: TextStyle(
                                 fontFamily: Kingdom.displayFont,
                                 fontSize: Kingdom.textBody,

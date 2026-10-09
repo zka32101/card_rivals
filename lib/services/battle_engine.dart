@@ -45,7 +45,7 @@ class BattleEngine {
 
     // 1回の攻撃（わざ判定を含む）。actorIsAttacker=true なら attackerDeck 側の打ち手。
     // attackerDeck側のカードが打つ攻撃だけが移住ボーナス対象。
-    void doAttack(int round, PlayCard actor, PlayCard target, bool actorIsAttacker, String verb) {
+    void doAttack(int round, PlayCard actor, PlayCard target, bool actorIsAttacker, BattleActionKind kind) {
       final own = actorIsAttacker ? attSide : defSide;
       final foe = actorIsAttacker ? defSide : attSide;
       final boosted = actorIsAttacker && actor.attribute == migratedAttribute;
@@ -83,7 +83,7 @@ class BattleEngine {
 
       logs.add(BattleLog(
         turn: turn++,
-        action: '${actor.nameJp} が ${target.nameJp} に$verb',
+        action: kind,
         damage: r.damage,
         attackerHp: attackerHp,
         defenderHp: defenderHp,
@@ -106,14 +106,14 @@ class BattleEngine {
           attCard.speed * attSide.speedFactor(i) >= defCard.speed * defSide.speedFactor(i);
 
       if (attackerGoesFirst) {
-        doAttack(i, attCard, defCard, true, '攻撃');
+        doAttack(i, attCard, defCard, true, BattleActionKind.attack);
         if (defenderHp <= 0) break;
-        doAttack(i, defCard, attCard, false, '反撃');
+        doAttack(i, defCard, attCard, false, BattleActionKind.counter);
         if (attackerHp <= 0) break;
       } else {
-        doAttack(i, defCard, attCard, false, '先制攻撃');
+        doAttack(i, defCard, attCard, false, BattleActionKind.firstStrike);
         if (attackerHp <= 0) break;
-        doAttack(i, attCard, defCard, true, '反撃');
+        doAttack(i, attCard, defCard, true, BattleActionKind.counter);
         if (defenderHp <= 0) break;
       }
     }

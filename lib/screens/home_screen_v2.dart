@@ -352,7 +352,7 @@ class _MigrationBannerV2 extends ConsumerWidget {
     final wallet = ref.watch(walletProvider);
     final isMigrated = active == favored;
     final emoji = migrationAttributeEmoji(favored);
-    final label = migrationAttributeLabel(favored);
+    final label = migrationAttributeLabel(t, favored);
     final accent = Kingdom.attributeColor(favored);
 
     return OrnateFrame(

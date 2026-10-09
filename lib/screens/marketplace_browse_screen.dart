@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/card_name.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/marketplace_provider.dart';
 import '../models/marketplace_models.dart';
@@ -69,7 +70,7 @@ class MarketplaceBrowseScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${t.marketplace_cardLabel}: ${listing.cardName['en'] ?? 'Unknown'}'),
+            Text('${t.marketplace_cardLabel}: ${localizedCardNameOrUnknown(AppLocalizations.of(context)!, listing.cardName)}'),
             const SizedBox(height: 8),
             IconText('${t.marketplace_priceLabel}: ${listing.price} 🪙'),
             const SizedBox(height: 8),
@@ -137,7 +138,7 @@ class CardListingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardNameDisplay = listing.cardName['en'] ?? listing.cardName['jp'] ?? 'Unknown Card';
+    final cardNameDisplay = localizedCardNameOrUnknown(AppLocalizations.of(context)!, listing.cardName);
 
     return Card(
       color: Kingdom.nightDeep,

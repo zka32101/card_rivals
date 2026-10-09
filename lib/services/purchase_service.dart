@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -23,14 +24,23 @@ const String kRevenueCatApiKeyIos = 'YOUR_REVENUECAT_IOS_API_KEY';
 // コイン/ジェムパック定義（RevenueCat側のPackage識別子と1:1で対応させる）
 class CurrencyPackageDef {
   final String packageId; // RevenueCat Package identifier
-  final String label;
   final int amount; // ボーナス込みの実際の付与量
   final String fallbackPriceLabel; // ストア価格が取得できない場合の表示用
   final bool isGem;
 
+  /// 表示名（ロケールに合わせる。購入履歴の表示名と同じ文言）
+  String labelOf(AppLocalizations t) => switch (packageId) {
+        'coin_100' => t.shop_purchaseHistoryCoin100,
+        'coin_500' => t.shop_purchaseHistoryCoin500,
+        'coin_1200' => t.shop_purchaseHistoryCoin1200,
+        'gem_10' => t.shop_purchaseHistoryGem10,
+        'gem_50' => t.shop_purchaseHistoryGem50,
+        'gem_120' => t.shop_purchaseHistoryGem120,
+        _ => packageId,
+      };
+
   const CurrencyPackageDef({
     required this.packageId,
-    required this.label,
     required this.amount,
     required this.fallbackPriceLabel,
     required this.isGem,
@@ -40,21 +50,18 @@ class CurrencyPackageDef {
 const List<CurrencyPackageDef> kCoinPackages = [
   CurrencyPackageDef(
     packageId: 'coin_100',
-    label: 'コイン100枚',
     amount: 100,
     fallbackPriceLabel: '¥120',
     isGem: false,
   ),
   CurrencyPackageDef(
     packageId: 'coin_500',
-    label: 'コイン500枚 +ボーナス50枚',
     amount: 550,
     fallbackPriceLabel: '¥480',
     isGem: false,
   ),
   CurrencyPackageDef(
     packageId: 'coin_1200',
-    label: 'コイン1200枚 +ボーナス200枚',
     amount: 1400,
     fallbackPriceLabel: '¥980',
     isGem: false,
@@ -64,21 +71,18 @@ const List<CurrencyPackageDef> kCoinPackages = [
 const List<CurrencyPackageDef> kGemPackages = [
   CurrencyPackageDef(
     packageId: 'gem_10',
-    label: 'ジェム10個',
     amount: 10,
     fallbackPriceLabel: '¥120',
     isGem: true,
   ),
   CurrencyPackageDef(
     packageId: 'gem_50',
-    label: 'ジェム50個 +ボーナス5個',
     amount: 55,
     fallbackPriceLabel: '¥480',
     isGem: true,
   ),
   CurrencyPackageDef(
     packageId: 'gem_120',
-    label: 'ジェム120個 +ボーナス20個',
     amount: 140,
     fallbackPriceLabel: '¥980',
     isGem: true,

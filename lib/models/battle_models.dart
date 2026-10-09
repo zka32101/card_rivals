@@ -46,9 +46,12 @@ class BattleState {
   }
 }
 
+// バトルログの行動の種類（表示文はロケールに合わせて画面側で組み立てる）
+enum BattleActionKind { attack, counter, firstStrike }
+
 class BattleLog {
   final int turn;
-  final String action;
+  final BattleActionKind action;
   final int damage;
   final int attackerHp;
   final int defenderHp;
@@ -66,7 +69,7 @@ class BattleLog {
 
   BattleLog({
     required this.turn,
-    required this.action,
+    this.action = BattleActionKind.attack,
     required this.damage,
     required this.attackerHp,
     required this.defenderHp,

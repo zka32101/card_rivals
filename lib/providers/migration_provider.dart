@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -119,9 +120,9 @@ String migrationAttributeEmoji(String attr) => switch (attr) {
       _ => '⭐',
     };
 
-String migrationAttributeLabel(String attr) => switch (attr) {
-      'joy' => '喜の大陸',
-      'anger' => '怒の大陸',
-      'sadness' => '哀の大陸',
+String migrationAttributeLabel(AppLocalizations t, String attr) => switch (attr) {
+      'joy' => t.migration_continentJoy,
+      'anger' => t.migration_continentAnger,
+      'sadness' => t.migration_continentSadness,
       _ => '?',
     };

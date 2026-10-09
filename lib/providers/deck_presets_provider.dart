@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../l10n/app_localizations.dart';
 import '../models/deck_preset.dart';
 import 'auth_provider.dart';
 
@@ -10,6 +11,43 @@ import 'auth_provider.dart';
 
 const int maxPresetsPerUser = 10;
 const int maxCardsPerDeck = 30;
+
+/// デッキプリセット操作の失敗理由。画面側でロケールに合わせた文言にする。
+enum DeckPresetError {
+  notSignedIn,
+  nameEmpty,
+  nameTooLong,
+  deckSize,
+  maxPresets,
+  idRequired,
+  notFound,
+  sourceRequired,
+  sourceNotFound,
+}
+
+class DeckPresetException implements Exception {
+  final DeckPresetError error;
+  const DeckPresetException(this.error);
+
+  String message(AppLocalizations t) => switch (error) {
+        DeckPresetError.notSignedIn => t.deckPreset_errNotSignedIn,
+        DeckPresetError.nameEmpty => t.deckPreset_errNameEmpty,
+        DeckPresetError.nameTooLong => t.deckPreset_errNameTooLong,
+        DeckPresetError.deckSize => t.deckPreset_errDeckSize(maxCardsPerDeck),
+        DeckPresetError.maxPresets => t.deckPreset_errMaxPresets(maxPresetsPerUser),
+        DeckPresetError.idRequired => t.deckPreset_errIdRequired,
+        DeckPresetError.notFound => t.deckPreset_errNotFound,
+        DeckPresetError.sourceRequired => t.deckPreset_errSourceRequired,
+        DeckPresetError.sourceNotFound => t.deckPreset_errSourceNotFound,
+      };
+
+  @override
+  String toString() => 'DeckPresetException($error)';
+}
+
+/// 画面に出すエラー文言（DeckPresetExceptionはローカライズ、それ以外は従来どおり）。
+String deckPresetErrorText(AppLocalizations t, Object e) =>
+    e is DeckPresetException ? e.message(t) : e.toString();
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // Providers
@@ -99,20 +137,20 @@ Future<String?> saveDeckPreset(
 }) async {
   final userId = ref.read(currentUserIdProvider);
   if (userId == null) {
-    throw Exception('User not authenticated');
+    throw const DeckPresetException(DeckPresetError.notSignedIn);
   }
 
   // バリデーション
   if (name.isEmpty) {
-    throw Exception('プリセット名は空にできません');
+    throw const DeckPresetException(DeckPresetError.nameEmpty);
   }
 
   if (name.length > 50) {
-    throw Exception('プリセット名は50文字以内です');
+    throw const DeckPresetException(DeckPresetError.nameTooLong);
   }
 
   if (cardIds.isEmpty || cardIds.length > maxCardsPerDeck) {
-    throw Exception('デッキには1〜$maxCardsPerDeck枚のカードが必要です');
+    throw const DeckPresetException(DeckPresetError.deckSize);
   }
 
   try {
@@ -140,7 +178,7 @@ Future<String?> saveDeckPreset(
       final countSnapshot = await presetsRef.count().get();
       final count = countSnapshot.count ?? 0;
       if (count >= maxPresetsPerUser) {
-        throw Exception('デッキプリセットは最大$maxPresetsPerUser個までです');
+        throw const DeckPresetException(DeckPresetError.maxPresets);
       }
 
       final presetId = presetsRef.doc().id;
@@ -170,10 +208,10 @@ Future<String?> saveDeckPreset(
 /// デッキの名前を変更
 Future<void> renameDeckPreset(WidgetRef ref, String presetId, String newName) async {
   final userId = ref.read(currentUserIdProvider);
-  if (userId == null) throw Exception('User not authenticated');
+  if (userId == null) throw const DeckPresetException(DeckPresetError.notSignedIn);
   final name = newName.trim();
-  if (presetId.isEmpty || name.isEmpty) throw Exception('プリセット名は空にできません');
-  if (name.length > 50) throw Exception('プリセット名は50文字以内です');
+  if (presetId.isEmpty || name.isEmpty) throw const DeckPresetException(DeckPresetError.nameEmpty);
+  if (name.length > 50) throw const DeckPresetException(DeckPresetError.nameTooLong);
 
   await FirebaseFirestore.instance
       .collection('users')
@@ -188,8 +226,8 @@ Future<void> renameDeckPreset(WidgetRef ref, String presetId, String newName) as
 /// デッキのお気に入りを切り替え
 Future<void> setDeckPresetFavorite(WidgetRef ref, String presetId, bool favorite) async {
   final userId = ref.read(currentUserIdProvider);
-  if (userId == null) throw Exception('User not authenticated');
-  if (presetId.isEmpty) throw Exception('プリセットIDが必要です');
+  if (userId == null) throw const DeckPresetException(DeckPresetError.notSignedIn);
+  if (presetId.isEmpty) throw const DeckPresetException(DeckPresetError.idRequired);
 
   // 並び順（更新日時）を変えないよう updatedAt は触らない
   await FirebaseFirestore.instance
@@ -209,11 +247,11 @@ Future<void> deleteDeckPreset(
 ) async {
   final userId = ref.read(currentUserIdProvider);
   if (userId == null) {
-    throw Exception('User not authenticated');
+    throw const DeckPresetException(DeckPresetError.notSignedIn);
   }
 
   if (presetId.isEmpty) {
-    throw Exception('プリセットIDが必要です');
+    throw const DeckPresetException(DeckPresetError.idRequired);
   }
 
   try {
@@ -226,7 +264,7 @@ Future<void> deleteDeckPreset(
     // 存在確認
     final snap = await presetRef.get();
     if (!snap.exists) {
-      throw Exception('プリセットが見つかりません');
+      throw const DeckPresetException(DeckPresetError.notFound);
     }
 
     // 削除
@@ -249,15 +287,15 @@ Future<String?> copyDeckPreset(
 }) async {
   final userId = ref.read(currentUserIdProvider);
   if (userId == null) {
-    throw Exception('User not authenticated');
+    throw const DeckPresetException(DeckPresetError.notSignedIn);
   }
 
   if (sourcePresetId.isEmpty || newName.isEmpty) {
-    throw Exception('ソースプリセットIDと新しい名前が必要です');
+    throw const DeckPresetException(DeckPresetError.sourceRequired);
   }
 
   if (newName.length > 50) {
-    throw Exception('プリセット名は50文字以内です');
+    throw const DeckPresetException(DeckPresetError.nameTooLong);
   }
 
   try {
@@ -272,14 +310,14 @@ Future<String?> copyDeckPreset(
     // ソースプリセットを取得
     final sourceSnap = await sourceRef.get();
     if (!sourceSnap.exists) {
-      throw Exception('ソースプリセットが見つかりません');
+      throw const DeckPresetException(DeckPresetError.sourceNotFound);
     }
 
     // 既存プリセット数をチェック
     final countSnapshot = await presetsRef.count().get();
     final count = countSnapshot.count ?? 0;
     if (count >= maxPresetsPerUser) {
-      throw Exception('デッキプリセットは最大$maxPresetsPerUser個までです');
+      throw const DeckPresetException(DeckPresetError.maxPresets);
     }
 
     final sourceData = sourceSnap.data() as Map<String, dynamic>? ?? {};
