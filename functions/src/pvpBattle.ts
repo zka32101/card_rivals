@@ -213,13 +213,13 @@ interface AttackResolution {
 interface Mod {value: number; through: number}
 interface SideState {
   attacks: number; // これまでの自陣営の攻撃回数
-  lastMoveAttack: number; // 最後にわざを使った時の攻撃回数（未使用は -Infinity）
+  nextMoveAttack: number; // 次にわざを使える攻撃回数（使ったわざの interval 後）
   attackUp: Mod; attackDown: Mod; defenseUp: Mod; speedUp: Mod; speedDown: Mod;
 }
 
 const noMod = (): Mod => ({value: 0, through: -1});
 const newSide = (): SideState => ({
-  attacks: 0, lastMoveAttack: -Infinity,
+  attacks: 0, nextMoveAttack: 0,
   attackUp: noMod(), attackDown: noMod(), defenseUp: noMod(), speedUp: noMod(), speedDown: noMod(),
 });
 const modAt = (m: Mod, round: number): number => (round <= m.through ? m.value : 0);
@@ -292,14 +292,14 @@ function simulateBattle(
 
     // わざ：カードが持ち、かつ自陣営の使用間隔を満たしている時のみ発動
     const spec = actor.moveId ? MOVES[actor.moveId] : undefined;
-    const useMove = spec !== undefined && own.attacks - own.lastMoveAttack >= spec.interval;
+    const useMove = spec !== undefined && own.attacks >= own.nextMoveAttack;
     const attackMod = 1 + modAt(own.attackUp, round) - modAt(own.attackDown, round);
     const defenseMod = 1 + modAt(foe.defenseUp, round);
     const r = resolveAttack(actor, target, m, attackMod, defenseMod, useMove ? spec : undefined);
 
     if (actorIsAttacker) defenderHp -= r.damage; else attackerHp -= r.damage;
     if (useMove && spec) {
-      own.lastMoveAttack = own.attacks;
+      own.nextMoveAttack = own.attacks + spec.interval;
       setMod(own.attackUp, spec.selfAttackUp, round);
       setMod(own.defenseUp, spec.selfDefenseUp, round);
       setMod(own.speedUp, spec.selfSpeedUp, round);
