@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/user_card.dart';
 import '../models/battle_models.dart';
+import '../models/battle_log_text.dart';
 import '../services/battle_engine.dart';
 import '../providers/game_state_provider.dart';
 import '../widgets/card_widget.dart';
@@ -189,7 +190,7 @@ class _TutorialBattleScreenState extends ConsumerState<TutorialBattleScreen>
                       const SizedBox(width: Kingdom.spaceSm),
                       Expanded(
                         child: Text(
-                          '${log.action}　-${log.damage}',
+                          '${battleLogText(AppLocalizations.of(context)!, log)}　-${log.damage}',
                           style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.8), fontSize: Kingdom.textBody),
                         ),
                       ),

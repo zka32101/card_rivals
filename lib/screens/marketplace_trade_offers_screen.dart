@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/card_name.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/marketplace_provider.dart';
 import '../providers/auth_provider.dart';
@@ -441,7 +442,7 @@ class _TradeCardChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
-          '${card.cardName['en'] ?? card.cardName['jp'] ?? 'Unknown'} (${card.cost})',
+          '${localizedCardNameOrUnknown(AppLocalizations.of(context)!, card.cardName)} (${card.cost})',
           style: TextStyle(
             fontSize: 11,
             color: Kingdom.parchment.withValues(alpha: 0.8),

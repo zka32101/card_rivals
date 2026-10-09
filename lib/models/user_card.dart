@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'card_move.dart';
 import 'card_skill.dart';
+import 'card_name.dart';
 
 // カード育成（特訓）システム
 // レベルはcopyWith可能な進捗値としてFirestoreに保存し、実数値への反映は
@@ -271,6 +272,9 @@ class PlayCard {
     this.skillId,
     this.moveId,
   });
+
+  /// 表示言語に合わせたカード名（'en'で英語名があれば英語、無ければ元の名前）。
+  String nameFor(String lang) => pickCardName(lang, jp: nameJp, en: nameEn);
 
   bool get isCoCreated => coCreatorName != null && coCreatorName!.isNotEmpty;
 

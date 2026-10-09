@@ -187,6 +187,9 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
       final match = await FunctionsService.pvpMatch(myRating);
       _matchId = match['matchId'] as String?;
       final deckData = (match['opponentDeck'] as List).cast<Map>();
+      // サーバーはnameJpしか返さないため、シードカードは手元の英語名で補う
+      // （無ければサーバーの名前にフォールバック）。
+      final seedEn = {for (final c in ref.read(allPlayCardsProvider)) c.cardId: c.nameEn};
       _opponentDeck = deckData
           .map((c) => PlayCard(
                 cardId: c['cardId'] as String,
@@ -196,6 +199,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                 defensePower: c['defensePower'] as int,
                 speed: c['speed'] as int,
                 nameJp: c['nameJp'] as String,
+                nameEn: (c['nameEn'] as String?) ?? seedEn[c['cardId'] as String] ?? '',
               ))
           .toList();
       _opponentName = match['opponentName'] as String;
@@ -267,7 +271,6 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
         logs: rawLogs
             .map((l) => BattleLog(
                   turn: l['turn'] as int,
-                  action: '',
                   damage: l['damage'] as int,
                   attackerHp: l['attackerHp'] as int,
                   defenderHp: l['defenderHp'] as int,

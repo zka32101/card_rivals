@@ -1,6 +1,9 @@
+import 'card_name.dart';
+
 class CardPopularityScore {
   final String cardId;
-  final String cardName;
+  final String cardName; // 日本語名（無ければ英語名）
+  final String cardNameEn;
   final String creatorId;
   final String creatorName;
   final String attribute;
@@ -20,6 +23,7 @@ class CardPopularityScore {
   CardPopularityScore({
     required this.cardId,
     required this.cardName,
+    this.cardNameEn = '',
     required this.creatorId,
     required this.creatorName,
     required this.attribute,
@@ -34,6 +38,9 @@ class CardPopularityScore {
     this.rank = 0,
     required this.lastUpdated,
   });
+
+  /// 表示言語に合わせたカード名（英語名が無ければ元の名前）
+  String nameFor(String lang) => pickCardName(lang, jp: cardName, en: cardNameEn);
 
   // レンタル回数で進化するオーナーカードのレベル（0=無印, 1〜3=進化段階）
   // しきい値: 5回=Lv1, 15回=Lv2, 30回=Lv3

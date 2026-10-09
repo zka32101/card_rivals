@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/card_name.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/marketplace_provider.dart';
 import '../models/marketplace_models.dart';
@@ -96,7 +97,7 @@ class MyListingTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cardNameDisplay = listing.cardName['en'] ?? listing.cardName['jp'] ?? 'Unknown';
+    final cardNameDisplay = localizedCardNameOrUnknown(AppLocalizations.of(context)!, listing.cardName);
 
     return Card(
       color: Kingdom.nightDeep,
@@ -193,7 +194,7 @@ class MyListingTile extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: IconText(t.marketplace_removeListingTitle),
-        content: Text('${t.marketplace_removeListingDesc} (${listing.cardName['en'] ?? 'this card'})?'),
+        content: Text('${t.marketplace_removeListingDesc} (${localizedCardNameOrUnknown(AppLocalizations.of(context)!, listing.cardName)})?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -227,7 +228,7 @@ class SoldListingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardNameDisplay = listing.cardName['en'] ?? listing.cardName['jp'] ?? 'Unknown';
+    final cardNameDisplay = localizedCardNameOrUnknown(AppLocalizations.of(context)!, listing.cardName);
 
     return Card(
       color: Kingdom.nightDeep.withValues(alpha: 0.6),

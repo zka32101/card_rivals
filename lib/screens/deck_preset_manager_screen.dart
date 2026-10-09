@@ -128,7 +128,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(e.toString()))),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(deckPresetErrorText(AppLocalizations.of(context)!, e)))),
                   );
                 }
               }
@@ -160,7 +160,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(e.toString()))),
+          SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(deckPresetErrorText(AppLocalizations.of(context)!, e)))),
         );
       }
     }
@@ -198,7 +198,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(e.toString()))),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(deckPresetErrorText(AppLocalizations.of(context)!, e)))),
                   );
                 }
               }
@@ -266,7 +266,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(e.toString()))),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(deckPresetErrorText(AppLocalizations.of(context)!, e)))),
                   );
                 }
               }

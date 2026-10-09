@@ -63,6 +63,7 @@ final popularCardsProvider = FutureProvider<List<CardPopularityScore>>((ref) asy
     return CardPopularityScore(
       cardId: data['cardId'] as String? ?? snapshot.docs[i].id,
       cardName: cardName['jp'] ?? cardName['en'] ?? '',
+      cardNameEn: cardName['en'] ?? '',
       creatorId: creatorId,
       // このアプリにはまだ表示名（ハンドルネーム）機能が無く、認証も匿名のみのため、
       // UIDの先頭6文字を使った擬似ハンドルで代用する（今後、表示名機能を追加したら差し替える）。

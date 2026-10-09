@@ -911,6 +911,9 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
     }
 
     final coCreatorName = _coCreatorController.text.trim();
+    // カード名は作成時の表示言語で選んだ1つだけ（AI名前生成を言語ごとに増やさないため）。
+    // jp/en の両方に同じ名前を保存し、表示側（nameFor）が言語に追従する。
+    // 別言語の表示では、この名前にそのままフォールバックする。
     final cardNameJp = _selectedName ?? t.cardCreation_defaultCardName;
     final userId = ref.read(currentUserIdProvider);
 
@@ -922,6 +925,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
         defensePower: _defense,
         speed: _speed,
         cardNameJp: cardNameJp,
+        cardNameEn: cardNameJp,
         imageUrl: imageUrl,
         coCreatorName: coCreatorName.isEmpty ? null : coCreatorName,
         isVip: isVip,
@@ -978,7 +982,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       attackPower: newCard.attackPower,
       defensePower: newCard.defensePower,
       speed: newCard.speed,
-      cardName: {'jp': newCard.nameJp, 'en': newCard.nameJp},
+      cardName: {'jp': newCard.nameJp, 'en': newCard.nameEn},
       cardDescription: const {'jp': '', 'en': ''},
       imageUrl: newCard.imageUrl,
       createdAt: Timestamp.now(),

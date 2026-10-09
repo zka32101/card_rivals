@@ -45,7 +45,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         final synced = await _grantCurrency(pkg);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: IconText(t.shop_receivedPackage(pkg.label))),
+          SnackBar(content: IconText(t.shop_receivedPackage(pkg.labelOf(t)))),
         );
         if (!synced) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -565,7 +565,7 @@ class _PackageTile extends StatelessWidget {
           IconText(pkg.isGem ? '💎' : '🪙', style: const TextStyle(fontSize: 28)),
           const SizedBox(width: Kingdom.spaceMd),
           Expanded(
-            child: IconText(pkg.label,
+            child: IconText(pkg.labelOf(AppLocalizations.of(context)!),
                 style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
           ),
           SizedBox(
