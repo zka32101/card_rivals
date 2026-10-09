@@ -473,7 +473,7 @@ class _CardResults extends StatelessWidget {
               // 上寄せで描画（余白は下に逃がし、カード本体は中身の高さに合わせる）
               child: Align(
                 alignment: Alignment.topCenter,
-                child: CardWidget(card: card, size: itemWidth, compact: true),
+                child: MyCardWidget(card: card, size: itemWidth, compact: true),
               ),
             );
           },

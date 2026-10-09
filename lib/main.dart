@@ -31,9 +31,7 @@ import 'widgets/startup_splash.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 初期化中は組織ロゴ付きの起動画面を表示する（本来のrunAppが後で置き換える）。
-  runApp(
-    const MaterialApp(debugShowCheckedModeBanner: false, home: StartupSplash()),
-  );
+  runApp(const MaterialApp(debugShowCheckedModeBanner: false, home: StartupSplash()));
   // リリースビルドではdebugPrint()の出力を抑制する。debugPrintはpackage:flutter/
   // foundation.dartが公開する差し替え可能な関数ポインタなので、ここで1箇所無効化
   // するだけでアプリ全体（lib/配下の全debugPrint呼び出し）に効く。
@@ -101,13 +99,9 @@ class CardRivalsApp extends ConsumerWidget {
     // Firestoreに保存済みのウォレットを、ユーザーごとに1回だけ
     // ローカルのwalletProviderへ反映する（未反映のままだと再起動のたびに
     // コイン/ジェムが初期値へリセットされたように見えるバグがあった）。
-    ref.listen<AsyncValue<WalletState>>(userWalletProvider, (previous, next) {
+    ref.listen<AsyncValue<WalletState?>>(userWalletProvider, (previous, next) {
       final uid = ref.read(currentUserIdProvider);
-      final wallet = valueToHydrate(
-        next,
-        uid: uid,
-        hydratedUid: ref.read(walletHydratedForUidProvider),
-      );
+      final wallet = valueToHydrate(next, uid: uid, hydratedUid: ref.read(walletHydratedForUidProvider));
       if (wallet == null || uid == null) return;
       ref.read(walletProvider.notifier).state = wallet;
       ref.read(walletHydratedForUidProvider.notifier).state = uid;
@@ -121,32 +115,18 @@ class CardRivalsApp extends ConsumerWidget {
     });
 
     // 属性移住状態も同様に、ユーザーごとに1回だけFirestoreから復元する。
-    ref.listen<AsyncValue<MigrationState>>(userMigrationProvider, (
-      previous,
-      next,
-    ) {
+    ref.listen<AsyncValue<MigrationState?>>(userMigrationProvider, (previous, next) {
       final uid = ref.read(currentUserIdProvider);
-      final migration = valueToHydrate(
-        next,
-        uid: uid,
-        hydratedUid: ref.read(migrationHydratedForUidProvider),
-      );
+      final migration = valueToHydrate(next, uid: uid, hydratedUid: ref.read(migrationHydratedForUidProvider));
       if (migration == null || uid == null) return;
       ref.read(migrationStateProvider.notifier).state = migration;
       ref.read(migrationHydratedForUidProvider.notifier).state = uid;
     });
 
     // 作成済みカードも同様に、ユーザーごとに1回だけFirestoreから復元する。
-    ref.listen<AsyncValue<List<UserCard>>>(userCardsFirestoreProvider, (
-      previous,
-      next,
-    ) {
+    ref.listen<AsyncValue<List<UserCard>?>>(userCardsFirestoreProvider, (previous, next) {
       final uid = ref.read(currentUserIdProvider);
-      final cards = valueToHydrate(
-        next,
-        uid: uid,
-        hydratedUid: ref.read(myCardsHydratedForUidProvider),
-      );
+      final cards = valueToHydrate(next, uid: uid, hydratedUid: ref.read(myCardsHydratedForUidProvider));
       if (cards == null || uid == null) return;
       ref.read(myCardsProvider.notifier).state = cards;
       ref.read(myCardsHydratedForUidProvider.notifier).state = uid;
@@ -170,30 +150,42 @@ class CardRivalsApp extends ConsumerWidget {
 
 /// アプリの全ルート（画面遷移テストから参照するため公開）。
 final List<RouteBase> appRoutes = [
-  GoRoute(path: '/', builder: (context, state) => const MainShell()),
-  GoRoute(
-    path: '/settings',
-    builder: (context, state) => const SettingsScreen(),
-  ),
-  GoRoute(path: '/shop', builder: (context, state) => const ShopScreen()),
-  GoRoute(
-    path: '/bonus-detail',
-    builder: (context, state) => const BonusDetailScreen(),
-  ),
-  GoRoute(
-    path: '/purchase-history',
-    builder: (context, state) => const PurchaseHistoryScreen(),
-  ),
-  GoRoute(
-    path: '/terms',
-    builder: (context, state) => const TermsOfServiceScreen(),
-  ),
-  GoRoute(path: '/contact', builder: (context, state) => const ContactScreen()),
-  GoRoute(path: '/season', builder: (context, state) => const SeasonScreen()),
-  GoRoute(
-    path: '/explanation',
-    builder: (context, state) => const ExplanationScreen(),
-  ),
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const MainShell(),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/shop',
+      builder: (context, state) => const ShopScreen(),
+    ),
+    GoRoute(
+      path: '/bonus-detail',
+      builder: (context, state) => const BonusDetailScreen(),
+    ),
+    GoRoute(
+      path: '/purchase-history',
+      builder: (context, state) => const PurchaseHistoryScreen(),
+    ),
+    GoRoute(
+      path: '/terms',
+      builder: (context, state) => const TermsOfServiceScreen(),
+    ),
+    GoRoute(
+      path: '/contact',
+      builder: (context, state) => const ContactScreen(),
+    ),
+    GoRoute(
+      path: '/season',
+      builder: (context, state) => const SeasonScreen(),
+    ),
+    GoRoute(
+      path: '/explanation',
+      builder: (context, state) => const ExplanationScreen(),
+    ),
 ];
 
 final _router = GoRouter(routes: appRoutes);

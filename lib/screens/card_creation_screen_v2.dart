@@ -532,7 +532,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
           Center(
             child: SizedBox(
               width: 160,
-              child: CardWidget(
+              child: MyCardWidget(
                 card: PlayCard(
                   cardId: 'preview',
                   attribute: _attribute ?? 'joy',

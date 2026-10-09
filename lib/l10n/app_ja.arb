@@ -978,5 +978,19 @@
   "deckPreset_errSourceRequired": "ソースプリセットIDと新しい名前が必要です",
   "deckPreset_errSourceNotFound": "ソースプリセットが見つかりません",
   "deckPreset_errNotSignedIn": "ログインしていません",
-  "card_unknownName": "名前不明のカード"
+  "card_unknownName": "名前不明のカード",
+  "shop_framesHeader": "🖼️ カードフレーム",
+  "shop_framesDesc": "自分のカードを飾る枠です。対戦相手には表示されません。",
+  "shop_frameOwned": "所持済み",
+  "shop_frameEquipped": "装着中",
+  "shop_frameEquip": "装着",
+  "shop_frameUnequip": "外す",
+  "shop_frameConfirmTitle": "フレームを購入しますか？",
+  "shop_frameConfirmBody": "「{name}」を{price}で購入します。",
+  "@shop_frameConfirmBody": {"placeholders":{"name":{},"price":{}}},
+  "shop_frameCancel": "キャンセル",
+  "shop_frameBuy": "購入",
+  "shop_frameInsufficientCoins": "コインが不足しています",
+  "shop_frameBought": "フレームを購入しました！",
+  "shop_frameFailed": "処理できませんでした。通信状態を確認して、しばらくしてからもう一度お試しください。"
 }

@@ -978,5 +978,19 @@
   "deckPreset_errSourceRequired": "A source preset and a new name are required",
   "deckPreset_errSourceNotFound": "Source preset not found",
   "deckPreset_errNotSignedIn": "You are not signed in",
-  "card_unknownName": "Unknown card"
+  "card_unknownName": "Unknown card",
+  "shop_framesHeader": "🖼️ Card Frames",
+  "shop_framesDesc": "Decorate your own cards. Opponents can't see your frame.",
+  "shop_frameOwned": "Owned",
+  "shop_frameEquipped": "Equipped",
+  "shop_frameEquip": "Equip",
+  "shop_frameUnequip": "Remove",
+  "shop_frameConfirmTitle": "Buy this frame?",
+  "shop_frameConfirmBody": "Buy \"{name}\" for {price}?",
+  "@shop_frameConfirmBody": {"placeholders":{"name":{},"price":{}}},
+  "shop_frameCancel": "Cancel",
+  "shop_frameBuy": "Buy",
+  "shop_frameInsufficientCoins": "Not enough coins",
+  "shop_frameBought": "Frame purchased!",
+  "shop_frameFailed": "Couldn't complete that. Please check your connection and try again later."
 }

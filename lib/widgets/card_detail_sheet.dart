@@ -76,7 +76,7 @@ class CardDetailSheet extends ConsumerWidget {
           Row(
             children: [
               // カードプレビュー
-              SizedBox(width: 120, child: CardWidget(card: displayCard, size: 120)),
+              SizedBox(width: 120, child: MyCardWidget(card: displayCard, size: 120)),
               const SizedBox(width: Kingdom.spaceXl),
               // 詳細情報
               Expanded(

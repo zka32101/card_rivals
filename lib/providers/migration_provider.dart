@@ -49,9 +49,9 @@ final migrationStateProvider = StateProvider<MigrationState>((ref) => const Migr
 final migrationHydratedForUidProvider = StateProvider<String?>((ref) => null);
 
 // Firestore統合版：ユーザーの属性移住状態
-final userMigrationProvider = FutureProvider<MigrationState>((ref) async {
+final userMigrationProvider = FutureProvider<MigrationState?>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
-  if (userId == null) return const MigrationState();
+  if (userId == null) return null; // uid未確定は実データなし(初期値をdataで返さない)
 
   try {
     final doc = await FirebaseFirestore.instance
@@ -64,7 +64,7 @@ final userMigrationProvider = FutureProvider<MigrationState>((ref) async {
     return MigrationState.fromMap(doc.data() ?? {});
   } catch (e) {
     debugPrint('Error loading migration state: $e');
-    return const MigrationState();
+    rethrow; // 失敗を初期値で代用しない(ハイドレートさせない)
   }
 });
 

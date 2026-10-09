@@ -8,6 +8,23 @@ import 'auth_provider.dart';
 import 'collection_provider.dart';
 import 'game_state_provider.dart';
 
+// サーバー側で残高/所持カードが変わった後に、ローカル状態をFirestoreの最新値へ更新する。
+// StateProviderをref.refreshすると初期値(コイン100・未受取/カード空)へ戻り、以降の保存で
+// 実データを上書きしてしまうため使わない。取得に失敗したら何もしない(ローカル値を維持)。
+Future<void> reloadWalletFromServer(WidgetRef ref) async {
+  try {
+    final w = await ref.refresh(userWalletProvider.future);
+    if (w != null) ref.read(walletProvider.notifier).state = w;
+  } catch (_) {}
+}
+
+Future<void> reloadMyCardsFromServer(WidgetRef ref) async {
+  try {
+    final c = await ref.refresh(userCardsFirestoreProvider.future);
+    if (c != null) ref.read(myCardsProvider.notifier).state = c;
+  } catch (_) {}
+}
+
 // ===== Constants =====
 const int kCardListingPlatformFeePercent = 10;
 const int kCardListingMinPrice = 10;
@@ -269,8 +286,8 @@ Future<bool> buyCardFlow(WidgetRef ref, String listingId) async {
     if (result.isNotEmpty && result['success'] == true) {
       // Refresh all relevant providers
       ref.refresh(activeCardListingsProvider);
-      ref.refresh(myCardsProvider);
-      ref.refresh(walletProvider);
+      await reloadMyCardsFromServer(ref);
+      await reloadWalletFromServer(ref);
       ref.refresh(marketplaceHistoryProvider);
       return true;
     }
@@ -355,7 +372,7 @@ Future<bool> respondToTradeOfferFlow(WidgetRef ref, String offerId, String actio
 
     if (result.isNotEmpty && result['success'] == true) {
       ref.refresh(myTradeOffersProvider);
-      ref.refresh(myCardsProvider);
+      await reloadMyCardsFromServer(ref);
       if (action == 'accept') {
         ref.refresh(marketplaceHistoryProvider);
       }
@@ -394,7 +411,7 @@ Future<bool> fillCurrencyListingFlow(WidgetRef ref, String listingId, {int? amou
 
     if (result.isNotEmpty && result['success'] == true) {
       ref.refresh(activeCurrencyListingsProvider);
-      ref.refresh(walletProvider);
+      await reloadWalletFromServer(ref);
       ref.refresh(marketplaceHistoryProvider);
       return true;
     }

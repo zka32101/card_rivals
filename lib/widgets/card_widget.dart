@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../models/card_frame.dart';
+import '../providers/card_frame_provider.dart';
 import '../models/card_skill.dart';
 import '../models/user_card.dart';
 import '../theme/kingdom_theme.dart';
@@ -100,6 +104,11 @@ class CardWidget extends StatelessWidget {
   /// 属性ラベルも省いて小さいマスでも見切れないようにする。
   final bool compact;
 
+  /// 購入済みカードフレームのID。nullなら従来表示と完全に同一。
+  /// 指定時はカード本体をフレームの開口部に収め、外側にフレーム画像を描く
+  /// （全体の幅は[size]に揃え、縦が収まらない場合は縮小）。
+  final String? frameId;
+
   const CardWidget({
     super.key,
     required this.card,
@@ -107,15 +116,49 @@ class CardWidget extends StatelessWidget {
     this.isSelected = false,
     this.onTap,
     this.compact = false,
+    this.frameId,
   });
 
   @override
   Widget build(BuildContext context) {
     // カードは size で固定寸法のアート扱い。端末の文字拡大で中身が溢れないよう拡大しない。
-    return MediaQuery.withNoTextScaling(child: _buildCard(context));
+    return MediaQuery.withNoTextScaling(child: _buildFramed(context));
   }
 
-  Widget _buildCard(BuildContext context) {
+  Widget _buildFramed(BuildContext context) {
+    final frame = cardFrameById(frameId);
+    if (frame == null) return _buildCard(context, size);
+    final hole = frame.holeNorm;
+    // カード本体は開口部の幅で描くが、幅が狭すぎると文字が収まらないため、基準幅
+    // (150) 以上で組んでから全体を[size]幅へ縮小/拡大する（比率は保つ）。
+    final inner = (size * hole.width) < 150.0 ? 150.0 : size * hole.width;
+    return SizedBox(
+      width: size,
+      child: FittedBox(
+        fit: BoxFit.contain,
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          width: inner / hole.width,
+          child: Stack(
+            children: [
+              _FrameHoleLayout(hole: hole, child: _buildCard(context, inner)),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Image.asset(
+                    frame.assetPath,
+                    fit: BoxFit.fill,
+                    errorBuilder: (_, e, s) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, double size) {
     final attr = card.attribute;
     final accent = _attrPrimary(attr);
     final rColor = rarityColor(card.rarity);
@@ -213,6 +256,72 @@ class CardWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+/// カード本体（child）を、フレーム画像の開口部[hole]に収まるように配置し、
+/// 全体サイズをフレーム全体の大きさ（本体サイズ ÷ 開口部比率）にするレイアウト。
+class _FrameHoleLayout extends SingleChildRenderObjectWidget {
+  final FrameHole hole;
+  const _FrameHoleLayout({required this.hole, required Widget child}) : super(child: child);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderFrameHole(hole);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderFrameHole renderObject) {
+    renderObject.hole = hole;
+  }
+}
+
+class _RenderFrameHole extends RenderShiftedBox {
+  _RenderFrameHole(this._hole) : super(null);
+  FrameHole _hole;
+  set hole(FrameHole v) {
+    if (v == _hole) return;
+    _hole = v;
+    markNeedsLayout();
+  }
+
+  @override
+  void performLayout() {
+    final c = child;
+    if (c == null) {
+      size = constraints.smallest;
+      return;
+    }
+    c.layout(const BoxConstraints(), parentUsesSize: true);
+    final w = c.size.width / _hole.width;
+    final h = c.size.height / _hole.height;
+    size = constraints.constrain(Size(w, h));
+    (c.parentData! as BoxParentData).offset = Offset(w * _hole.left, h * _hole.top);
+  }
+}
+
+/// 自分のカード表示用。装着中のカードフレームを自動で適用する。
+class MyCardWidget extends ConsumerWidget {
+  final PlayCard card;
+  final double size;
+  final bool isSelected;
+  final VoidCallback? onTap;
+  final bool compact;
+  const MyCardWidget({
+    super.key,
+    required this.card,
+    this.size = 150,
+    this.isSelected = false,
+    this.onTap,
+    this.compact = false,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => CardWidget(
+        card: card,
+        size: size,
+        isSelected: isSelected,
+        onTap: onTap,
+        compact: compact,
+        frameId: ref.watch(equippedFrameIdProvider),
+      );
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

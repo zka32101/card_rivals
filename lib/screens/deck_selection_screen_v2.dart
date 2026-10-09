@@ -212,7 +212,7 @@ class _DeckSelectionScreenV2State extends ConsumerState<DeckSelectionScreenV2> {
                         onLongPress: () => showCardDetailSheet(context, card),
                         child: Stack(
                           children: [
-                            CardWidget(
+                            MyCardWidget(
                               card: card,
                               compact: true,
                               isSelected: isSelected,
