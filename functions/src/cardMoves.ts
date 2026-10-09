@@ -37,25 +37,25 @@ export const MOVES: Record<string, MoveSpec> = {
   heal: {...NONE, interval: 3, healHp: 1},
 };
 
-// レア度(cost)ごとの付与確率と抽選プール。N(cost1)は付与なし。
-// 強くなりすぎないよう、高レア度でも確率付与にしている。
-const MILD_MOVES = ["iron_wall", "tailwind", "rally", "heal"];
-const MID_MOVES = [...MILD_MOVES, "slash", "pierce", "flinch", "shadow_step"];
-const ALL_MOVES = [...MID_MOVES, "heavy_blow", "weak_point"];
+// わざの付与。ステータス予算が全レア度で同じなのと同様に、わざもレア度で強さに差をつけない:
+// - 抽選プールは全レア度で共通（URだけが強いわざを持つ、ということは無い）
+// - 付与確率の差は小さい（N 30% 〜 UR 45%）ので、Nでも「わざ持ち」を引ける
+// レア度の差は主にスキルの有無と希少性で表現し、勝敗を決めるほどの差にはしない。
+const MOVE_POOL = [
+  "slash", "pierce", "heavy_blow", "weak_point",
+  "iron_wall", "tailwind", "rally", "flinch", "shadow_step", "heal",
+];
+
+const MOVE_CHANCE_BY_COST: Record<number, number> = {
+  1: 0.30, // N
+  2: 0.35, // R
+  3: 0.35, // R
+  4: 0.40, // SR
+  5: 0.45, // UR
+};
 
 export function moveIdForCostTier(cost: number): string | null {
-  let chance = 0;
-  let pool: string[] = [];
-  if (cost === 2 || cost === 3) {
-    chance = 0.2; // R
-    pool = MILD_MOVES;
-  } else if (cost === 4) {
-    chance = 0.4; // SR
-    pool = MID_MOVES;
-  } else if (cost === 5) {
-    chance = 0.7; // UR
-    pool = ALL_MOVES;
-  }
-  if (pool.length === 0 || Math.random() >= chance) return null;
-  return pool[Math.floor(Math.random() * pool.length)];
+  const chance = MOVE_CHANCE_BY_COST[cost] ?? 0;
+  if (Math.random() >= chance) return null;
+  return MOVE_POOL[Math.floor(Math.random() * MOVE_POOL.length)];
 }
