@@ -79,6 +79,7 @@ card_rivals/
 - `.github/workflows/ios-build.yml` - iOS CI (PR時に自動実行)
 - `.github/workflows/claude.yml` - Claude Code 統合
 - `.github/workflows/deploy.yml` - デプロイ設定
+- `.github/workflows/deploy-functions.yml` - Cloud Functions 本番デプロイ（手動実行のみ。要 `FIREBASE_PROJECT_ID` / `FIREBASE_SERVICE_ACCOUNT_JSON` シークレット）
 
 ### CI 検査項目
 - iOS ビルド（flutter analyze, flutter test）
