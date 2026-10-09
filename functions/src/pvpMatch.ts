@@ -24,18 +24,19 @@ interface OpponentCard {
   defensePower: number;
   speed: number;
   nameJp: string;
+  nameEn: string;
 }
 
 // シードカードの一部を流用した対戦相手プール（属性バランス良く採用）
 const OPPONENT_POOL: OpponentCard[] = [
-  {cardId: "anger_c2_001", attribute: "anger", cost: 2, attackPower: 14, defensePower: 6, speed: 5, nameJp: "怒りの王"},
-  {cardId: "anger_c2_003", attribute: "anger", cost: 2, attackPower: 8, defensePower: 8, speed: 9, nameJp: "怒りの炎"},
-  {cardId: "sadness_c2_001", attribute: "sadness", cost: 2, attackPower: 12, defensePower: 8, speed: 5, nameJp: "悲しみの王"},
-  {cardId: "sadness_c2_004", attribute: "sadness", cost: 2, attackPower: 5, defensePower: 7, speed: 13, nameJp: "泪の精"},
-  {cardId: "joy_c2_001", attribute: "joy", cost: 2, attackPower: 14, defensePower: 6, speed: 5, nameJp: "光の騎士"},
-  {cardId: "joy_c2_003", attribute: "joy", cost: 2, attackPower: 8, defensePower: 8, speed: 9, nameJp: "幸せの輪"},
-  {cardId: "anger_c3_003", attribute: "anger", cost: 3, attackPower: 10, defensePower: 5, speed: 15, nameJp: "獄炎の戦士"},
-  {cardId: "sadness_c3_003", attribute: "sadness", cost: 3, attackPower: 9, defensePower: 10, speed: 11, nameJp: "泪の魔女"},
+  {cardId: "anger_c2_001", attribute: "anger", cost: 2, attackPower: 14, defensePower: 6, speed: 5, nameJp: "怒りの王", nameEn: "King of Anger"},
+  {cardId: "anger_c2_003", attribute: "anger", cost: 2, attackPower: 8, defensePower: 8, speed: 9, nameJp: "怒りの炎", nameEn: "Flame of Wrath"},
+  {cardId: "sadness_c2_001", attribute: "sadness", cost: 2, attackPower: 12, defensePower: 8, speed: 5, nameJp: "悲しみの王", nameEn: "King of Sadness"},
+  {cardId: "sadness_c2_004", attribute: "sadness", cost: 2, attackPower: 5, defensePower: 7, speed: 13, nameJp: "泪の精", nameEn: "Spirit of Tears"},
+  {cardId: "joy_c2_001", attribute: "joy", cost: 2, attackPower: 14, defensePower: 6, speed: 5, nameJp: "光の騎士", nameEn: "Knight of Light"},
+  {cardId: "joy_c2_003", attribute: "joy", cost: 2, attackPower: 8, defensePower: 8, speed: 9, nameJp: "幸せの輪", nameEn: "Circle of Joy"},
+  {cardId: "anger_c3_003", attribute: "anger", cost: 3, attackPower: 10, defensePower: 5, speed: 15, nameJp: "獄炎の戦士", nameEn: "Hellfire Warrior"},
+  {cardId: "sadness_c3_003", attribute: "sadness", cost: 3, attackPower: 9, defensePower: 10, speed: 11, nameJp: "泪の魔女", nameEn: "Witch of Tears"},
 ];
 
 const OPPONENT_NAME_BASES = [

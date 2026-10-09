@@ -10,6 +10,7 @@ import '../widgets/move_effects.dart';
 import '../services/battle_engine.dart';
 import '../services/functions_service.dart';
 import '../providers/game_state_provider.dart';
+import '../data/opponent_pool_names.dart';
 import '../providers/season_provider.dart';
 import '../services/sound_service.dart';
 import '../widgets/card_widget.dart';
@@ -198,7 +199,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
       final deckData = (match['opponentDeck'] as List).cast<Map>();
       // サーバーはnameJpしか返さないため、シードカードは手元の英語名で補う
       // （無ければサーバーの名前にフォールバック）。
-      final seedEn = {for (final c in ref.read(allPlayCardsProvider)) c.cardId: c.nameEn};
+      final seedEn = {for (final c in ref.read(allPlayCardsProvider)) c.cardId: c.nameEn, ...opponentPoolNamesEn};
       _opponentDeck = deckData
           .map((c) => PlayCard(
                 cardId: c['cardId'] as String,
