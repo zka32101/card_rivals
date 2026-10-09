@@ -11,9 +11,18 @@ interface GenerateCardNameRequest {
   defense: number;
   speed: number;
   tone: string;
+  language?: string; // "ja"(既定) | "en"
 }
 
 const ATTR_LABEL: Record<string, string> = {joy: "喜", anger: "怒", sadness: "哀"};
+const ATTR_LABEL_EN: Record<string, string> = {joy: "Joy", anger: "Anger", sadness: "Sadness"};
+const TONE_LABEL_EN: Record<string, string> = {
+  cute: "cute",
+  cool: "cool",
+  dark: "dark and ominous",
+  elegant: "elegant",
+  normal: "well-balanced",
+};
 const TONE_LABEL: Record<string, string> = {
   cute: "かわいい",
   cool: "かっこいい",
@@ -40,7 +49,21 @@ export const generateCardName = onCall(
     const attrLabel = ATTR_LABEL[attribute] ?? "喜";
     const toneLabel = TONE_LABEL[tone] ?? TONE_LABEL.normal;
 
-    const prompt = `感情の国のカードゲーム「Card Rivals」用のカード名を考えてください。
+    const isEn = data.language === "en";
+    const promptEn = `Come up with card names for "Card Rivals", a card game set in a land of emotions.
+Attribute: ${ATTR_LABEL_EN[attribute] ?? "Joy"} (${attribute})
+Cost: ${cost} / Attack: ${attack} / Defense: ${defense} / Speed: ${speed}
+Tone: ${TONE_LABEL_EN[tone] ?? TONE_LABEL_EN.normal}
+
+Suggest 3 card names that fit these stats and the tone. Each name must be in English, 2 to 4 words.
+Do not use Japanese characters.
+
+Format:
+1. Name 1
+2. Name 2
+3. Name 3`;
+
+    const promptJa = `感情の国のカードゲーム「Card Rivals」用のカード名を考えてください。
 属性: ${attrLabel}（${attribute}）
 コスト: ${cost} / 攻撃力: ${attack} / 防御力: ${defense} / 素早さ: ${speed}
 トーン: ${toneLabel}
@@ -51,6 +74,7 @@ export const generateCardName = onCall(
 1. 名前1
 2. 名前2
 3. 名前3`;
+    const prompt = isEn ? promptEn : promptJa;
 
     try {
       const response = await fetch("https://api.anthropic.com/v1/messages", {

@@ -10,6 +10,7 @@ import '../models/user_card.dart';
 import '../models/card_move.dart';
 import '../models/card_skill.dart';
 import '../models/card_design_words.dart';
+import '../models/card_design_words_en.dart';
 import '../providers/auth_provider.dart';
 import '../providers/collection_provider.dart';
 import '../providers/game_state_provider.dart';
@@ -206,6 +207,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
   }
 
   Widget _buildDesignStep(AppLocalizations t) {
+    final lang = t.localeName;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -225,7 +227,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                   runSpacing: 6,
                   children: _selectedDesignWords.map((word) {
                     return Chip(
-                      label: IconText(word),
+                      label: IconText(designWordLabel(word, lang)),
                       onDeleted: () => setState(() => _selectedDesignWords.remove(word)),
                       backgroundColor: Kingdom.gilt,
                       labelStyle: TextStyle(color: Kingdom.night, fontWeight: FontWeight.bold),
@@ -264,7 +266,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
               _buildCategoryChip(null, t.cardCreation_designCategoryAll),
               for (final category in kCardDesignWordsByCategory.keys) ...[
                 const SizedBox(width: 6),
-                _buildCategoryChip(category, category),
+                _buildCategoryChip(category, designCategoryLabel(category, lang)),
               ],
             ],
           ),
@@ -276,7 +278,9 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
               : kCardDesignWordsByCategory[_designCategoryFilter]!;
           final filteredWords = _designSearchQuery.isEmpty
               ? pool
-              : pool.where((w) => w.contains(_designSearchQuery)).toList();
+              : pool.where((w) =>
+                  w.contains(_designSearchQuery) ||
+                  designWordLabel(w, lang).toLowerCase().contains(_designSearchQuery.toLowerCase())).toList();
           if (filteredWords.isEmpty) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: Kingdom.spaceXl),
@@ -322,7 +326,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
                 ),
                 child: Center(
                   child: IconText(
-                    word,
+                    designWordLabel(word, lang),
                     style: TextStyle(
                       fontSize: Kingdom.textCaption,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -767,6 +771,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
         defense: _defense,
         speed: _speed,
         tone: _tone,
+        language: AppLocalizations.of(context)!.localeName,
       );
       if (!mounted) return;
       setState(() {
@@ -888,7 +893,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
         defensePower: _defense,
         speed: _speed,
         nameJp: _selectedName ?? t.cardCreation_defaultCardName,
-        nameEn: '',
+        nameEn: _selectedName ?? t.cardCreation_defaultCardName,
       );
       // レア度はまだサーバー抽選前なので、画像は仮のレア度(_cost)で生成する
       // （演出上の見た目のみに影響し、実際に付与されるレア度とは無関係）。
@@ -957,7 +962,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       defensePower: _defense,
       speed: _speed,
       nameJp: _selectedName ?? t.cardCreation_defaultCardName,
-      nameEn: '',
+      nameEn: _selectedName ?? t.cardCreation_defaultCardName,
       imageUrl: imageUrl,
       coCreatorName: coCreatorName.isEmpty ? null : coCreatorName,
       skillId: serverSkillId,

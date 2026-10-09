@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 「感情の国」ファンタジー王国 デザインシステム
@@ -40,11 +41,11 @@ class Kingdom {
         _ => bronze,
       };
 
-  static String attributeRealm(String? attribute) => switch (attribute) {
-        'joy' => '黄金の大陸',
-        'anger' => '火山の大陸',
-        'sadness' => '深夜の森',
-        _ => '感情の国',
+  static String attributeRealm(String? attribute, AppLocalizations t) => switch (attribute) {
+        'joy' => t.cardCreation_attrJoyRealm,
+        'anger' => t.cardCreation_attrAngerRealm,
+        'sadness' => t.cardCreation_attrSadnessRealm,
+        _ => t.kingdom_defaultRealm,
       };
 
   static List<Color> attributeGradient(String? attribute) => switch (attribute) {

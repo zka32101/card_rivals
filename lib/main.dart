@@ -77,9 +77,11 @@ void main() async {
     // 広告SDKの初期化失敗でもアプリ本体は止めない（無料版でも広告なしで遊べる）
     debugPrint('AdService initialize failed: $e');
   }
+  final initialLocale = await loadSavedLocale();
   runApp(
-    const ProviderScope(
-      child: CardRivalsApp(),
+    ProviderScope(
+      overrides: [localeProvider.overrideWith((ref) => initialLocale)],
+      child: const CardRivalsApp(),
     ),
   );
 }
@@ -90,6 +92,8 @@ class CardRivalsApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
+    // 言語設定の変更を端末に保存（再起動後も維持）
+    ref.listen<Locale>(localeProvider, (previous, next) => saveLocale(next));
 
     // Firestoreに保存済みのウォレットを、ユーザーごとに1回だけ
     // ローカルのwalletProviderへ反映する（未反映のままだと再起動のたびに

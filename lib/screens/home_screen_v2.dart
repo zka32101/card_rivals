@@ -118,7 +118,7 @@ class _HomeScreenV2State extends ConsumerState<HomeScreenV2> {
               child: SizedBox(
                 height: Kingdom.minTapTarget,
                 child: Center(
-                  child: _AppBarChip(text: '${rank.tierEmoji} ${rank.tierLabel}', color: Kingdom.sadnessIndigo),
+                  child: _AppBarChip(text: '${rank.tierEmoji} ${rank.tierLabelOf(AppLocalizations.of(context)!)}', color: Kingdom.sadnessIndigo),
                 ),
               ),
             ),
