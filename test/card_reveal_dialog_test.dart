@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:card_rivals/l10n/app_localizations.dart';
 import 'package:card_rivals/models/user_card.dart';
@@ -23,7 +24,8 @@ void main() {
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(
-      MaterialApp(
+      ProviderScope(
+        child: MaterialApp(
         locale: const Locale('ja'),
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -42,6 +44,7 @@ void main() {
             ),
           ),
         ),
+      ),
       ),
     );
 

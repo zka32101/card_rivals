@@ -276,7 +276,7 @@ class _CardRevealDialogState extends State<CardRevealDialog>
   Widget _buildFront() {
     return Stack(
       children: [
-        SizedBox(width: 170, child: CardWidget(card: widget.card, size: 170)),
+        SizedBox(width: 170, child: MyCardWidget(card: widget.card, size: 170)),
         // 斜めに走るシャイン
         Positioned.fill(
           child: ClipRRect(
