@@ -1,0 +1,115 @@
+name: Deploy Cloud Functions
+
+# Firebase Cloud Functions（functions/）を本番へデプロイする。
+# 本番に影響するため、タグやpushでは自動実行せず、Actionsタブからの手動実行のみ。
+#
+# 必要なリポジトリシークレット（Settings > Secrets and variables > Actions）:
+#   FIREBASE_PROJECT_ID            デプロイ先のFirebaseプロジェクトID
+#   FIREBASE_SERVICE_ACCOUNT_JSON  サービスアカウントキー（JSONそのままの中身）
+#     付与するロールの目安: Cloud Functions Admin / Service Account User /
+#     Cloud Build Editor / Artifact Registry Writer / Firebase Rules Admin(必要時)
+#
+# 承認ゲートを付けたい場合は、Settings > Environments で `production-functions` を作成し、
+# Required reviewers を設定する（未作成でも実行は可能だが承認は不要になる）。
+
+on:
+  workflow_dispatch:
+    inputs:
+      functions:
+        description: 'デプロイする関数名（カンマ区切り。空なら全関数。例: createCard,pvpBattle,generateCardImage）'
+        required: false
+        default: ''
+        type: string
+
+# 同時デプロイを防ぐ（後続は待機）
+concurrency:
+  group: deploy-functions
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production-functions
+    timeout-minutes: 30
+    env:
+      FIREBASE_TOOLS_VERSION: '15.33.0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check required secrets
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          missing=0
+          if [ -z "$FIREBASE_PROJECT_ID" ]; then
+            echo "::error::Secret FIREBASE_PROJECT_ID is not set (Settings > Secrets and variables > Actions)."
+            missing=1
+          fi
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error::Secret FIREBASE_SERVICE_ACCOUNT_JSON is not set (service account key JSON)."
+            missing=1
+          fi
+          exit $missing
+
+      - name: Show runtime versions
+        run: |
+          node --version
+          npm --version
+
+      - name: Install dependencies
+        working-directory: functions
+        run: npm ci
+
+      # デプロイ前にTypeScriptのビルドを通して、壊れたコードを本番へ出さない
+      - name: Build (tsc)
+        working-directory: functions
+        run: npm run build
+
+      # 入力は英数字・アンダースコア・ハイフン・カンマのみ許可（シェルへの混入防止）。
+      # 空なら全関数、指定があれば functions:<名前> 形式へ変換する。
+      - name: Resolve deploy target
+        id: target
+        env:
+          INPUT_FUNCTIONS: ${{ inputs.functions }}
+        run: |
+          if [ -z "$INPUT_FUNCTIONS" ]; then
+            echo "only=functions" >> "$GITHUB_OUTPUT"
+            echo "Deploy target: all functions"
+            exit 0
+          fi
+          if ! printf '%s' "$INPUT_FUNCTIONS" | grep -Eq '^[A-Za-z0-9_,-]+$'; then
+            echo "::error::functions input may only contain letters, digits, '_', '-' and ','."
+            exit 1
+          fi
+          only=$(printf '%s' "$INPUT_FUNCTIONS" | tr ',' '\n' | grep -v '^$' | sed 's/^/functions:/' | paste -sd, -)
+          echo "only=${only}" >> "$GITHUB_OUTPUT"
+          echo "Deploy target: ${only}"
+
+      - name: Write service account credentials
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          key_file="${RUNNER_TEMP}/firebase-sa.json"
+          umask 077
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$key_file"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${key_file}" >> "$GITHUB_ENV"
+
+      # --force は付けない: ソースに無い既存の関数を非対話で削除してしまうのを防ぐため。
+      # 削除対象がある場合はデプロイが失敗するので、その時は手元で確認してから対応する。
+      - name: Deploy functions
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          DEPLOY_ONLY: ${{ steps.target.outputs.only }}
+        run: |
+          npx --yes "firebase-tools@${FIREBASE_TOOLS_VERSION}" deploy \
+            --only "$DEPLOY_ONLY" \
+            --project "$FIREBASE_PROJECT_ID" \
+            --non-interactive
+
+      - name: Remove credentials
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/firebase-sa.json"
