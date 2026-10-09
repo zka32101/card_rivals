@@ -18,9 +18,9 @@ final myCardsProvider = StateProvider<List<UserCard>>((ref) => []);
 final myCardsHydratedForUidProvider = StateProvider<String?>((ref) => null);
 
 // Firestore統合版：ユーザーが作成した全カード
-final userCardsFirestoreProvider = FutureProvider<List<UserCard>>((ref) async {
+final userCardsFirestoreProvider = FutureProvider<List<UserCard>?>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
-  if (userId == null) return [];
+  if (userId == null) return null; // uid未確定は実データなし
 
   try {
     final snapshot = await FirebaseFirestore.instance
@@ -32,7 +32,7 @@ final userCardsFirestoreProvider = FutureProvider<List<UserCard>>((ref) async {
     return snapshot.docs.map((d) => UserCard.fromMap(d.data())).toList();
   } catch (e) {
     debugPrint('Error loading user cards: $e');
-    return [];
+    rethrow; // 失敗を空リストで代用しない(ローカルのカードを消さない)
   }
 });
 

@@ -256,10 +256,12 @@ final walletProvider = StateProvider<WalletState>((ref) => const WalletState());
 final walletHydratedForUidProvider = StateProvider<String?>((ref) => null);
 
 // Firestore統合版：ユーザーのウォレット
-final userWalletProvider = FutureProvider<WalletState>((ref) async {
+// uid未確定(null)のときは「実データなし」としてnullを返す。初期値をdataで返すと、
+// uid確定後にそれが「そのuidの実データ」と取り違えられてハイドレートされてしまう。
+final userWalletProvider = FutureProvider<WalletState?>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) {
-    return const WalletState();
+    return null;
   }
 
   try {
