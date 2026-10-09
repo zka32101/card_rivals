@@ -1,4 +1,5 @@
 // Battle system models
+import 'card_move.dart';
 import 'user_card.dart';
 
 enum Attribute { joy, anger, sadness }
@@ -60,6 +61,8 @@ class BattleLog {
   final bool isDodged;
   // 防御側がdefenseタイプの特性でシールドを発動し、被ダメージを軽減した
   final bool isShielded;
+  // このターンに発動したわざ（null = 不発動）
+  final CardMoveId? moveId;
 
   BattleLog({
     required this.turn,
@@ -73,6 +76,7 @@ class BattleLog {
     this.isCritical = false,
     this.isDodged = false,
     this.isShielded = false,
+    this.moveId,
   });
 
   bool get isAdvantage => multiplier > 1.0;

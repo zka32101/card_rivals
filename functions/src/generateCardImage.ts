@@ -43,7 +43,9 @@ async function checkAndIncrementDailyGenerationCount(userId: string): Promise<vo
 // 属性ごとに複数のキャラクター案を用意し、カード名のハッシュで決定的に選ぶ。
 // 単一の固定文言だと全カードの顔立ちがほぼ同じになってしまうため、
 // アーキタイプ・髪型・髪色・表情・鎧の意匠を変えたバリエーションを持たせる。
-// 前半5個=人型、後半5個=精霊・幻獣・エレメンタル等の非人型（属性の世界観は共通のまま多様化する）。
+// 人型と、精霊・幻獣・エレメンタル等の非人型を混在させている（属性の世界観は共通のまま多様化する）。
+// さらに生成のたびに下の VARIATION_* からランダムに演出（構図・光・差し色・装飾）を足して、
+// 同じ属性・同じ言葉でも毎回違う見た目になるようにしている。
 const ATTR_CHARACTER_VARIANTS: Record<string, string[]> = {
   joy: [
     "radiant fantasy hero, golden glowing aura, warm smile, luminous flowing golden hair, brilliant sun-motif armor",
@@ -56,6 +58,12 @@ const ATTR_CHARACTER_VARIANTS: Record<string, string[]> = {
     "small radiant sun sprite, golden glowing aura, glowing childlike wisp form, trailing sparks of light, no human features",
     "celestial golden serpent deity, golden glowing aura, gleaming scaled coils, crowned with a solar halo, no human features",
     "living sunflower golem, golden glowing aura, petal-crowned wooden body, radiant core glowing within its chest, no human features",
+    "gentle sunlit bard, golden glowing aura, warm laughing smile, curly honey-blonde hair, embroidered golden tunic",
+    "proud dawn archer, golden glowing aura, keen focused gaze, long tied-back amber hair, light radiant leather armor",
+    "wise golden-robed scholar, golden glowing aura, kind knowing smile, white beard and tidy gold circlet, sun-patterned robes",
+    "radiant winged sun angel, golden glowing aura, serene gentle face, feathered golden wings, shining white-gold armor",
+    "playful golden fox spirit, golden glowing aura, bright mischievous eyes, fluffy amber tails tipped with light, no human features",
+    "ancient sun-blessed stag beast, golden glowing aura, antlers wreathed in golden flame, gleaming coat, no human features",
   ],
   anger: [
     "fierce berserker warrior, blazing crimson energy, burning intense eyes, battle-scarred dark armor with flame runes",
@@ -68,6 +76,12 @@ const ATTR_CHARACTER_VARIANTS: Record<string, string[]> = {
     "infernal fire salamander spirit, blazing crimson energy, serpentine flame-wreathed body, ember-trailing tail, no human features",
     "demonic obsidian oni beast, blazing crimson energy, twisted curved horns, smoldering ember-red eyes, no human features",
     "ferocious ember wolf spirit, blazing crimson energy, flame-licked fur, glowing molten claws, no human features",
+    "grim crimson assassin, blazing crimson energy, narrowed cold eyes, hooded dark cloak with ember trim, twin burning blades",
+    "roaring flame knight, blazing crimson energy, fierce battle cry expression, horned crimson helmet, heavy spiked greaves",
+    "scarred veteran general, blazing crimson energy, stern iron stare, grey-streaked red beard, war-torn banner cape",
+    "wild fire-dancer warrior, blazing crimson energy, fierce wild grin, long flowing red hair, ember-lit tribal garb",
+    "colossal obsidian minotaur, blazing crimson energy, glowing cracked horns, smoking nostrils, chained iron armor, no human features",
+    "blazing phoenix-eagle of war, blazing crimson energy, sharp burning talons, wings trailing sparks, no human features",
   ],
   sadness: [
     "serene ethereal mage, soft blue-violet glow, gentle melancholic eyes, midnight robes adorned with silver stars",
@@ -80,17 +94,52 @@ const ATTR_CHARACTER_VARIANTS: Record<string, string[]> = {
     "deep-sea leviathan spirit, soft blue-violet glow, bioluminescent trailing fins, ancient sorrowful eyes, no human features",
     "shadow raven familiar, soft blue-violet glow, midnight feathers dusted with starlight, glowing violet eyes, no human features",
     "weeping willow tree spirit, soft blue-violet glow, drooping star-lit branches, a faint sorrowful face in its bark, no human features",
+    "lonely rain-cloaked traveler, soft blue-violet glow, quiet distant eyes, drenched dark hair, hooded silver-blue cloak",
+    "elegant moon priestess, soft blue-violet glow, tearful serene gaze, long pale hair with crescent crown, flowing pearl-white robes",
+    "gentle sleeping dream knight, soft blue-violet glow, calm closed-eye expression, short dark curls, star-dusted indigo armor",
+    "ghostly lantern-bearer child, soft blue-violet glow, wistful pale face, tattered violet cloak, a glowing blue lantern",
+    "ancient silver owl sage, soft blue-violet glow, deep wise eyes, moonlit feathers like silver leaves, no human features",
+    "drifting jellyfish star spirit, soft blue-violet glow, translucent bell body, trailing glittering tendrils, no human features",
   ],
 };
 
-// カード名+属性から決定的にバリエーションを選ぶ（同じ入力なら常に同じ見た目になる）
-function pickCharacterVariant(attribute: string, seedKey: string): string {
-  const variants = ATTR_CHARACTER_VARIANTS[attribute] ?? ATTR_CHARACTER_VARIANTS["joy"];
-  let hash = 0;
-  for (let i = 0; i < seedKey.length; i++) {
-    hash = (hash * 31 + seedKey.charCodeAt(i)) >>> 0;
-  }
-  return variants[hash % variants.length];
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// キャラクター案は生成のたびにランダムに選ぶ（以前はカード名のハッシュで固定していたため、
+// 同じ名前・言葉なら何度作っても同じ見た目になっていた。作り直しで別の絵になるのが狙い）。
+function pickCharacterVariant(attribute: string): string {
+  return pick(ATTR_CHARACTER_VARIANTS[attribute] ?? ATTR_CHARACTER_VARIANTS["joy"]);
+}
+
+// 生成のたびにランダムに混ぜる演出。属性パレットは崩さずに、構図・光・差し色・装飾を変える。
+const VARIATION_CAMERA = [
+  "close-up bust portrait", "dynamic low-angle heroic shot", "three-quarter view portrait",
+  "full-body standing pose", "dramatic over-the-shoulder glance", "wide shot with the character small against a grand scene",
+  "dynamic diagonal composition mid-action", "symmetrical heraldic frontal composition",
+];
+const VARIATION_LIGHT = [
+  "rim lighting from behind", "soft diffused glow", "dramatic side lighting",
+  "strong backlit halo", "volumetric light rays", "moody chiaroscuro lighting", "sparkling floating light particles",
+];
+const VARIATION_DETAIL = [
+  "intricate engraved ornamental details", "flowing ribbons and billowing cloth", "swirling magical runes in the air",
+  "drifting petals and sparks", "layered translucent veils of light", "delicate filigree patterns",
+];
+const VARIATION_ACCENT: Record<string, string[]> = {
+  joy: ["with soft pink accents", "with fresh emerald green accents", "with sky blue accents", "with warm white and ivory accents", "with deep orange accents"],
+  anger: ["with bright gold accents", "with cold steel grey accents", "with violet accents", "with black and white contrast accents", "with burning orange accents"],
+  sadness: ["with soft pink accents", "with pale emerald accents", "with silver white accents", "with warm amber lantern accents", "with deep purple accents"],
+};
+
+function pickVariation(attribute: string): string {
+  return [
+    pick(VARIATION_CAMERA),
+    pick(VARIATION_LIGHT),
+    pick(VARIATION_DETAIL),
+    pick(VARIATION_ACCENT[attribute] ?? VARIATION_ACCENT["joy"]),
+  ].join(", ");
 }
 
 const ATTR_PALETTE: Record<string, string> = {
@@ -381,8 +430,9 @@ export const generateCardImage = onCall(
     const cardName = (data.cardName ?? "").trim();
 
     // ── ベース要素（属性・レアリティで固定） ──
-    // カード名+属性をシードに人型/非人型を含む10案から決定的に選ぶ（同名同属性なら再生成しても同じ見た目）
-    const character = pickCharacterVariant(attr, `${cardName}:${attr}:${designWords.join(",")}`);
+    // 人型/非人型を含む16案から生成のたびにランダムに選び、構図・光・差し色・装飾もランダムに足す
+    const character = pickCharacterVariant(attr);
+    const variation = pickVariation(attr);
     const palette = ATTR_PALETTE[attr] ?? ATTR_PALETTE["joy"];
     const bg = RARITY_BG[attr]?.[rarity] ?? RARITY_BG["joy"]["n"];
     const pose = TYPE_POSE[cardType] ?? TYPE_POSE["balance"];
@@ -411,6 +461,7 @@ export const generateCardImage = onCall(
     const prompt = [
       keyLead,
       charParts,
+      variation,
       bgParts,
       palette,
       rarityQuality,
@@ -428,10 +479,12 @@ export const generateCardImage = onCall(
     ].join(", ");
 
     // ── 画像生成: Replicate(Flux Schnell)を優先、失敗時はLeonardo(Phoenix 1.0)へフォールバック ──
+    // 毎回異なるseedを渡し、同じプロンプトでも構図が似通わないようにする
+    const seed = Math.floor(Math.random() * 2147483000);
     let imageBuffer: Buffer;
     let providerUsed: "replicate" | "leonardo";
     try {
-      const generated = await generateImageWithFallback(prompt, negativePrompt);
+      const generated = await generateImageWithFallback(prompt, negativePrompt, seed);
       imageBuffer = generated.buffer;
       providerUsed = generated.provider;
     } catch {

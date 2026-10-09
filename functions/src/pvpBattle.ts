@@ -1,6 +1,7 @@
 import {getFirestore, Timestamp, FieldValue} from "firebase-admin/firestore";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {SEED_CARDS} from "./seedCards";
+import {MOVES, MOVE_BUFF_ROUNDS, MoveSpec} from "./cardMoves";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PvPバトル判定（サーバー権威）
@@ -25,13 +26,15 @@ interface CardInput {
   // 作成時にレア度に応じて付与されたスキル（null = スキル無し）。
   // lib/models/card_skill.dart の CardSkillId と同じ文字列表現。
   skillId?: string | null;
+  // 作成時に付与された「わざ」（null = わざ無し）。lib/models/card_move.dart の CardMoveId と同じ文字列。
+  moveId?: string | null;
 }
 
 // スキル効果の係数。lib/models/card_skill.dart の同名定数と同じ値
 // （クライアント側フォールバック battle_engine.dart もこの値を使う）。
-const SKILL_STAT_BONUS_MULTIPLIER = 1.15; // guard_up / power_strike
-const DOUBLE_STRIKE_CHANCE = 0.2;
-const DOUBLE_STRIKE_BONUS = 0.5;
+const SKILL_STAT_BONUS_MULTIPLIER = 1.08; // guard_up / power_strike
+const DOUBLE_STRIKE_CHANCE = 0.1;
+const DOUBLE_STRIKE_BONUS = 0.3;
 
 // カード育成（特訓）のレベルボーナス。lib/models/user_card.dart の
 // kCardLevelAttackBonus/kCardLevelDefenseBonus/kCardLevelSpeedBonus と同じ値。
@@ -60,6 +63,7 @@ async function resolveCustomCard(ownerUid: string, cardId: string): Promise<Card
     defensePower: (data.defensePower ?? 0) + level * CARD_LEVEL_DEFENSE_BONUS,
     speed: (data.speed ?? 0) + level * CARD_LEVEL_SPEED_BONUS,
     skillId: data.skillId ?? null,
+    moveId: data.moveId ?? null,
   };
 }
 
@@ -87,6 +91,7 @@ async function resolveRentedCard(renterUid: string, cardId: string): Promise<Car
     // レンタル契約スナップショット(rentCard.ts)はskillIdを保存していないため、
     // レンタル中カードのスキルは常に無効（見た目のみ引き継ぎ、対戦効果は不発）。
     skillId: data.skillId ?? null,
+    moveId: data.moveId ?? null,
   };
 }
 
@@ -147,6 +152,8 @@ interface BattleLogEntry {
   isCritical: boolean;
   isDodged: boolean;
   isShielded: boolean;
+  // このターンに発動したわざ（null = 不発動）
+  moveId: string | null;
 }
 
 // lib/models/user_card.dart の PlayCard.getCardType() と同じ判定式。
@@ -201,10 +208,37 @@ interface AttackResolution {
   isShielded: boolean;
 }
 
+// 陣営（デッキ側）ごとの状態。わざの使用間隔と、補助わざによる効果（ラウンド単位）を持つ。
+// 各カードは1回しか攻撃しないため、わざの使用制限はカードではなく陣営単位で管理する。
+interface Mod {value: number; through: number}
+interface SideState {
+  attacks: number; // これまでの自陣営の攻撃回数
+  lastMoveAttack: number; // 最後にわざを使った時の攻撃回数（未使用は -Infinity）
+  attackUp: Mod; attackDown: Mod; defenseUp: Mod; speedUp: Mod; speedDown: Mod;
+}
+
+const noMod = (): Mod => ({value: 0, through: -1});
+const newSide = (): SideState => ({
+  attacks: 0, lastMoveAttack: -Infinity,
+  attackUp: noMod(), attackDown: noMod(), defenseUp: noMod(), speedUp: noMod(), speedDown: noMod(),
+});
+const modAt = (m: Mod, round: number): number => (round <= m.through ? m.value : 0);
+const setMod = (m: Mod, value: number, round: number): void => {
+  if (value > 0) {
+    m.value = value;
+    m.through = round + MOVE_BUFF_ROUNDS - 1;
+  }
+};
+const speedFactor = (own: SideState, round: number): number =>
+  1 + modAt(own.speedUp, round) - modAt(own.speedDown, round);
+
 // 1回の攻撃を解決する：防御側の回避→シールド判定 → 攻撃側のクリティカル判定 →
 // 最終ダメージ算出、の順で処理する（lib/services/battle_engine.dart の
 // _resolveAttack と同じ手順・同じ確率）。
-function resolveAttack(attacker: CardInput, defender: CardInput, multiplier: number): AttackResolution {
+function resolveAttack(
+  attacker: CardInput, defender: CardInput, multiplier: number,
+  attackMod = 1, defenseMod = 1, move?: MoveSpec
+): AttackResolution {
   if (getCardType(defender) === "speed" && Math.random() < DODGE_CHANCE) {
     return {damage: 0, isCritical: false, isDodged: true, isShielded: false};
   }
@@ -212,20 +246,21 @@ function resolveAttack(attacker: CardInput, defender: CardInput, multiplier: num
   const critChance = getCardType(attacker) === "attack" ? CRITICAL_CHANCE + TYPE_CRITICAL_BONUS : CRITICAL_CHANCE;
   const isCritical = Math.random() < critChance;
 
-  // パッシブスキル: power_strike(攻撃側)は攻撃力、guard_up(防御側)は防御力を+15%する
-  const effectiveAttack = attacker.skillId === "power_strike" ?
-    attacker.attackPower * SKILL_STAT_BONUS_MULTIPLIER : attacker.attackPower;
-  const effectiveDefense = defender.skillId === "guard_up" ?
-    defender.defensePower * SKILL_STAT_BONUS_MULTIPLIER : defender.defensePower;
+  // パッシブスキル: power_strike(攻撃側)は攻撃力、guard_up(防御側)は防御力を+8%する
+  const effectiveAttack = (attacker.skillId === "power_strike" ?
+    attacker.attackPower * SKILL_STAT_BONUS_MULTIPLIER : attacker.attackPower) * attackMod;
+  const effectiveDefense = (defender.skillId === "guard_up" ?
+    defender.defensePower * SKILL_STAT_BONUS_MULTIPLIER : defender.defensePower) *
+    defenseMod * (1 - (move?.defenseIgnore ?? 0));
 
   const raw = effectiveAttack - effectiveDefense;
-  let effectiveMultiplier = multiplier;
+  let effectiveMultiplier = multiplier * (move?.damageMultiplier ?? 1);
   if (isCritical) effectiveMultiplier *= CRITICAL_MULTIPLIER;
   if (isShielded) effectiveMultiplier *= SHIELD_DAMAGE_REDUCTION;
   let dmg = Math.floor(raw * effectiveMultiplier);
   dmg = dmg < 1 ? 1 : dmg;
 
-  // アクティブスキル: double_strike(攻撃側)は命中時20%の確率で追加50%ダメージ
+  // アクティブスキル: double_strike(攻撃側)は命中時10%の確率で追加30%ダメージ
   if (attacker.skillId === "double_strike" && Math.random() < DOUBLE_STRIKE_CHANCE) {
     dmg += Math.floor(dmg * DOUBLE_STRIKE_BONUS);
   }
@@ -244,53 +279,63 @@ function simulateBattle(
   const logs: BattleLogEntry[] = [];
   const len = Math.min(attackerDeck.length, defenderDeck.length);
   let turn = 1;
+  const attSide = newSide();
+  const defSide = newSide();
+
+  // 1回の攻撃（わざ判定を含む）。actorIsAttacker=true なら attackerDeck 側の打ち手。
+  // attackerDeck側（元の攻撃側プレイヤー）のカードが打つ攻撃だけが移住ボーナス対象。
+  const doAttack = (round: number, actor: CardInput, target: CardInput, actorIsAttacker: boolean) => {
+    const own = actorIsAttacker ? attSide : defSide;
+    const foe = actorIsAttacker ? defSide : attSide;
+    const boosted = actorIsAttacker && actor.attribute === migratedAttribute;
+    const m = effectiveMultiplier(actor.attribute, target.attribute, boosted);
+
+    // わざ：カードが持ち、かつ自陣営の使用間隔を満たしている時のみ発動
+    const spec = actor.moveId ? MOVES[actor.moveId] : undefined;
+    const useMove = spec !== undefined && own.attacks - own.lastMoveAttack >= spec.interval;
+    const attackMod = 1 + modAt(own.attackUp, round) - modAt(own.attackDown, round);
+    const defenseMod = 1 + modAt(foe.defenseUp, round);
+    const r = resolveAttack(actor, target, m, attackMod, defenseMod, useMove ? spec : undefined);
+
+    if (actorIsAttacker) defenderHp -= r.damage; else attackerHp -= r.damage;
+    if (useMove && spec) {
+      own.lastMoveAttack = own.attacks;
+      setMod(own.attackUp, spec.selfAttackUp, round);
+      setMod(own.defenseUp, spec.selfDefenseUp, round);
+      setMod(own.speedUp, spec.selfSpeedUp, round);
+      setMod(foe.attackDown, spec.foeAttackDown, round);
+      setMod(foe.speedDown, spec.foeSpeedDown, round);
+      if (spec.healHp > 0) {
+        if (actorIsAttacker) attackerHp = Math.min(initialHp, attackerHp + spec.healHp);
+        else defenderHp = Math.min(initialHp, defenderHp + spec.healHp);
+      }
+    }
+    own.attacks++;
+
+    logs.push({
+      turn: turn++, attackerCardId: actor.cardId, defenderCardId: target.cardId,
+      damage: r.damage, attackerHp, defenderHp, multiplier: m,
+      isCritical: r.isCritical, isDodged: r.isDodged, isShielded: r.isShielded,
+      moveId: useMove ? actor.moveId ?? null : null,
+    });
+  };
 
   for (let i = 0; i < len; i++) {
     const attCard = attackerDeck[i];
     const defCard = defenderDeck[i];
-    const attackerGoesFirst = attCard.speed >= defCard.speed;
-    // attackerDeck側（元の攻撃側プレイヤー）のカードが打つ攻撃だけが移住ボーナス対象
-    const attCardBoosted = attCard.attribute === migratedAttribute;
+    // スピードが高い方が先攻（補助わざによるスピード増減を反映）
+    const attackerGoesFirst =
+      attCard.speed * speedFactor(attSide, i) >= defCard.speed * speedFactor(defSide, i);
 
     if (attackerGoesFirst) {
-      const m1 = effectiveMultiplier(attCard.attribute, defCard.attribute, attCardBoosted);
-      const r1 = resolveAttack(attCard, defCard, m1);
-      defenderHp -= r1.damage;
-      logs.push({
-        turn: turn++, attackerCardId: attCard.cardId, defenderCardId: defCard.cardId,
-        damage: r1.damage, attackerHp, defenderHp, multiplier: m1,
-        isCritical: r1.isCritical, isDodged: r1.isDodged, isShielded: r1.isShielded,
-      });
+      doAttack(i, attCard, defCard, true);
       if (defenderHp <= 0) break;
-
-      const m2 = effectiveMultiplier(defCard.attribute, attCard.attribute, false);
-      const r2 = resolveAttack(defCard, attCard, m2);
-      attackerHp -= r2.damage;
-      logs.push({
-        turn: turn++, attackerCardId: defCard.cardId, defenderCardId: attCard.cardId,
-        damage: r2.damage, attackerHp, defenderHp, multiplier: m2,
-        isCritical: r2.isCritical, isDodged: r2.isDodged, isShielded: r2.isShielded,
-      });
+      doAttack(i, defCard, attCard, false);
       if (attackerHp <= 0) break;
     } else {
-      const m1 = effectiveMultiplier(defCard.attribute, attCard.attribute, false);
-      const r1 = resolveAttack(defCard, attCard, m1);
-      attackerHp -= r1.damage;
-      logs.push({
-        turn: turn++, attackerCardId: defCard.cardId, defenderCardId: attCard.cardId,
-        damage: r1.damage, attackerHp, defenderHp, multiplier: m1,
-        isCritical: r1.isCritical, isDodged: r1.isDodged, isShielded: r1.isShielded,
-      });
+      doAttack(i, defCard, attCard, false);
       if (attackerHp <= 0) break;
-
-      const m2 = effectiveMultiplier(attCard.attribute, defCard.attribute, attCardBoosted);
-      const r2 = resolveAttack(attCard, defCard, m2);
-      defenderHp -= r2.damage;
-      logs.push({
-        turn: turn++, attackerCardId: attCard.cardId, defenderCardId: defCard.cardId,
-        damage: r2.damage, attackerHp, defenderHp, multiplier: m2,
-        isCritical: r2.isCritical, isDodged: r2.isDodged, isShielded: r2.isShielded,
-      });
+      doAttack(i, attCard, defCard, true);
       if (defenderHp <= 0) break;
     }
   }

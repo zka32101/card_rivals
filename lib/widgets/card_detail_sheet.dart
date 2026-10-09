@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../models/card_move.dart';
 import '../models/card_skill.dart';
 import '../models/user_card.dart';
 import '../providers/collection_provider.dart';
@@ -135,6 +136,11 @@ class CardDetailSheet extends ConsumerWidget {
             _SkillSection(skillId: displayCard.skillId!, accent: rc),
           ],
 
+          if (displayCard.moveId != null) ...[
+            const SizedBox(height: Kingdom.spaceLg),
+            _MoveSection(moveId: displayCard.moveId!, accent: rc),
+          ],
+
           if (liveCard != null) ...[
             const SizedBox(height: Kingdom.spaceLg),
             _TrainingSection(card: liveCard),
@@ -209,6 +215,83 @@ String _skillDesc(AppLocalizations t, CardSkillId id) => switch (id) {
       CardSkillId.powerStrike => t.cardSkill_powerStrikeDesc,
       CardSkillId.doubleStrike => t.cardSkill_doubleStrikeDesc,
     };
+
+String cardMoveName(AppLocalizations t, CardMoveId id) => switch (id) {
+      CardMoveId.slash => t.cardMove_slashName,
+      CardMoveId.pierce => t.cardMove_pierceName,
+      CardMoveId.heavyBlow => t.cardMove_heavyBlowName,
+      CardMoveId.weakPoint => t.cardMove_weakPointName,
+      CardMoveId.ironWall => t.cardMove_ironWallName,
+      CardMoveId.tailwind => t.cardMove_tailwindName,
+      CardMoveId.rally => t.cardMove_rallyName,
+      CardMoveId.flinch => t.cardMove_flinchName,
+      CardMoveId.shadowStep => t.cardMove_shadowStepName,
+      CardMoveId.heal => t.cardMove_healName,
+    };
+
+String cardMoveDesc(AppLocalizations t, CardMoveId id) => switch (id) {
+      CardMoveId.slash => t.cardMove_slashDesc,
+      CardMoveId.pierce => t.cardMove_pierceDesc,
+      CardMoveId.heavyBlow => t.cardMove_heavyBlowDesc,
+      CardMoveId.weakPoint => t.cardMove_weakPointDesc,
+      CardMoveId.ironWall => t.cardMove_ironWallDesc,
+      CardMoveId.tailwind => t.cardMove_tailwindDesc,
+      CardMoveId.rally => t.cardMove_rallyDesc,
+      CardMoveId.flinch => t.cardMove_flinchDesc,
+      CardMoveId.shadowStep => t.cardMove_shadowStepDesc,
+      CardMoveId.heal => t.cardMove_healDesc,
+    };
+
+// カードのわざ表示セクション
+class _MoveSection extends StatelessWidget {
+  final CardMoveId moveId;
+  final Color accent;
+  const _MoveSection({required this.moveId, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    return OrnateFrame(
+      accent: accent,
+      padding: const EdgeInsets.all(Kingdom.spaceMd),
+      child: Row(
+        children: [
+          const IconText('✨', style: TextStyle(fontSize: 22)),
+          const SizedBox(width: Kingdom.spaceMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    IconText(cardMoveName(t, moveId),
+                        style: TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: accent.withValues(alpha: 0.5)),
+                      ),
+                      child: Text(
+                        t.cardMove_badgeLabel,
+                        style: TextStyle(color: accent, fontSize: 9, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                IconText(cardMoveDesc(t, moveId),
+                    style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.65), fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 // カードスキル（パッシブ/アクティブ）表示セクション
 class _SkillSection extends StatelessWidget {

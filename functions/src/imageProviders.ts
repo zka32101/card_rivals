@@ -21,7 +21,7 @@ export const IMAGE_PROVIDER_SECRETS = ["REPLICATE_API_TOKEN", "LEONARDO_API_KEY"
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 1段目: Replicate（コスト最小・Apache 2.0ライセンスのFlux Schnell）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-async function generateImageViaReplicate(prompt: string, negativePrompt: string): Promise<Buffer> {
+async function generateImageViaReplicate(prompt: string, negativePrompt: string, seed?: number): Promise<Buffer> {
   if (!REPLICATE_API_TOKEN) {
     throw new Error("REPLICATE_API_TOKEN が未設定です");
   }
@@ -41,6 +41,7 @@ async function generateImageViaReplicate(prompt: string, negativePrompt: string)
         height: 512,
         num_outputs: 1,
         num_inference_steps: 4,
+        ...(seed !== undefined ? {seed} : {}),
       },
     }),
   });
@@ -71,7 +72,7 @@ async function generateImageViaReplicate(prompt: string, negativePrompt: string)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 2段目: Leonardo（Replicate失敗時のフォールバック）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-async function generateImageViaLeonardo(prompt: string, negativePrompt: string): Promise<Buffer> {
+async function generateImageViaLeonardo(prompt: string, negativePrompt: string, seed?: number): Promise<Buffer> {
   if (!LEONARDO_API_KEY) {
     throw new Error("LEONARDO_API_KEY が未設定です");
   }
@@ -91,6 +92,7 @@ async function generateImageViaLeonardo(prompt: string, negativePrompt: string):
       num_images: 1,
       alchemy: false, // 高品質モード（コスト数倍）はオフ
       photoReal: false, // Phoenixは非対応のため常にfalse
+      ...(seed !== undefined ? {seed} : {}),
     }),
   });
 
@@ -141,15 +143,16 @@ async function generateImageViaLeonardo(prompt: string, negativePrompt: string):
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export async function generateImageWithFallback(
   prompt: string,
-  negativePrompt: string
+  negativePrompt: string,
+  seed?: number
 ): Promise<{buffer: Buffer; provider: "replicate" | "leonardo"}> {
   try {
-    const buffer = await generateImageViaReplicate(prompt, negativePrompt);
+    const buffer = await generateImageViaReplicate(prompt, negativePrompt, seed);
     return {buffer, provider: "replicate"};
   } catch (replicateError) {
     functions.logger.warn("Replicate生成に失敗、Leonardoにフォールバックします", replicateError);
     try {
-      const buffer = await generateImageViaLeonardo(prompt, negativePrompt);
+      const buffer = await generateImageViaLeonardo(prompt, negativePrompt, seed);
       return {buffer, provider: "leonardo"};
     } catch (leonardoError) {
       functions.logger.error("Leonardoフォールバックも失敗", leonardoError);
