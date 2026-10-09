@@ -99,7 +99,7 @@ class CardRivalsApp extends ConsumerWidget {
     // Firestoreに保存済みのウォレットを、ユーザーごとに1回だけ
     // ローカルのwalletProviderへ反映する（未反映のままだと再起動のたびに
     // コイン/ジェムが初期値へリセットされたように見えるバグがあった）。
-    ref.listen<AsyncValue<WalletState>>(userWalletProvider, (previous, next) {
+    ref.listen<AsyncValue<WalletState?>>(userWalletProvider, (previous, next) {
       final uid = ref.read(currentUserIdProvider);
       final wallet = valueToHydrate(next, uid: uid, hydratedUid: ref.read(walletHydratedForUidProvider));
       if (wallet == null || uid == null) return;
@@ -115,7 +115,7 @@ class CardRivalsApp extends ConsumerWidget {
     });
 
     // 属性移住状態も同様に、ユーザーごとに1回だけFirestoreから復元する。
-    ref.listen<AsyncValue<MigrationState>>(userMigrationProvider, (previous, next) {
+    ref.listen<AsyncValue<MigrationState?>>(userMigrationProvider, (previous, next) {
       final uid = ref.read(currentUserIdProvider);
       final migration = valueToHydrate(next, uid: uid, hydratedUid: ref.read(migrationHydratedForUidProvider));
       if (migration == null || uid == null) return;
@@ -124,7 +124,7 @@ class CardRivalsApp extends ConsumerWidget {
     });
 
     // 作成済みカードも同様に、ユーザーごとに1回だけFirestoreから復元する。
-    ref.listen<AsyncValue<List<UserCard>>>(userCardsFirestoreProvider, (previous, next) {
+    ref.listen<AsyncValue<List<UserCard>?>>(userCardsFirestoreProvider, (previous, next) {
       final uid = ref.read(currentUserIdProvider);
       final cards = valueToHydrate(next, uid: uid, hydratedUid: ref.read(myCardsHydratedForUidProvider));
       if (cards == null || uid == null) return;
