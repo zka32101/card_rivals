@@ -6,6 +6,7 @@ import '../models/user_card.dart';
 import '../models/battle_models.dart';
 import '../models/card_move.dart';
 import '../widgets/card_detail_sheet.dart' show cardMoveName;
+import '../widgets/move_effects.dart';
 import '../services/battle_engine.dart';
 import '../services/functions_service.dart';
 import '../providers/game_state_provider.dart';
@@ -124,6 +125,12 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
   late AnimationController _particleController;
   late AnimationController _comebackController;
   late AnimationController _tapEffectController;
+  // わざ発動演出（技名カットイン＋攻撃系の専用エフェクト）
+  late AnimationController _moveController;
+  CardMoveId? _activeMove;
+  Color _moveColor = Colors.white;
+  // ごうりき等の重い技は画面揺れを大きくする
+  double _shakeScale = 1.0;
 
   @override
   void initState() {
@@ -150,6 +157,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
         vsync: this, duration: const Duration(milliseconds: 1100));
     _tapEffectController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 500));
+    _moveController = AnimationController(vsync: this, duration: kMoveEffectDuration);
   }
 
   @override
@@ -163,6 +171,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
     _particleController.dispose();
     _comebackController.dispose();
     _tapEffectController.dispose();
+    _moveController.dispose();
     super.dispose();
   }
 
@@ -237,6 +246,7 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
       _comboCount = 0;
       _spiritCount = 0;
       _showConclusion = false;
+      _activeMove = null;
     });
 
     // サーバー権威でバトル判定（クライアント計算の改ざん防止・レーティング更新もサーバー側で行う）
@@ -305,8 +315,25 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
         if (!mounted) return;
       }
 
-      await Future.delayed(
-          Duration(milliseconds: isFinalTurn ? 1400 : 1100));
+      final preHit = Duration(milliseconds: isFinalTurn ? 1400 : 1100);
+      final moveId = log.moveId;
+      if (moveId != null) {
+        // わざ発動: ヒット演出の少し前から技名カットイン＋攻撃エフェクトを再生し、
+        // エフェクトのヒット位置(kMoveEffectHitPoint)にダメージ演出を合わせる
+        final leadIn = kMoveEffectDuration * kMoveEffectHitPoint;
+        await Future.delayed(preHit > leadIn ? preHit - leadIn : Duration.zero);
+        if (!mounted) return;
+        setState(() {
+          _activeMove = moveId;
+          _moveColor = _attrColor(log.attackingCard?.attribute);
+          _shakeScale = moveId == CardMoveId.heavyBlow ? 2.2 : 1.0;
+        });
+        _moveController.forward(from: 0);
+        await Future.delayed(leadIn);
+      } else {
+        _shakeScale = 1.0;
+        await Future.delayed(preHit);
+      }
       if (!mounted) return;
 
       final newMyHp = log.attackerHp;
@@ -518,7 +545,8 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
               math.sin(_shakeController.value * math.pi * 8) *
                   7 *
                   (1 - _shakeController.value) *
-                  (_isFinalTurn ? 1.6 : 1.0);
+                  (_isFinalTurn ? 1.6 : 1.0) *
+                  _shakeScale;
           final flashAlpha = (_flashController.value < 0.5
                   ? _flashController.value * 2
                   : (1 - _flashController.value) * 2) *
@@ -608,6 +636,15 @@ class _PvpBattleScreenV2State extends ConsumerState<PvpBattleScreenV2>
                     ),
                   ],
                 ),
+                // わざ発動演出（技名カットイン＋攻撃系の専用エフェクト）
+                if (_activeMove != null)
+                  Positioned.fill(
+                    child: MoveEffectOverlay(
+                      animation: _moveController,
+                      moveId: _activeMove!,
+                      color: _moveColor,
+                    ),
+                  ),
                 // 逆転演出
                 if (_showComeback)
                   Positioned.fill(
