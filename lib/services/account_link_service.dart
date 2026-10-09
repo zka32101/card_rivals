@@ -27,7 +27,14 @@ class AccountLinkService {
     _initialized = true;
   }
 
-  static User? get _user => FirebaseAuth.instance.currentUser;
+  static User? get _user {
+    try {
+      return FirebaseAuth.instance.currentUser;
+    } catch (_) {
+      // Firebase未初期化（起動失敗・テスト）でも画面を落とさず「未連携」として扱う
+      return null;
+    }
+  }
 
   /// 現在のアカウントにGoogleが紐付いているか
   static bool get isLinked => _googleInfo != null;

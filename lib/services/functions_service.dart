@@ -1,7 +1,37 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
+/// Cloud Functions呼び出しの薄いラッパー。実機では従来どおり FirebaseFunctions を呼ぶ。
+/// テストでは [FunctionsService.debugHandler] を差し替えるとサーバー関数なしで動かせる。
+class _Functions {
+  const _Functions();
+  _Callable httpsCallable(String name, {HttpsCallableOptions? options}) => _Callable(name, options);
+}
+
+class _CallResult {
+  final dynamic data;
+  const _CallResult(this.data);
+}
+
+class _Callable {
+  final String name;
+  final HttpsCallableOptions? options;
+  const _Callable(this.name, this.options);
+
+  Future<_CallResult> call(Map<String, dynamic> params) async {
+    final handler = FunctionsService.debugHandler;
+    if (handler != null) return _CallResult(await handler(name, params));
+    final callable = FirebaseFunctions.instanceFor(region: 'asia-northeast1').httpsCallable(name, options: options);
+    return _CallResult((await callable.call(params)).data);
+  }
+}
 
 class FunctionsService {
-  static final _functions = FirebaseFunctions.instanceFor(region: 'asia-northeast1');
+  /// テスト専用: 関数名と引数を受け取り、サーバーの戻り値(data)を返す/例外を投げる。
+  @visibleForTesting
+  static Future<dynamic> Function(String name, Map<String, dynamic> params)? debugHandler;
+
+  static const _functions = _Functions();
 
   // カード名生成（Claude Haiku）
   static Future<List<String>> generateCardName({

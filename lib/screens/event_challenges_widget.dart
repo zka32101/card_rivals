@@ -58,18 +58,22 @@ class EventChallengesWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        SizedBox(
-          height: 140,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: activeChallenges.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: _ChallengeCard(challenge: activeChallenges[index]),
-              );
-            },
+        // 高さ固定のカードなので、文字拡大は1.3倍までに抑えて見切れ/溢れを防ぐ
+        MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.3,
+          child: SizedBox(
+            height: 140,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: activeChallenges.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: _ChallengeCard(challenge: activeChallenges[index]),
+                );
+              },
+            ),
           ),
         ),
       ],

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme/kingdom_theme.dart';
+import '../utils/safe_pop.dart';
 import '../l10n/app_localizations.dart';
 
 const String kSupportEmail = 'petitworksdev@gmail.com';
@@ -42,7 +43,7 @@ class ContactScreen extends StatelessWidget {
         backgroundColor: Kingdom.nightDeep,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Kingdom.gilt),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrHome(),
         ),
       ),
       body: Stack(

@@ -312,24 +312,34 @@ class RoyalButton extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(10),
             onTap: onPressed,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 18, color: Kingdom.night),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontFamily: Kingdom.displayFont,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                    letterSpacing: 0.6,
-                    color: disabled ? Colors.grey[400] : Kingdom.night,
+            // 幅の狭いボタン/大きい文字でも溢れないよう、収まらないときは縮小する
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (icon != null) ...[
+                        Icon(icon, size: 18, color: Kingdom.night),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        label,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontFamily: Kingdom.displayFont,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                          letterSpacing: 0.6,
+                          color: disabled ? Colors.grey[400] : Kingdom.night,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
