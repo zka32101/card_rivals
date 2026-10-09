@@ -53,7 +53,7 @@ class BattleEngine {
 
       // わざ：カードが持ち、かつ自陣営の使用間隔を満たしている時のみ発動
       final spec = actor.moveId != null ? kCardMoves[actor.moveId] : null;
-      final useMove = spec != null && own.attacks - own.lastMoveAttack >= spec.interval;
+      final useMove = spec != null && own.attacks >= own.nextMoveAttack;
       final attackMod = 1 + own.attackUp.at(round) - own.attackDown.at(round);
       final defenseMod = 1 + foe.defenseUp.at(round);
       final r = _resolveAttack(actor, target, m,
@@ -64,8 +64,8 @@ class BattleEngine {
       } else {
         attackerHp -= r.damage;
       }
-      if (useMove && spec != null) {
-        own.lastMoveAttack = own.attacks;
+      if (useMove) {
+        own.nextMoveAttack = own.attacks + spec.interval;
         own.attackUp.set(spec.selfAttackUp, round);
         own.defenseUp.set(spec.selfDefenseUp, round);
         own.speedUp.set(spec.selfSpeedUp, round);
@@ -210,7 +210,7 @@ class _Mod {
 // わざの使用間隔はカードではなく陣営単位で管理する。
 class _SideState {
   int attacks = 0; // これまでの自陣営の攻撃回数
-  int lastMoveAttack = -1000; // 最後にわざを使った時の攻撃回数
+  int nextMoveAttack = 0; // 次にわざを使える攻撃回数（使ったわざの interval 後）
   final attackUp = _Mod();
   final attackDown = _Mod();
   final defenseUp = _Mod();
