@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../providers/game_state_provider.dart';
 import '../providers/vip_provider.dart';
 import '../services/purchase_service.dart';
 import '../theme/kingdom_theme.dart';
+import '../utils/safe_pop.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/frame_shop_section.dart';
 import '../widgets/ui_icon.dart';
@@ -219,7 +219,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         backgroundColor: Kingdom.nightDeep,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Kingdom.gilt),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrHome(),
         ),
         actions: [
           TextButton(

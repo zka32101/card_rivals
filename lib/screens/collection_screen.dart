@@ -144,11 +144,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceMd, vertical: 6),
                 child: Row(
                   children: [
-                    IconText(
-                      t.collection_resultCount(shown.length, scoped.length),
-                      style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.6)),
+                    Expanded(
+                      child: IconText(
+                        t.collection_resultCount(shown.length, scoped.length),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.6)),
+                      ),
                     ),
-                    const Spacer(),
                     PopupMenuButton<String>(
                       tooltip: t.collection_sortTooltip,
                       color: Kingdom.nightDeep,

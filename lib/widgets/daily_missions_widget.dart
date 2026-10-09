@@ -54,14 +54,19 @@ class DailyMissionsWidget extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconText(
-                t.dailyMissions_title,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFFFFD700),
+              // 狭い端末・大きいフォントでは見出しを折り返して、右側の操作を優先して残す
+              Expanded(
+                child: IconText(
+                  t.dailyMissions_title,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFFFD700),
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (canReroll)
                     TextButton.icon(

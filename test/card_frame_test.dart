@@ -22,6 +22,9 @@ PlayCard _card({int cost = 3}) => PlayCard(
       nameEn: 'Test',
     );
 
+/// フレーム用のFittedBox（fit: contain）。カード内のプレースホルダ縮小用FittedBox(scaleDown)とは区別する。
+final frameFit = find.byWidgetPredicate((w) => w is FittedBox && w.fit == BoxFit.contain);
+
 void main() {
   group('kCardFrames', () {
     test('10件・id重複なし・価格はコインかジェムのどちらか1つ・アセット存在', () {
@@ -151,17 +154,17 @@ void main() {
     testWidgets('frameIdがnull/不明なら従来と同一（FittedBox・フレーム画像なし）', (tester) async {
       await tester.pumpWidget(host(CardWidget(card: _card(), size: 150)));
       final plain = tester.getSize(find.byType(CardWidget));
-      expect(find.byType(FittedBox), findsNothing);
+      expect(frameFit, findsNothing);
 
       await tester.pumpWidget(host(CardWidget(card: _card(), size: 150, frameId: 'unknown')));
       expect(tester.getSize(find.byType(CardWidget)), plain);
-      expect(find.byType(FittedBox), findsNothing);
+      expect(frameFit, findsNothing);
       expect(tester.takeException(), isNull);
     });
 
     testWidgets('フレームを渡すとフレーム画像が描画される', (tester) async {
       await tester.pumpWidget(host(CardWidget(card: _card(), size: 150, frameId: 'coin_silver')));
-      expect(find.byType(FittedBox), findsOneWidget);
+      expect(frameFit, findsOneWidget);
       expect(find.byType(Image), findsWidgets);
     });
   });

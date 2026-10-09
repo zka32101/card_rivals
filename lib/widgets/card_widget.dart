@@ -121,6 +121,11 @@ class CardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // カードは size で固定寸法のアート扱い。端末の文字拡大で中身が溢れないよう拡大しない。
+    return MediaQuery.withNoTextScaling(child: _buildFramed(context));
+  }
+
+  Widget _buildFramed(BuildContext context) {
     final frame = cardFrameById(frameId);
     if (frame == null) return _buildCard(context, size);
     final hole = frame.holeNorm;
@@ -565,8 +570,11 @@ class _ArtPlaceholder extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
       ),
+      // 小さいカード枠でも中身が溢れないよう、収まらないときは縮小する
       child: Center(
-        child: Column(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
@@ -584,6 +592,7 @@ class _ArtPlaceholder extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: Kingdom.label(size: 9, color: attrColor)),
           ],
+        ),
         ),
       ),
     );
@@ -911,14 +920,17 @@ class CardThumbnail extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconText(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 20)),
-            const SizedBox(height: 4),
-            IconText(_attrLabel(t, card.attribute),
-                style: Kingdom.label(size: 8, color: accent)),
-          ],
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconText(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 20)),
+              const SizedBox(height: 4),
+              IconText(_attrLabel(t, card.attribute),
+                  style: Kingdom.label(size: 8, color: accent)),
+            ],
+          ),
         ),
       ),
     );

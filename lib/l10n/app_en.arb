@@ -646,6 +646,7 @@
   "cardCreation_confirmNote": "(This cannot be cancelled after creation)",
   "cardCreation_cancel": "Cancel",
   "cardCreation_insufficientCoins": "Not enough coins",
+  "cardCreation_createFailed": "Couldn't create the card. Please check your connection and try again.",
   "cardCreation_goToShop": "Go to Shop",
   "cardCreation_defaultCardName": "Card",
   "cardCreation_cardAddedSnackbar": "✅ \"{name}\" added to your collection! (🪙{cost} spent)",

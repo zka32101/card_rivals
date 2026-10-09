@@ -455,22 +455,26 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
           children: [
             IconText(t.battleResult_statsTitle, style: Kingdom.label(size: 15, color: accent)),
             const SizedBox(height: 16),
+            // 3つの統計は均等幅にして、狭い幅・大きい文字でもラベルを折り返して収める
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _StatBox(label: t.battleResult_statTurns, value: '${widget.result.logs.length}', icon: '⏱️'),
+                Expanded(child: _StatBox(label: t.battleResult_statTurns, value: '${widget.result.logs.length}', icon: '⏱️')),
                 Container(width: 1, height: 60, color: Kingdom.parchment.withValues(alpha: 0.15)),
-                _StatBox(
-                  label: t.battleResult_statTotalDamage,
-                  value: '${widget.result.logs.fold<int>(0, (prev, log) => prev + log.damage)}',
-                  icon: '⚔️',
+                Expanded(
+                  child: _StatBox(
+                    label: t.battleResult_statTotalDamage,
+                    value: '${widget.result.logs.fold<int>(0, (prev, log) => prev + log.damage)}',
+                    icon: '⚔️',
+                  ),
                 ),
                 Container(width: 1, height: 60, color: Kingdom.parchment.withValues(alpha: 0.15)),
-                _StatBox(
-                  label: t.battleResult_statRemainingHp,
-                  value:
-                      '${widget.result.attackerWon ? widget.result.finalAttackerHp : widget.result.finalDefenderHp}',
-                  icon: '❤️',
+                Expanded(
+                  child: _StatBox(
+                    label: t.battleResult_statRemainingHp,
+                    value:
+                        '${widget.result.attackerWon ? widget.result.finalAttackerHp : widget.result.finalDefenderHp}',
+                    icon: '❤️',
+                  ),
                 ),
               ],
             ),
@@ -550,7 +554,9 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
               children: [
                 const Text('🔍', style: TextStyle(fontSize: 18)),
                 const SizedBox(width: 8),
-                IconText(t.battleResult_factorsTitle, style: Kingdom.label(size: 14, color: Kingdom.sadnessIndigo)),
+                Expanded(
+                  child: IconText(t.battleResult_factorsTitle, style: Kingdom.label(size: 14, color: Kingdom.sadnessIndigo)),
+                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -768,7 +774,9 @@ class _StatBox extends StatelessWidget {
               color: Kingdom.parchment),
         ),
         const SizedBox(height: 4),
-        IconText(label, style: TextStyle(fontSize: 10, color: Kingdom.parchment.withValues(alpha: 0.5))),
+        IconText(label,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 10, color: Kingdom.parchment.withValues(alpha: 0.5))),
       ],
     );
   }

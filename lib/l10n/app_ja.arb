@@ -645,6 +645,7 @@
   "@cardCreation_confirmBody": {"placeholders":{"cost":{"type":"int"}}},
   "cardCreation_confirmNote": "（作成後はキャンセルできません）",
   "cardCreation_cancel": "キャンセル",
+  "cardCreation_createFailed": "カードを作成できませんでした。通信状況を確認して、もう一度お試しください。",
   "cardCreation_insufficientCoins": "コインが不足しています",
   "cardCreation_goToShop": "ショップへ",
   "cardCreation_defaultCardName": "カード",

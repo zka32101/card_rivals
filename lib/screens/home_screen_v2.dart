@@ -298,8 +298,9 @@ class _BonusBannerV2 extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconText(t.bonusBanner_today, style: Kingdom.label(size: 12, color: Kingdom.parchment.withValues(alpha: 0.8))),
-              Container(
+              Flexible(child: IconText(t.bonusBanner_today, style: Kingdom.label(size: 12, color: Kingdom.parchment.withValues(alpha: 0.8)))),
+              const SizedBox(width: 8),
+              Flexible(child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: Kingdom.spaceSm, vertical: 2),
                 decoration: BoxDecoration(
                   color: Kingdom.gilt.withValues(alpha: 0.2),
@@ -308,21 +309,27 @@ class _BonusBannerV2 extends StatelessWidget {
                 ),
                 child: IconText(t.home_tapForBonusLabel,
                     style: Kingdom.label(size: 10, color: Kingdom.gilt)),
-              ),
+              )),
             ],
           ),
           const SizedBox(height: Kingdom.spaceMd),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconText(t.home_todayCoinsProgress(wallet.todayPoints),
-                  style: TextStyle(
-                      fontFamily: Kingdom.displayFont,
-                      color: Kingdom.gilt,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 24)),
-              IconText(t.home_todayWinsProgress(wallet.todayWins),
-                  style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: Kingdom.textBody)),
+              Flexible(
+                child: IconText(t.home_todayCoinsProgress(wallet.todayPoints),
+                    style: TextStyle(
+                        fontFamily: Kingdom.displayFont,
+                        color: Kingdom.gilt,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 24)),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: IconText(t.home_todayWinsProgress(wallet.todayWins),
+                    textAlign: TextAlign.end,
+                    style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: Kingdom.textBody)),
+              ),
             ],
           ),
           const SizedBox(height: Kingdom.spaceSm),
@@ -415,9 +422,9 @@ class _MainActionsV2 extends StatelessWidget {
     return Column(
       children: [
         // PvP ボタン（大きく目立たせる）
-        SizedBox(
-          height: 70,
-          width: double.infinity,
+        // 高さは固定せず最小値にする（大きいフォントでも文字が見切れない）
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 70, minWidth: double.infinity),
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: const LinearGradient(
@@ -525,7 +532,7 @@ class _KingdomActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tile = Container(
-      height: fullWidth ? 70 : 60,
+      constraints: BoxConstraints(minHeight: fullWidth ? 70 : 60),
       decoration: BoxDecoration(
         color: Kingdom.nightDeep,
         borderRadius: BorderRadius.circular(12),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../services/purchase_service.dart';
 import '../theme/kingdom_theme.dart';
+import '../utils/safe_pop.dart';
 import '../l10n/app_localizations.dart';
 
 class PurchaseHistoryScreen extends StatefulWidget {
@@ -65,7 +65,7 @@ class _PurchaseHistoryScreenState extends State<PurchaseHistoryScreen> {
         backgroundColor: Kingdom.nightDeep,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Kingdom.gilt),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrHome(),
         ),
       ),
       body: Stack(

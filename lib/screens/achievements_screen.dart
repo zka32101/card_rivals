@@ -185,7 +185,11 @@ class _AchievementCard extends StatelessWidget {
               Text('${achievement.progress}/${achievement.target}',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
               if (achievement.reward != null)
-                Text(achievementRewardFor(achievement, t.localeName), style: const TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.gilt)),
+                Flexible(
+                  child: Text(achievementRewardFor(achievement, t.localeName),
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.gilt)),
+                ),
             ],
           ),
         ],

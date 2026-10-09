@@ -148,8 +148,8 @@ class CardRivalsApp extends ConsumerWidget {
   }
 }
 
-final _router = GoRouter(
-  routes: [
+/// アプリの全ルート（画面遷移テストから参照するため公開）。
+final List<RouteBase> appRoutes = [
     GoRoute(
       path: '/',
       builder: (context, state) => const MainShell(),
@@ -186,5 +186,6 @@ final _router = GoRouter(
       path: '/explanation',
       builder: (context, state) => const ExplanationScreen(),
     ),
-  ],
-);
+];
+
+final _router = GoRouter(routes: appRoutes);

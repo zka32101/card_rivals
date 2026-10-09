@@ -739,7 +739,12 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
         return RoyalButton(
           label: t.cardCreation_generateNameButton,
           onPressed: () {
-            setState(() => _step = 4);
+            // 生成中はローディングを表示し、前回の選択名（候補が入れ替わると画面に無い名前になる）を捨てる
+            setState(() {
+              _step = 4;
+              _isGeneratingName = true;
+              _selectedName = null;
+            });
             _generateNames();
           },
         );
@@ -776,6 +781,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       if (!mounted) return;
       setState(() {
         _nameCandidates = names;
+        _selectedName = null; // 候補が入れ替わるので、画面から消えた名前を選択状態のまま残さない
         _isGeneratingName = false;
       });
     } catch (e) {
@@ -792,6 +798,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       ];
       setState(() {
         _nameCandidates = fallback;
+        _selectedName = null;
         _isGeneratingName = false;
       });
     }
@@ -934,7 +941,11 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       if (mounted) Navigator.of(context, rootNavigator: true).pop();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? t.cardCreation_insufficientCoins), backgroundColor: Kingdom.angerCrimson),
+          // サーバーのエラー文は日本語固定なので、英語UIで日本語が出ないよう端末側の文言にする
+          // （コイン不足はサーバーが failed-precondition で返す）
+          SnackBar(
+              content: Text(e.code == 'failed-precondition' ? t.cardCreation_insufficientCoins : t.cardCreation_createFailed),
+              backgroundColor: Kingdom.angerCrimson),
         );
       }
       return;
@@ -942,7 +953,7 @@ class _CardCreationScreenV2State extends ConsumerState<CardCreationScreenV2> {
       if (mounted) Navigator.of(context, rootNavigator: true).pop();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: IconText(t.cardCreation_insufficientCoins), backgroundColor: Kingdom.angerCrimson),
+          SnackBar(content: IconText(t.cardCreation_createFailed), backgroundColor: Kingdom.angerCrimson),
         );
       }
       return;

@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 import '../theme/kingdom_theme.dart';
+import '../utils/safe_pop.dart';
 import '../widgets/account_link_section.dart';
 
 const String kPrivacyPolicyUrl = 'https://sites.google.com/view/yourwishapps/privacy-policy';
@@ -24,7 +25,7 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: Kingdom.nightDeep,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Kingdom.gilt),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrHome(),
         ),
       ),
       body: Stack(
@@ -144,7 +145,8 @@ class _SettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Kingdom.parchment.withValues(alpha: 0.12)),
       ),
-      child: Column(children: children),
+      // 色付きContainerの中でListTileの波紋が見えなくなるのを防ぐ透明Material
+      child: Material(type: MaterialType.transparency, child: Column(children: children)),
     );
   }
 }

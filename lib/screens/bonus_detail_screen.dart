@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/game_state_provider.dart';
 import '../providers/vip_provider.dart';
 import '../theme/kingdom_theme.dart';
+import '../utils/safe_pop.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/ui_icon.dart';
 
@@ -29,7 +30,7 @@ class BonusDetailScreen extends ConsumerWidget {
         backgroundColor: Kingdom.nightDeep,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Kingdom.gilt),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrHome(),
         ),
       ),
       body: Stack(
@@ -52,7 +53,9 @@ class BonusDetailScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          IconText(t.bonusDetail_todayHeader, style: Kingdom.label(size: 13, color: Kingdom.parchment.withValues(alpha: 0.8))),
+                          Flexible(
+                            child: IconText(t.bonusDetail_todayHeader, style: Kingdom.label(size: 13, color: Kingdom.parchment.withValues(alpha: 0.8))),
+                          ),
                           if (isVip) ...[
                             const SizedBox(width: Kingdom.spaceSm),
                             Container(
@@ -70,8 +73,11 @@ class BonusDetailScreen extends ConsumerWidget {
                           IconText('🪙$earnedToday / $totalCapToday',
                               style: TextStyle(
                                   fontFamily: Kingdom.displayFont, color: Kingdom.gilt, fontWeight: FontWeight.w900, fontSize: 26)),
-                          IconText(t.home_todayWinsProgress(wallet.todayWins),
-                              style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: Kingdom.textBody)),
+                          Flexible(
+                            child: IconText(t.home_todayWinsProgress(wallet.todayWins),
+                                textAlign: TextAlign.end,
+                                style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: Kingdom.textBody)),
+                          ),
                         ],
                       ),
                       const SizedBox(height: Kingdom.spaceSm),
@@ -156,8 +162,9 @@ class BonusDetailScreen extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconText(label, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: 13)),
-            IconText(value, style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14)),
+            Flexible(child: IconText(label, style: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.75), fontSize: 13))),
+            const SizedBox(width: 8),
+            Flexible(child: IconText(value, textAlign: TextAlign.end, style: const TextStyle(color: Kingdom.parchment, fontWeight: FontWeight.bold, fontSize: 14))),
           ],
         ),
       );
