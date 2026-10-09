@@ -115,7 +115,7 @@ class _RankingScreenV3State extends ConsumerState<RankingScreenV3> with TickerPr
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconText(rank.tierLabel, style: Kingdom.label(size: 16, color: Kingdom.gilt)),
+                  IconText(rank.tierLabelOf(AppLocalizations.of(context)!), style: Kingdom.label(size: 16, color: Kingdom.gilt)),
                   IconText(
                     t.rankingV3_statsLine(rank.rating, rank.wins, rank.losses),
                     style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.7)),

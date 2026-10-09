@@ -11,6 +11,7 @@ class FunctionsService {
     required int defense,
     required int speed,
     required String tone,
+    String language = 'ja', // 'ja' | 'en'（英語表示のときは英語のカード名を生成）
   }) async {
     final callable = _functions.httpsCallable('generateCardName');
     final result = await callable.call({
@@ -20,6 +21,7 @@ class FunctionsService {
       'defense': defense,
       'speed': speed,
       'tone': tone,
+      'language': language,
     });
     final names = List<String>.from(result.data['names'] as List);
     return names;

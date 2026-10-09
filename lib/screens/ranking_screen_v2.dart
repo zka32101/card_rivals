@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/game_state_provider.dart';
 import '../widgets/ui_icon.dart';
@@ -33,7 +34,7 @@ class RankingScreenV2 extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 自分のTierカード
-            _buildMyRankCard(rank),
+            _buildMyRankCard(context, rank),
             const SizedBox(height: 24),
 
             // ランキング説明
@@ -63,7 +64,7 @@ class RankingScreenV2 extends ConsumerWidget {
     );
   }
 
-  Widget _buildMyRankCard(PlayerRank rank) {
+  Widget _buildMyRankCard(BuildContext context, PlayerRank rank) {
     final nextTierThreshold = _getTierThreshold(rank.tier) + 250;
     final progress = (rank.rating - _getTierThreshold(rank.tier)) / 250;
 
@@ -96,7 +97,7 @@ class RankingScreenV2 extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     IconText(
-                      rank.tierLabel,
+                      rank.tierLabelOf(AppLocalizations.of(context)!),
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,

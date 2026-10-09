@@ -27,7 +27,8 @@ export const generateDailyEmotionCardName = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const { emotion, userMessage } = request.data;
+    const { emotion, userMessage, language } = request.data;
+    const isEn = language === "en";
     if (!emotion || !userMessage) {
       throw new HttpsError("invalid-argument", "Missing emotion or message");
     }
@@ -46,7 +47,14 @@ export const generateDailyEmotionCardName = onCall(
           messages: [
             {
               role: "user",
-              content: `感情の国の${emotion}属性カードです。ユーザーが「${userMessage}」という気持ちで今日を過ごしました。この気持ちを表すカード名を3つ提案してください。各名前は5-10字で、かわいい/かっこいい/優雅な雰囲気で。
+              content: isEn
+                ? `This is a card of the "${emotion}" attribute from a land of emotions. The user spent today feeling: "${userMessage}". Suggest 3 card names in English (2 to 4 words each, no Japanese characters) that express this feeling, with a cute, cool, or elegant vibe.
+
+Format:
+1. Name 1
+2. Name 2
+3. Name 3`
+                : `感情の国の${emotion}属性カードです。ユーザーが「${userMessage}」という気持ちで今日を過ごしました。この気持ちを表すカード名を3つ提案してください。各名前は5-10字で、かわいい/かっこいい/優雅な雰囲気で。
 
 形式:
 1. [名前1]
@@ -67,7 +75,7 @@ export const generateDailyEmotionCardName = onCall(
 
       return {
         names: names.slice(0, 3),
-        selectedName: names[0] || "感情のカード",
+        selectedName: names[0] || (isEn ? "Card of Emotion" : "感情のカード"),
       };
     } catch (error) {
       console.error("Error generating emotion card name:", error);

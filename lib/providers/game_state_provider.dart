@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hooks_riverpod/legacy.dart';
+import '../l10n/app_localizations.dart';
 import '../models/user_card.dart';
 import '../data/seed_cards_data.dart';
 import 'auth_provider.dart';
@@ -399,14 +400,14 @@ class PlayerRank {
   factory PlayerRank.fromRating(int rating, {int wins = 0, int losses = 0}) =>
       PlayerRank(rating: rating, tier: tierForRating(rating), wins: wins, losses: losses);
 
-  String get tierLabel {
+  /// ランク名の表示ラベル（現在の表示言語）。
+  String tierLabelOf(AppLocalizations t) {
     switch (tier) {
-      case 'bronze': return 'ブロンズ';
-      case 'silver': return 'シルバー';
-      case 'gold': return 'ゴールド';
-      case 'platinum': return 'プラチナ';
-      case 'diamond': return 'ダイヤモンド';
-      default: return 'ブロンズ';
+      case 'silver': return t.rank_silver;
+      case 'gold': return t.rank_gold;
+      case 'platinum': return t.rank_platinum;
+      case 'diamond': return t.rank_diamond;
+      default: return t.rank_bronze;
     }
   }
 

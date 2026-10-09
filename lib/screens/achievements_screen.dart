@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide Badge;
+import '../models/game_enrichment_en.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/game_enrichment.dart';
 import '../providers/game_state_provider.dart';
@@ -90,13 +91,13 @@ class AchievementsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: Kingdom.spaceSm),
                           IconText(
-                            badge.name,
+                            badgeNameFor(badge, Localizations.localeOf(context).languageCode),
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Kingdom.parchment),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: Kingdom.spaceXs),
                           IconText(
-                            badge.description,
+                            badgeDescriptionFor(badge, Localizations.localeOf(context).languageCode),
                             style: TextStyle(fontSize: 10, color: Kingdom.parchment.withValues(alpha: 0.5)),
                             textAlign: TextAlign.center,
                           ),
@@ -151,9 +152,9 @@ class _AchievementCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconText(achievement.title,
+                    IconText(achievementTitleFor(achievement, t.localeName),
                         style: Kingdom.label(size: 14, color: Kingdom.parchment)),
-                    IconText(achievement.description,
+                    IconText(achievementDescriptionFor(achievement, t.localeName),
                         style: TextStyle(fontSize: 12, color: Kingdom.parchment.withValues(alpha: 0.5))),
                   ],
                 ),
@@ -184,7 +185,7 @@ class _AchievementCard extends StatelessWidget {
               Text('${achievement.progress}/${achievement.target}',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Kingdom.parchment)),
               if (achievement.reward != null)
-                Text(achievement.reward!, style: const TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.gilt)),
+                Text(achievementRewardFor(achievement, t.localeName), style: const TextStyle(fontSize: Kingdom.textCaption, color: Kingdom.gilt)),
             ],
           ),
         ],

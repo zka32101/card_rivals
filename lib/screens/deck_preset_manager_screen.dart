@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/deck_preset.dart';
 import '../providers/deck_presets_provider.dart';
@@ -53,7 +54,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
       builder: (context) => AlertDialog(
         backgroundColor: Kingdom.nightDeep,
         title: Text(
-          'プリセットを保存',
+          AppLocalizations.of(context)!.dpm_saveTitle,
           style: Kingdom.title(size: 18, color: Kingdom.gilt),
         ),
         content: SingleChildScrollView(
@@ -64,7 +65,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 controller: _nameController,
                 style: const TextStyle(color: Kingdom.parchment),
                 decoration: InputDecoration(
-                  hintText: 'プリセット名',
+                  hintText: AppLocalizations.of(context)!.dpm_nameHint,
                   hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.3)),
@@ -80,7 +81,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 style: const TextStyle(color: Kingdom.parchment),
                 maxLines: 3,
                 decoration: InputDecoration(
-                  hintText: '説明（オプション）',
+                  hintText: AppLocalizations.of(context)!.dpm_descHint,
                   hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.3)),
@@ -96,14 +97,14 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル', style: TextStyle(color: Kingdom.parchment)),
+            child: Text(AppLocalizations.of(context)!.dpm_cancel, style: TextStyle(color: Kingdom.parchment)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Kingdom.gilt),
             onPressed: () async {
               if (_nameController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('プリセット名を入力してください')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.dpm_nameRequired)),
                 );
                 return;
               }
@@ -121,18 +122,18 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                   _nameController.clear();
                   _descriptionController.clear();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('プリセットを保存しました')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_saved)),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('エラー: $e')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(e.toString()))),
                   );
                 }
               }
             },
-            child: const Text('保存'),
+            child: Text(AppLocalizations.of(context)!.dpm_save),
           ),
         ],
       ),
@@ -153,13 +154,13 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('「${widget.editingPresetName}」を更新しました')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.dpm_updated(widget.editingPresetName ?? ''))),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラー: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(e.toString()))),
         );
       }
     }
@@ -171,17 +172,17 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
       builder: (context) => AlertDialog(
         backgroundColor: Kingdom.nightDeep,
         title: Text(
-          'プリセットを削除',
+          AppLocalizations.of(context)!.dpm_deleteTitle,
           style: Kingdom.title(size: 18, color: Kingdom.angerCrimson),
         ),
         content: Text(
-          '「${preset.name}」を削除しますか？',
+          AppLocalizations.of(context)!.dpm_confirmDelete(preset.name),
           style: const TextStyle(color: Kingdom.parchment),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル', style: TextStyle(color: Kingdom.parchment)),
+            child: Text(AppLocalizations.of(context)!.dpm_cancel, style: TextStyle(color: Kingdom.parchment)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Kingdom.angerCrimson),
@@ -191,18 +192,18 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('プリセットを削除しました')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_deleted)),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('エラー: $e')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(e.toString()))),
                   );
                 }
               }
             },
-            child: const Text('削除'),
+            child: Text(AppLocalizations.of(context)!.dpm_delete),
           ),
         ],
       ),
@@ -210,21 +211,21 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
   }
 
   void _showCopyPresetDialog(DeckPreset preset) {
-    final copyNameController = TextEditingController(text: '${preset.name} (コピー)');
+    final copyNameController = TextEditingController(text: '${preset.name} ${AppLocalizations.of(context)!.dpm_copySuffix}');
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Kingdom.nightDeep,
         title: Text(
-          'プリセットをコピー',
+          AppLocalizations.of(context)!.dpm_copyTitle,
           style: Kingdom.title(size: 18, color: Kingdom.gilt),
         ),
         content: TextField(
           controller: copyNameController,
           style: const TextStyle(color: Kingdom.parchment),
           decoration: InputDecoration(
-            hintText: '新しい名前',
+            hintText: AppLocalizations.of(context)!.dpm_newNameHint,
             hintStyle: TextStyle(color: Kingdom.parchment.withValues(alpha: 0.5)),
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Kingdom.gilt.withValues(alpha: 0.3)),
@@ -237,14 +238,14 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル', style: TextStyle(color: Kingdom.parchment)),
+            child: Text(AppLocalizations.of(context)!.dpm_cancel, style: TextStyle(color: Kingdom.parchment)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Kingdom.gilt),
             onPressed: () async {
               if (copyNameController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('プリセット名を入力してください')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.dpm_nameRequired)),
                 );
                 return;
               }
@@ -259,18 +260,18 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('プリセットをコピーしました')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_copied)),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('エラー: $e')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.dpm_errorWith(e.toString()))),
                   );
                 }
               }
             },
-            child: const Text('コピー'),
+            child: Text(AppLocalizations.of(context)!.dpm_copy),
           ),
         ],
       ),
@@ -284,7 +285,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
     return Scaffold(
       backgroundColor: Kingdom.night,
       appBar: AppBar(
-        title: const Text('デッキプリセット管理'),
+        title: Text(AppLocalizations.of(context)!.dpm_title),
         backgroundColor: Kingdom.nightDeep,
         elevation: 0,
       ),
@@ -294,7 +295,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
         ),
         error: (error, stack) => Center(
           child: Text(
-            'エラーが発生しました: $error',
+            AppLocalizations.of(context)!.dpm_errorGeneric(error.toString()),
             style: const TextStyle(color: Kingdom.parchment),
           ),
         ),
@@ -307,7 +308,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 child: ElevatedButton.icon(
                   onPressed: _overwriteEditingPreset,
                   icon: const Icon(Icons.edit),
-                  label: Text('「${widget.editingPresetName}」を上書き保存'),
+                  label: Text(AppLocalizations.of(context)!.dpm_overwrite(widget.editingPresetName ?? '')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Kingdom.sadnessIndigo,
                     foregroundColor: Kingdom.parchment,
@@ -322,7 +323,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                 child: ElevatedButton.icon(
                   onPressed: _showSavePresetDialog,
                   icon: const Icon(Icons.save),
-                  label: const Text('現在のデッキを保存'),
+                  label: Text(AppLocalizations.of(context)!.dpm_saveCurrent),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Kingdom.gilt,
                     minimumSize: const Size(double.infinity, 48),
@@ -334,7 +335,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
               child: presets.isEmpty
                   ? Center(
                       child: Text(
-                        'プリセットがありません',
+                        AppLocalizations.of(context)!.dpm_empty,
                         style: TextStyle(
                           color: Kingdom.parchment.withValues(alpha: 0.6),
                           fontSize: 14,
@@ -367,7 +368,7 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 Text(
-                                  'カード: ${preset.cardIds.length}枚',
+                                  AppLocalizations.of(context)!.dpm_cardCount(preset.cardIds.length),
                                   style: TextStyle(
                                     color: Kingdom.parchment.withValues(alpha: 0.6),
                                     fontSize: 12,
@@ -380,10 +381,10 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                               itemBuilder: (context) => [
                                 PopupMenuItem(
                                   child: Row(
-                                    children: const [
+                                    children: [
                                       Icon(Icons.copy, color: Kingdom.gilt),
                                       SizedBox(width: 8),
-                                      Text('コピー', style: TextStyle(color: Kingdom.parchment)),
+                                      Text(AppLocalizations.of(context)!.dpm_copy, style: TextStyle(color: Kingdom.parchment)),
                                     ],
                                   ),
                                   onTap: () {
@@ -394,10 +395,10 @@ class _DeckPresetManagerScreenState extends ConsumerState<DeckPresetManagerScree
                                 ),
                                 PopupMenuItem(
                                   child: Row(
-                                    children: const [
+                                    children: [
                                       Icon(Icons.delete, color: Kingdom.angerCrimson),
                                       SizedBox(width: 8),
-                                      Text('削除', style: TextStyle(color: Kingdom.parchment)),
+                                      Text(AppLocalizations.of(context)!.dpm_delete, style: TextStyle(color: Kingdom.parchment)),
                                     ],
                                   ),
                                   onTap: () {

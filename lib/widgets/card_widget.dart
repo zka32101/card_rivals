@@ -329,8 +329,12 @@ class _Header extends StatelessWidget {
               children: [
                 IconText(_attrEmoji(card.attribute), style: const TextStyle(fontSize: 12)),
                 const SizedBox(width: 6),
-                IconText(Kingdom.attributeRealm(card.attribute),
-                    style: Kingdom.label(size: 8, color: accent.withValues(alpha: 0.85))),
+                Flexible(
+                  child: IconText(Kingdom.attributeRealm(card.attribute, AppLocalizations.of(context)!),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Kingdom.label(size: 8, color: accent.withValues(alpha: 0.85))),
+                ),
               ],
             ),
             const SizedBox(height: 3),
@@ -463,7 +467,7 @@ class _ArtPlaceholder extends StatelessWidget {
                   )),
             ),
             const SizedBox(height: 8),
-            IconText(Kingdom.attributeRealm(card.attribute),
+            IconText(Kingdom.attributeRealm(card.attribute, AppLocalizations.of(context)!),
                 textAlign: TextAlign.center,
                 style: Kingdom.label(size: 9, color: attrColor)),
           ],

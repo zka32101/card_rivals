@@ -517,7 +517,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
                   children: [
                     IconText(t.battleResult_mvpLabel, style: Kingdom.label(size: 13, color: Kingdom.gilt)),
                     const SizedBox(height: 4),
-                    IconText(mvp.nameJp,
+                    IconText(Localizations.localeOf(context).languageCode == 'en' && mvp.nameEn.isNotEmpty ? mvp.nameEn : mvp.nameJp,
                         style: TextStyle(
                             color: Kingdom.parchment,
                             fontWeight: FontWeight.bold,
