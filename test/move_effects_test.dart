@@ -33,13 +33,13 @@ void main() {
     CardMoveId.weakPoint,
   ];
 
-  test('攻撃系4種だけが専用の攻撃エフェクトを持つ', () {
+  test('攻撃系4種だけが攻撃エフェクト扱い（補助系は別の専用エフェクト）', () {
     for (final id in CardMoveId.values) {
       expect(moveHasAttackEffect(id), attackMoves.contains(id), reason: '$id');
     }
   });
 
-  for (final id in attackMoves) {
+  for (final id in CardMoveId.values) {
     testWidgets('$id: 全フェーズを例外なく描画できる', (tester) async {
       for (final t in [0.05, 0.2, 0.45, 0.55, 0.7, 0.85, 0.99]) {
         await tester.pumpWidget(_host(id, t));
@@ -62,7 +62,7 @@ void main() {
     expect(find.textContaining('ごうりき'), findsNothing);
   });
 
-  testWidgets('補助系わざもカットインは表示される', (tester) async {
+  testWidgets('補助系わざもカットインとエフェクトが表示される', (tester) async {
     await tester.pumpWidget(_host(CardMoveId.ironWall, 0.25));
     expect(find.textContaining('てつぺき'), findsOneWidget);
   });

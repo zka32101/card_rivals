@@ -7,8 +7,10 @@ import 'ui_icon.dart';
 
 // バトル中の「わざ」演出。
 // 1) 全てのわざ: 技名のカットイン帯（左からスライドイン）
-// 2) 攻撃系4種（slash / pierce / heavyBlow / weakPoint）: 専用の攻撃エフェクト
-// 補助系の専用エフェクトは未実装（カットインのみ）。
+// 2) 全10種: わざごとの専用エフェクト
+//    攻撃系4種（slash / pierce / heavyBlow / weakPoint）は斬撃・衝撃波など、
+//    補助系6種（ironWall / tailwind / rally / flinch / shadowStep / heal）は
+//    シールド・風・上昇光・下降矢印・残像・回復の光で効果の種類を直感的に示す。
 //
 // animation は 0→1 で1回再生する。0〜0.45 がカットイン、攻撃エフェクトは 0.4 以降
 // （呼び出し側は 0.4〜0.5 付近でヒット演出を開始する想定）。
@@ -53,10 +55,9 @@ class MoveEffectOverlay extends StatelessWidget {
           return Stack(
             fit: StackFit.expand,
             children: [
-              if (moveHasAttackEffect(moveId))
-                CustomPaint(
-                  painter: MoveEffectPainter(t: v, moveId: moveId, color: color),
-                ),
+              CustomPaint(
+                painter: MoveEffectPainter(t: v, moveId: moveId, color: color),
+              ),
               _MoveCutIn(t: v, name: name, color: color),
             ],
           );
@@ -148,8 +149,154 @@ class MoveEffectPainter extends CustomPainter {
         _heavyBlow(canvas, size, center);
       case CardMoveId.weakPoint:
         _weakPoint(canvas, size, center);
-      default:
-        break;
+      case CardMoveId.ironWall:
+        _ironWall(canvas, size, center);
+      case CardMoveId.tailwind:
+        _tailwind(canvas, size, center);
+      case CardMoveId.rally:
+        _rally(canvas, size, center);
+      case CardMoveId.flinch:
+        _flinch(canvas, size, center);
+      case CardMoveId.shadowStep:
+        _shadowStep(canvas, size, center);
+      case CardMoveId.heal:
+        _heal(canvas, size, center);
+    }
+  }
+
+  // 上向き(up=true)／下向き(up=false)のシェブロン（矢印）
+  void _chevron(Canvas canvas, Offset c, double w, Paint paint, {required bool up}) {
+    final dy = up ? -w * 0.55 : w * 0.55;
+    final path = Path()
+      ..moveTo(c.dx - w, c.dy - dy)
+      ..lineTo(c.dx, c.dy + dy)
+      ..lineTo(c.dx + w, c.dy - dy);
+    canvas.drawPath(path, paint);
+  }
+
+  double get _fadeOut => _p < 0.65 ? 1.0 : (1 - (_p - 0.65) / 0.35).clamp(0.0, 1.0);
+  double get _fadeIn => (_p / 0.2).clamp(0.0, 1.0);
+
+  // てつぺき: 六角形のシールドが展開し、頂点が光る
+  void _ironWall(Canvas canvas, Size size, Offset c) {
+    final k = Curves.easeOutBack.transform((_p / 0.4).clamp(0.0, 1.0));
+    final r = 78.0 * k;
+    final a = _fadeOut;
+    Path hex(double rr) {
+      final path = Path();
+      for (int i = 0; i < 6; i++) {
+        final ang = i / 6 * math.pi * 2 - math.pi / 2;
+        final pt = c + Offset(math.cos(ang), math.sin(ang)) * rr;
+        i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
+      }
+      return path..close();
+    }
+    canvas.drawPath(hex(r), Paint()..color = color.withValues(alpha: 0.18 * a));
+    canvas.drawPath(hex(r), _glow(Colors.white, 4, 1.5, alpha: a));
+    canvas.drawPath(hex(r * 0.78), _glow(color, 2.5, 1, alpha: 0.7 * a));
+    final dot = Paint()..color = Colors.white.withValues(alpha: a);
+    for (int i = 0; i < 6; i++) {
+      final ang = i / 6 * math.pi * 2 - math.pi / 2;
+      canvas.drawCircle(c + Offset(math.cos(ang), math.sin(ang)) * r, 4.5, dot);
+    }
+  }
+
+  // ついふう: 風の線と渦が左から右へ流れる
+  void _tailwind(Canvas canvas, Size size, Offset c) {
+    final a = _fadeOut * _fadeIn;
+    final shift = Curves.easeInOut.transform(_p) * size.width * 1.2;
+    final rng = math.Random(5);
+    for (int i = 0; i < 9; i++) {
+      final y = c.dy + (i - 4) * 20.0 + rng.nextDouble() * 8;
+      final len = 60 + rng.nextDouble() * 90;
+      final x0 = -len + shift * (0.7 + rng.nextDouble() * 0.6) - 80;
+      final path = Path()..moveTo(x0, y);
+      path.quadraticBezierTo(x0 + len * 0.5, y - 10, x0 + len, y);
+      canvas.drawPath(path, _glow(i.isEven ? Colors.white : color, 2.6, 1, alpha: 0.8 * a));
+    }
+    // 渦（小さな円弧）
+    final sw = Offset(c.dx - 60 + shift * 0.25, c.dy);
+    canvas.drawArc(Rect.fromCircle(center: sw, radius: 26), 0.3, 4.2, false, _glow(Colors.white, 3, 1, alpha: 0.7 * a));
+  }
+
+  // ちからのよびごえ: 下から上へ立ち上る光の柱と上向き矢印、赤橙のオーラリング
+  void _rally(Canvas canvas, Size size, Offset c) {
+    final a = _fadeOut * _fadeIn;
+    final rise = Curves.easeOut.transform(_p);
+    for (int i = 0; i < 5; i++) {
+      final x = c.dx + (i - 2) * 38.0;
+      final h = 90 + (i.isEven ? 50 : 0);
+      final top = c.dy + 80 - rise * (h + 120);
+      canvas.drawLine(Offset(x, top + h), Offset(x, top), _glow(color, 7, 5, alpha: 0.45 * a));
+      canvas.drawLine(Offset(x, top + h * 0.7), Offset(x, top), _glow(Colors.white, 2.2, 1, alpha: 0.8 * a));
+    }
+    final arrow = _glow(Colors.white, 4, 1, alpha: a);
+    for (int i = 0; i < 3; i++) {
+      final y = c.dy + 60 - ((rise * 220 + i * 70) % 220);
+      _chevron(canvas, Offset(c.dx + (i - 1) * 46, y), 14, arrow, up: true);
+    }
+    canvas.drawCircle(c, 30 + 60 * rise, _glow(color, 3, 2, alpha: 0.5 * a));
+  }
+
+  // ひるませ: 相手の攻撃力ダウン。下向き矢印が降り、ひび割れた衝撃リングが走る
+  void _flinch(Canvas canvas, Size size, Offset c) {
+    final a = _fadeOut * _fadeIn;
+    const dark = Color(0xFFFF5C6C);
+    final drop = Curves.easeIn.transform(_p);
+    final arrow = _glow(dark, 5, 1.5, alpha: a);
+    for (int i = 0; i < 3; i++) {
+      final y = c.dy - 90 + ((drop * 200 + i * 60) % 200);
+      _chevron(canvas, Offset(c.dx + (i - 1) * 46, y), 16, arrow, up: false);
+    }
+    // ギザギザの衝撃リング
+    final path = Path();
+    const spikes = 14;
+    final rr = 20 + 56 * Curves.easeOutCubic.transform(_p);
+    for (int i = 0; i <= spikes; i++) {
+      final ang = i / spikes * math.pi * 2;
+      final r = rr * (i.isEven ? 1.0 : 0.78);
+      final pt = c + Offset(math.cos(ang), math.sin(ang)) * r;
+      i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
+    }
+    canvas.drawPath(path, _glow(Colors.white, 2.5, 1, alpha: 0.7 * a));
+    canvas.drawPath(path, _glow(dark, 8, 5, alpha: 0.45 * a));
+  }
+
+  // かげうち: 相手のスピードダウン。紫の残像が横に流れ、闇の渦が広がる
+  void _shadowStep(Canvas canvas, Size size, Offset c) {
+    final a = _fadeOut * _fadeIn;
+    const violet = Color(0xFF6B4FA3);
+    final slide = Curves.easeOut.transform(_p);
+    for (int i = 0; i < 5; i++) {
+      final x = c.dx - 120 + slide * 160 - i * 26.0;
+      final alpha = (0.5 - i * 0.09).clamp(0.0, 1.0) * a;
+      canvas.drawOval(Rect.fromCenter(center: Offset(x, c.dy), width: 46, height: 92),
+          Paint()..color = violet.withValues(alpha: alpha)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8));
+    }
+    for (int i = 0; i < 3; i++) {
+      final rr = 24 + i * 22 + 30 * _p;
+      canvas.drawArc(Rect.fromCircle(center: c, radius: rr), _p * 6 + i * 2.1, 3.6, false,
+          _glow(i == 0 ? Colors.white : violet, 3, 2, alpha: 0.6 * a));
+    }
+  }
+
+  // いやしのいぶき: 緑の光の球と、立ち上る「＋」の粒
+  void _heal(Canvas canvas, Size size, Offset c) {
+    final a = _fadeOut * _fadeIn;
+    const green = Color(0xFF6EE7A0);
+    final pulse = 0.6 + 0.4 * math.sin(_p * math.pi * 3);
+    canvas.drawCircle(c, 42 + 14 * pulse,
+        Paint()..color = green.withValues(alpha: 0.28 * a)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16));
+    canvas.drawCircle(c, 12 + 6 * pulse, Paint()..color = Colors.white.withValues(alpha: 0.9 * a));
+    final rng = math.Random(9);
+    final plus = _glow(green, 3.2, 1, alpha: a);
+    for (int i = 0; i < 9; i++) {
+      final x = c.dx + (rng.nextDouble() - 0.5) * 150;
+      final start = c.dy + 60 + rng.nextDouble() * 40;
+      final y = start - Curves.easeOut.transform(_p) * (110 + rng.nextDouble() * 60);
+      final w = 5 + rng.nextDouble() * 5;
+      canvas.drawLine(Offset(x - w, y), Offset(x + w, y), plus);
+      canvas.drawLine(Offset(x, y - w), Offset(x, y + w), plus);
     }
   }
 
