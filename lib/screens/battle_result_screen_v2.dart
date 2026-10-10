@@ -91,7 +91,7 @@ class _BattleResultScreenV2State extends ConsumerState<BattleResultScreenV2> {
     AdService.showInterstitialIfReady();
   }
 
-  // PvP勝利ボーナス（1日上限🪙20をstreakBonusと共有・実際に加算する）
+  // PvP勝利ボーナス（1日上限🪙15(kDailyBonusCoinCap)をstreakBonusと共有・実際に加算する）
   void _updatePvpBonus() {
     final w = ref.read(walletProvider);
     final isVip = ref.read(vipStatusProvider).value ?? false;
