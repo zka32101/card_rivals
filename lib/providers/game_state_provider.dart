@@ -34,7 +34,7 @@ final defenseDeckProvider = StateProvider<List<PlayCard>>((ref) {
 final selectedAttackDeckProvider = StateProvider<List<PlayCard>>((ref) => []);
 
 // 連勝/PvPボーナスの1日あたり合計獲得上限（コイン）
-// UI文言「1日上限🪙２０」に対応する、実際に強制する側の定数
+// UI文言「1日上限🪙15」（アプリ内の表示は l10n）に対応する、実際に強制する側の定数。表示と食い違わせないこと
 const int kDailyBonusCoinCap = 15;
 
 // ジェムの使い道（機能ブースト）
