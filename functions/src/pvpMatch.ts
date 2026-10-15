@@ -1,5 +1,7 @@
-import {getFirestore, FieldValue} from "firebase-admin/firestore";
+import {getFirestore, FieldValue, Timestamp} from "firebase-admin/firestore";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
+
+const PVP_MATCH_TTL_DAYS = 30;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PvPマッチング
@@ -88,6 +90,8 @@ export const pvpMatch = onCall(
       opponentRating,
       consumed: false,
       createdAt: FieldValue.serverTimestamp(),
+      // Firestore TTLポリシー用(README参照)。ポリシー設定後、この日時を過ぎた文書が自動削除される。
+      expireAt: Timestamp.fromMillis(Date.now() + PVP_MATCH_TTL_DAYS * 24 * 60 * 60 * 1000),
     });
 
     return {

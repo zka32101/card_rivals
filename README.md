@@ -15,3 +15,15 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## pvpMatches の TTL (自動削除)
+
+`pvpMatch` が作る `pvpMatches/{matchId}` には `expireAt` (作成から30日後の Timestamp) が入ります。
+Firestore の TTL ポリシーはコードでは作れないため、デプロイ後に一度だけ手動で設定します(共有プロジェクトなので対象を間違えないこと):
+
+```
+gcloud firestore fields ttls update expireAt --collection-group=pvpMatches --enable-ttl --project=<PROJECT_ID>
+```
+
+- 既に存在する文書には `expireAt` が無いため TTL は効きません(必要なら別途バックフィル)。
+- TTL削除は期限後おおむね24時間以内に行われます。

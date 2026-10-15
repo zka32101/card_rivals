@@ -32,7 +32,7 @@ const TONE_LABEL: Record<string, string> = {
 };
 
 export const generateCardName = onCall(
-  {region: "asia-northeast1", secrets: ["ANTHROPIC_API_KEY"]},
+  {region: "asia-northeast1", maxInstances: 5, secrets: ["ANTHROPIC_API_KEY"]},
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "認証が必要です");
