@@ -409,6 +409,7 @@ export const generateCardImage = onCall(
     region: "asia-northeast1",
     timeoutSeconds: 120,
     memory: "256MiB",
+    maxInstances: 3, // 外部画像API(Leonardo/Replicate)呼び出し: 課金・レート制限対策
     // REPLICATE_API_TOKEN は未登録（スキップ中）。generateImageWithFallbackは
     // トークン無し時にエラーを投げ、自動的にLeonardoへフォールバックする。
     // Replicateを登録したら IMAGE_PROVIDER_SECRETS （imageProviders.ts）に差し替える。

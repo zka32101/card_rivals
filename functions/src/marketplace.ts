@@ -50,7 +50,7 @@ interface MarketplaceTransaction {
 /**
  * Create a card listing
  */
-export const createCardListing = onCall(async (request) => {
+export const createCardListing = onCall({region: "asia-northeast1"}, async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
   const userId = request.auth.uid;
@@ -127,7 +127,7 @@ export const createCardListing = onCall(async (request) => {
 /**
  * Buy a card from marketplace
  */
-export const buyCard = onCall(async (request) => {
+export const buyCard = onCall({region: "asia-northeast1"}, async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
   const buyerId = request.auth.uid;
@@ -240,7 +240,7 @@ export const buyCard = onCall(async (request) => {
 /**
  * Delist a card from marketplace
  */
-export const delistCard = onCall(async (request) => {
+export const delistCard = onCall({region: "asia-northeast1"}, async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
   const userId = request.auth.uid;
@@ -269,7 +269,7 @@ export const delistCard = onCall(async (request) => {
 /**
  * Update price of a card listing
  */
-export const updateCardListing = onCall(async (request) => {
+export const updateCardListing = onCall({region: "asia-northeast1"}, async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
   const userId = request.auth.uid;
@@ -329,7 +329,7 @@ interface TradeOffer {
  * Create a trade offer between two players
  * No fees for P2P trades
  */
-export const createTradeOffer = onCall(async (request) => {
+export const createTradeOffer = onCall({region: "asia-northeast1"}, async (request) => {
   if (!request.auth) throw new Error('Not authenticated');
 
   const userId = request.auth.uid;
@@ -443,7 +443,7 @@ export const createTradeOffer = onCall(async (request) => {
 /**
  * Respond to a trade offer (accept or reject)
  */
-export const respondToTradeOffer = onCall(async (request) => {
+export const respondToTradeOffer = onCall({region: "asia-northeast1"}, async (request) => {
   if (!request.auth) throw new Error('Not authenticated');
 
   const userId = request.auth.uid;
@@ -598,7 +598,7 @@ export const respondToTradeOffer = onCall(async (request) => {
 /**
  * Cancel a trade offer (only sender can cancel pending offers)
  */
-export const cancelTradeOffer = onCall(async (request) => {
+export const cancelTradeOffer = onCall({region: "asia-northeast1"}, async (request) => {
   if (!request.auth) throw new Error('Not authenticated');
 
   const userId = request.auth.uid;
@@ -660,7 +660,7 @@ interface CurrencyListing {
  * Fill a currency exchange listing (buy/sell gems)
  * Supports partial fills
  */
-export const fillCurrencyListing = onCall(async (request) => {
+export const fillCurrencyListing = onCall({region: "asia-northeast1"}, async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'User not authenticated');
 
   const buyerId = request.auth.uid;

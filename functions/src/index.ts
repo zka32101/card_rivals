@@ -1,6 +1,11 @@
 import * as admin from "firebase-admin";
+import {setGlobalOptions} from "firebase-functions/v2";
 
 admin.initializeApp();
+
+// コスト暴走防止の上限。関数ごとの maxInstances 指定があればそちらが優先される。
+// minInstances は課金増になるため設定しない。
+setGlobalOptions({maxInstances: 10});
 
 export {generateCardImage} from "./generateCardImage";
 export {generateCardName} from "./generateCardName";

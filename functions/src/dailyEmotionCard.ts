@@ -21,7 +21,7 @@ const EMOTION_PROMPTS: Record<string, string> = {
 // Haiku を使ってカード名を生成
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export const generateDailyEmotionCardName = onCall(
-  {region: "asia-northeast1", secrets: ["ANTHROPIC_API_KEY"]},
+  {region: "asia-northeast1", maxInstances: 5, secrets: ["ANTHROPIC_API_KEY"]},
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -91,7 +91,7 @@ Format:
 // （旧実装はReplicateのprediction IDを返すだけでクライアント側ポーリングが未実装だった）。
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export const generateDailyEmotionCardImage = onCall(
-  {region: "asia-northeast1", timeoutSeconds: 120, memory: "256MiB", secrets: ["LEONARDO_API_KEY"]},
+  {region: "asia-northeast1", timeoutSeconds: 120, memory: "256MiB", maxInstances: 3, secrets: ["LEONARDO_API_KEY"]},
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
