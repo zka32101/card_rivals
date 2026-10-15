@@ -855,25 +855,41 @@ export const expireListings = onSchedule('every day 02:00', async () => {
   const now = Timestamp.now();
   const expiryThreshold = new Timestamp(now.seconds - 24 * 3600, now.nanoseconds);
 
-  // Expire active card listings
-  const expiredCardListings = await db
-    .collectionGroup('card_listings')
-    .where('status', '==', 'active')
-    .where('createdAt', '<', expiryThreshold)
-    .get();
+  // Expire active card listings.
+  // Bounded work per run: at most MAX_PAGES pages of PAGE_SIZE docs so the
+  // function cannot run past its timeout. Leftovers are picked up next run.
+  const PAGE_SIZE = 300;
+  const MAX_PAGES = 5;
+  let expiredCount = 0;
 
-  for (const doc of expiredCardListings.docs) {
-    await db.runTransaction(async (transaction) => {
-      transaction.update(doc.ref, { status: 'delisted' });
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const expiredCardListings = await db
+      .collectionGroup('card_listings')
+      .where('status', '==', 'active')
+      .where('createdAt', '<', expiryThreshold)
+      .limit(PAGE_SIZE)
+      .get();
 
-      const listingData = doc.data() as CardListing;
-      const globalRef = db.collection('marketplace/active_card_listings').doc(listingData.listingId);
-      transaction.update(globalRef, { status: 'delisted' });
-    });
+    if (expiredCardListings.empty) break;
+
+    for (const doc of expiredCardListings.docs) {
+      await db.runTransaction(async (transaction) => {
+        transaction.update(doc.ref, { status: 'delisted' });
+
+        const listingData = doc.data() as CardListing;
+        const globalRef = db.collection('marketplace/active_card_listings').doc(listingData.listingId);
+        transaction.update(globalRef, { status: 'delisted' });
+      });
+      expiredCount++;
+    }
+
+    // Updated docs no longer match status == 'active', so the next page query
+    // naturally returns the next batch.
+    if (expiredCardListings.size < PAGE_SIZE) break;
   }
 
   // Note: Trade offers and currency listings will auto-expire via client-side checks
   // Could add similar cleanup here if desired
 
-  console.log(`Expired ${expiredCardListings.docs.length} card listings`);
+  console.log(`Expired ${expiredCount} card listings`);
 });

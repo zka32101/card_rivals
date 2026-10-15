@@ -430,21 +430,24 @@ export const updateFriendCachedData = onDocumentUpdated(
         .where('friendId', '==', userId)
         .get();
 
-      const batch = db.batch();
+      const update = {
+        friendRating: newData?.rating || 1000,
+        friendTier: newData?.tier || 1,
+        friendName: newData?.displayName || 'Unknown',
+      };
 
-      reverseQuery.docs.forEach((doc) => {
+      // Firestore batch limit is 500 writes; commit in chunks.
+      const BATCH_LIMIT = 500;
+      for (let i = 0; i < reverseQuery.docs.length; i += BATCH_LIMIT) {
+        const batch = db.batch();
         // doc.ref is: users/{otherUserId}/friends/{userId}
-        const friendRef = doc.ref;
-
-        batch.update(friendRef, {
-          friendRating: newData?.rating || 1000,
-          friendTier: newData?.tier || 1,
-          friendName: newData?.displayName || 'Unknown',
+        reverseQuery.docs.slice(i, i + BATCH_LIMIT).forEach((doc) => {
+          batch.update(doc.ref, update);
         });
-      });
+        await batch.commit();
+      }
 
       if (reverseQuery.docs.length > 0) {
-        await batch.commit();
         console.log(`Updated friend caches for ${userId} (${reverseQuery.docs.length} friends)`);
       }
     } catch (error) {
